@@ -147,7 +147,7 @@ class Canvas
 		}
 		if (!isset($params[1])) {
 			if (($params[0] !== null) && (!is_bool($params[0]))) {
-				self::$magic[$method] = array($params[0]);
+				self::$magic[$method] = [$params[0]];
 			}
 			elseif ($params[0] === null) {
 				unset(self::$magic[$method]);

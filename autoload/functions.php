@@ -200,7 +200,7 @@ namespace gimle
 			return null;
 		}
 
-		$return = array();
+		$return = [];
 		$lines = file($filename, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 		if ($lines === false) {
 			return null;
@@ -303,7 +303,7 @@ namespace gimle
 		exec($command . ' 2> ' . $filename, $stout, $return);
 		$sterr = explode("\n", trim(file_get_contents($filename)));
 		unlink($filename);
-		return array('stout' => $stout, 'sterr' => $sterr, 'return' => $return);
+		return ['stout' => $stout, 'sterr' => $sterr, 'return' => $return];
 	}
 
 	/**

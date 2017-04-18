@@ -116,22 +116,22 @@ function var_dump ($var, bool $return = false, $title = null, ?string $backgroun
 	}
 
 	$fixDumpString = function (string $name, string $value, bool $htmlspecial = true) use (&$background, &$mode): string {
-		if (in_array($name, array('[\'pass\']', '[\'password\']', '[\'PHP_AUTH_PW\']'))) {
+		if (in_array($name, ['[\'pass\']', '[\'password\']', '[\'PHP_AUTH_PW\']'])) {
 			$value = '********';
 		}
 		else {
-			$fix = array(
+			$fix = [
 				"\r\n" => colorize('¤¶', 'gray', $background, $mode) . "\n", // Windows linefeed.
 				"\n\r" => colorize('¶¤', 'gray', $background, $mode) . "\n\n", // Erronumous (might be interpeted as double) linefeed.
 				"\n"   => colorize('¶', 'gray', $background, $mode) . "\n", // UNIX linefeed.
 				"\r"   => colorize('¤', 'gray', $background, $mode) . "\n" // Old mac linefeed.
-			);
+			];
 			$value = strtr(($htmlspecial ? htmlspecialchars($value) : $value), $fix);
 		}
 		return $value;
 	};
 
-	$recursionClasses = array();
+	$recursionClasses = [];
 
 	$dodump = function ($var, ?string $var_name = null, int $indent = 0, array $params = []) use (&$dodump, &$fixDumpString, &$background, &$webmode, &$mode, &$recursionClasses): void {
 		if (is_object($var)) {
@@ -251,7 +251,7 @@ function var_dump ($var, bool $return = false, $title = null, ?string $backgroun
 			else {
 				echo ' ' . colorize('=>', 'black', $background, $mode) . ' ' . colorize($class->getName() . ' Object' . $parents, 'gray', $background, $mode) . "\n" . str_repeat($doDump_indent, $indent) . colorize('(', 'lightgray', $background, $mode) . "\n";
 
-				$dblcheck = array();
+				$dblcheck = [];
 				foreach ((array) $var as $key => $value) {
 					if (!property_exists($var, $key)) {
 						$key = ltrim($key, "\x0*");
@@ -338,11 +338,11 @@ function var_dump ($var, bool $return = false, $title = null, ?string $backgroun
 								echo "\n";
 							}
 							else {
-								$dodump($value, '[\'' . $prop->name . '\'' . $append . ']', $indent + 1, array('error' => $error));
+								$dodump($value, '[\'' . $prop->name . '\'' . $append . ']', $indent + 1, ['error' => $error]);
 							}
 						}
 						else {
-							$dodump($value, '[\'' . $prop->name . '\'' . $append . ']', $indent + 1, array('error' => $error));
+							$dodump($value, '[\'' . $prop->name . '\'' . $append . ']', $indent + 1, ['error' => $error]);
 						}
 					}
 				}
