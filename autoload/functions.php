@@ -77,6 +77,27 @@ namespace
 namespace gimle
 {
 	/**
+	 * Set some default values on session start.
+	 *
+	 * @return void
+	 */
+	function session_start (): void
+	{
+		if (ini_set('session.use_only_cookies', '1') === false) {
+			throw new \Exception('Could not start session.');
+		}
+
+		$secure = false;
+		if (isset($_SERVER['HTTPS'])) {
+			$secure = true;
+		}
+
+		session_set_cookie_params(0, '/', '', $secure, true);
+		session_name('gimle' . ucfirst(preg_replace('/[^a-zA-Z]/', '', MAIN_SITE_ID)));
+		\session_start();
+	}
+
+	/**
 	 * Get information about the current url.
 	 *
 	 * @param mixed $part The part you want returned. (Optional).
