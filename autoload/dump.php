@@ -436,7 +436,7 @@ function var_dump ($var, bool $return = false, $title = null, ?string $backgroun
 			echo ' ' . colorize('=', 'black', $background, $mode) . ' ' . colorize('null', 'black', $background, $mode);
 		}
 		elseif (is_float($var)) {
-			echo ' ' . colorize('=', 'black', $background, $mode) . ' ' . colorize('Float(' . strlen($var) . ')', 'gray', $background) . ' ' . colorize($var, 'float', $background, $mode);
+			echo ' ' . colorize('=', 'black', $background, $mode) . ' ' . colorize('Float(' . strlen((string) $var) . ')', 'gray', $background) . ' ' . colorize((string) $var, 'float', $background, $mode);
 		}
 		elseif (is_resource($var)) {
 			echo ' ' . colorize('=', 'black', $background, $mode) . ' ' . colorize('Resource', 'gray', $background, $mode) . ' ' . $var;

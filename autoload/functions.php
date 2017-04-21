@@ -384,4 +384,64 @@ namespace gimle
 		}
 		return $array;
 	}
+
+	/**
+	 * Converts a config file formatted filesize string to bytes.
+	 *
+	 * @param string $size
+	 * @return int Number of bytes.
+	 */
+	function string_to_bytes (string $size): int
+	{
+		$size = trim($size);
+		$last = strtolower(substr($size, -1));
+		$size = (int) $size;
+		switch ($last) {
+			case 'g':
+				$size *= 1024;
+			case 'm':
+				$size *= 1024;
+			case 'k':
+				$size *= 1024;
+		}
+		return $size;
+	}
+
+	/**
+	 * Get the number of seconds since the file was last modified.
+	 *
+	 * @param string $name The file name.
+	 * @return int The age of the file, or null if not found.
+	 */
+	function get_modified_age (string $name): int
+	{
+		return (time() - filemtime($name));
+	}
+
+	/**
+	 * Convert bytes to readable number.
+	 *
+	 * @param int $filesize Number of bytes.
+	 * @param int $decimals optional Number of decimals to include in string.
+	 * @return array containing prefix, float value and readable string.
+	 */
+	function bytes_to_array (int $filesize = 0, int $decimals = 2): array
+	{
+		$return = [];
+		$count = 0;
+		$units = ['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
+		while ((($filesize / 1024) >= 1) && ($count < (count($units) - 1))) {
+			$filesize = $filesize / 1024;
+			$count++;
+		}
+		if (round($filesize, $decimals) === (float) 1024) {
+			$filesize = $filesize / 1024;
+			$count++;
+		}
+		$return['units']  = $units[$count];
+		$return['value']  = (float) $filesize;
+		$return['short'] = round($filesize, $decimals) . (($count > 0) ? ' ' . $units[$count] : '');
+		$return['full'] = round($filesize, $decimals) . ' ' . $units[$count] . 'B';
+		return $return;
+	}
 }

@@ -104,7 +104,7 @@ class System
 	public static function getUploadLimit (): int
 	{
 		if (self::$uploadLimit === null) {
-			self::$uploadLimit = (int) min(DiskIO::stringToBytes(ini_get('post_max_size')), DiskIO::stringToBytes(ini_get('upload_max_filesize')));
+			self::$uploadLimit = (int) min(string_to_bytes(ini_get('post_max_size')), string_to_bytes(ini_get('upload_max_filesize')));
 		}
 		return self::$uploadLimit;
 	}
