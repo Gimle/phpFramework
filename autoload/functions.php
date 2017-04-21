@@ -411,7 +411,7 @@ namespace gimle
 	 * Get the number of seconds since the file was last modified.
 	 *
 	 * @param string $name The file name.
-	 * @return int The age of the file, or null if not found.
+	 * @return int The age of the file.
 	 */
 	function get_modified_age (string $name): int
 	{
