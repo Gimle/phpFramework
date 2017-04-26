@@ -299,7 +299,7 @@ namespace gimle
 							$return[$key] = $value;
 						}
 						else {
-							$return = array_merge($return, string_to_nested_array($lastkey, [$key => $value]));
+							$return = array_merge_distinct($return, string_to_nested_array($lastkey, [$key => $value]));
 						}
 					}
 				}
@@ -354,7 +354,7 @@ namespace gimle
 	 * @param array $array Variable list of arrays to recursively merge.
 	 * @return array The merged array.
 	 */
-	function array_merge (...$arrays): array
+	function array_merge_distinct (...$arrays): array
 	{
 		$array = current($arrays);
 		$reposition = false;
@@ -370,7 +370,7 @@ namespace gimle
 				if (!empty($array2)) {
 					foreach ($array2 as $key => $val) {
 						if (is_array($array2[$key])) {
-							$array[$key] = ((isset($array[$key])) && (is_array($array[$key])) ? array_merge($array[$key], $array2[$key], $reposition) : $array2[$key]);
+							$array[$key] = ((isset($array[$key])) && (is_array($array[$key])) ? array_merge_distinct($array[$key], $array2[$key], $reposition) : $array2[$key]);
 						}
 						else {
 							if ((isset($array[$key])) && ($reposition === true)) {
@@ -443,5 +443,16 @@ namespace gimle
 		$return['short'] = round($filesize, $decimals) . (($count > 0) ? ' ' . $units[$count] : '');
 		$return['full'] = round($filesize, $decimals) . ' ' . $units[$count] . 'B';
 		return $return;
+	}
+
+	/**
+	 * Normalize spaces in the string, much like the browser would do it.
+	 *
+	 * @param string @string The input string.
+	 * @return string The normalized string.
+	 */
+	function normalize_space (string $string): string
+	{
+		return preg_replace('/\s+/s', ' ', $string);
 	}
 }

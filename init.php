@@ -61,7 +61,7 @@ else {
 unset($env_add);
 
 if (is_readable(SITE_DIR . 'config.php')) {
-	$config = array_merge(include SITE_DIR . 'config.php', $config, true);
+	$config = array_merge_distinct(include SITE_DIR . 'config.php', $config, true);
 }
 
 if ((ENV_MODE | ENV_LIVE) !== ENV_MODE) {
@@ -286,7 +286,7 @@ if (ENV_MODE & ENV_WEB) {
 							define(__NAMESPACE__ . '\\IS_SUBSITE', true);
 
 							if (is_readable(MAIN_SITE_DIR . 'config.php')) {
-								$subConfig = array_merge(include MAIN_SITE_DIR . 'config.php', $subConfig, true);
+								$subConfig = array_merge_distinct(include MAIN_SITE_DIR . 'config.php', $subConfig, true);
 							}
 
 							MainConfig::setAll($subConfig);

@@ -195,7 +195,7 @@ function var_dump ($var, bool $return = false, $title = null, ?string $backgroun
 					}
 					if ($same === true) {
 						$doDump_indent = colorize('|', 'lightgray', $background, $mode) . '   ';
-						echo str_repeat($doDump_indent, $indent + 1) . colorize('[\'' . ($webmode === true ? htmlentities($key) : $key) . '\']', 'varname', $background, $mode);
+						echo str_repeat($doDump_indent, $indent + 1) . colorize('[\'' . ($webmode === true ? htmlentities((string) $key) : $key) . '\']', 'varname', $background, $mode);
 						echo ' ' . colorize('=', 'black', $background, $mode) . ' ';
 						echo colorize(get_class($value) . '()', 'recursion', $background, $mode);
 						echo "\n";
@@ -253,8 +253,8 @@ function var_dump ($var, bool $return = false, $title = null, ?string $backgroun
 
 				$dblcheck = [];
 				foreach ((array) $var as $key => $value) {
-					if (!property_exists($var, $key)) {
-						$key = ltrim($key, "\x0*");
+					if (!property_exists($var, (string) $key)) {
+						$key = ltrim((string) $key, "\x0*");
 						if (substr($key, 0, strlen($class->getName())) === $class->getName()) {
 							$key = substr($key, (strlen($class->getName()) + 1));
 						}

@@ -20,7 +20,7 @@ class MainConfig
 	{
 		if (!self::exists($key)) {
 			$set = string_to_nested_array($key, $value);
-			self::$config = array_merge(self::$config, $set);
+			self::$config = array_merge_distinct(self::$config, $set);
 			return true;
 		}
 		return false;

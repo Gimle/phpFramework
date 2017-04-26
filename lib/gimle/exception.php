@@ -18,7 +18,7 @@ class Exception extends \Exception
 	 */
 	public function set (string $key, $value): void
 	{
-		$this->params = array_merge($this->params, string_to_nested_array($key, $value));
+		$this->params = array_merge_distinct($this->params, string_to_nested_array($key, $value));
 	}
 
 	/**
