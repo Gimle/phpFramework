@@ -14,6 +14,7 @@ namespace gimle;
  */
 function colorize (string $content, string $color, ?string $background = null, string $mode = 'auto', bool $getStyle = false): string
 {
+
 	if ($mode === 'terminal') {
 		return $content;
 	}
@@ -37,12 +38,15 @@ function colorize (string $content, string $color, ?string $background = null, s
 
 	if ($climode) {
 		$template = "\033[%sm%s\033[0m";
+		$templatergb = "\x1b[38;2;%s;%s;%sm%s\x1b[0m";
 	}
 	elseif ($getStyle === false) {
 		$template = '<span style="color: %s;">%s</span>';
+		$templatergb = '<span style="color: rgb(%s, %s, %s);">%s</span>';
 	}
 	else {
 		$template = 'color: %s;';
+		$templatergb = 'color: rgb(%s, %s, %s);';
 	}
 	if (substr($color, 0, 6) === 'range:') {
 		$config = json_decode(substr($color, 6), true);
@@ -143,6 +147,21 @@ function colorize (string $content, string $color, ?string $background = null, s
 			return sprintf($template, '38;5;208', $content);
 		}
 		return sprintf($template, 'darkorange', $content);
+	}
+	elseif (preg_match('/^[a-fA-F0-9]{3,6}$/', $color, $matches)) {
+		if (strlen($color) === 6) {
+			$color = str_split($color, 2);
+			array_walk($color, function (&$item, $key) use ($color) {
+				$item = strtolower($color[$key]);
+			});
+		}
+		else {
+			$color = str_split($color, 1);
+			array_walk($color, function (&$item, $key) use ($color) {
+				$item = strtolower($color[$key] . $color[$key]);
+			});
+		}
+		return sprintf($templatergb, hexdec($color[0]), hexdec($color[1]), hexdec($color[2]), $content);
 	}
 	elseif ($background === 'black') {
 		if ($climode) {
