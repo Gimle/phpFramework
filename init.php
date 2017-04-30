@@ -457,7 +457,7 @@ else {
 }
 
 if (ENV_MODE & ENV_CLI) {
-	ini_set('html_errors', false);
+	ini_set('html_errors', '0');
 }
 if ((isset($config['server']['override'])) && (is_array($config['server']['override'])) && (!empty($config['server']['override']))) {
 	if ((ENV_MODE & ENV_WEB) && (isset($config['server']['override']['html_errors']))) {

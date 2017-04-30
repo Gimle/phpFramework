@@ -241,16 +241,16 @@ class Spectacle
 			$dbs = sql\Mysql::getInstances();
 			if (!empty($dbs)) {
 				$this->data['tabs']['mysql'] = ['title' => 'Mysql', 'content' => ''];
-				$this->data['info']['mysql'] = ['connections' => 0, 'count' => 0, 'time' => 0, 'doubles' => false];
+				$this->data['info']['mysql'] = ['connections' => 0, 'count' => 0, 'time' => 0, 'duplicates' => false];
 				foreach ($dbs as $name) {
 					$this->data['info']['mysql']['connections']++;
 					$db = sql\Mysql::getInstance($name);
 					$this->data['tabs']['mysql']['content'] .= $db->explain();
-					$stats = $db->getQueryTotals();
-					$this->data['info']['mysql']['count'] += $stats['count'];
+					$stats = $db->explainJson();
+					$this->data['info']['mysql']['count'] += count($stats['queries']);
 					$this->data['info']['mysql']['time'] += $stats['time'];
-					if (($stats['doubles'] === true) && ($this->data['info']['mysql']['doubles'] === false)) {
-						$this->data['info']['mysql']['doubles'] = true;
+					if (($stats['duplicates'] === true) && ($this->data['info']['mysql']['duplicates'] === false)) {
+						$this->data['info']['mysql']['duplicates'] = true;
 						$this->data['tabs']['mysql']['content'] = '<p style="color: deeppink;">You have duplicate queries!</p>' . $this->data['tabs']['mysql']['content'];
 					}
 				}
