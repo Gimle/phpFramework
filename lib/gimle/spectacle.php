@@ -222,7 +222,7 @@ class Spectacle
 		$return[] = '<p><span style="font-family: monospace; color: DarkBlue;">' . $title . '</span> in <span style="color: DarkBlue;">' . $file . '</span> on line <span style="color: DarkBlue;">' . $line . '</span></p>';
 
 		foreach ($data as $index => $item) {
-			$return[] = d($item, true, 'param' . ($index + 1));
+			$return[] = d($item, ['return' => true, 'title' => 'param' . ($index + 1)]);
 		}
 		return implode('', $return);
 	}

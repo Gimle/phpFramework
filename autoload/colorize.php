@@ -8,14 +8,14 @@ namespace gimle;
  * @param string $content The content to colorize.
  * @param string $color The color to use.
  * @param string $background The background for color overrides to maintain visibility.
- * @param string $mode Default "auto", can be: "cli", "web" or "terminal".
+ * @param string $mode Default "auto", can be: "cli", "web" or "console".
  * @param bool $getStyle return the style only (Default false).
  * @return string
  */
 function colorize (string $content, string $color, ?string $background = null, string $mode = 'auto', bool $getStyle = false): string
 {
 
-	if ($mode === 'terminal') {
+	if ($mode === 'console') {
 		return $content;
 	}
 

@@ -2,113 +2,131 @@
 declare(strict_types=1);
 namespace gimle;
 
+
 /**
  * Dumps a varialble from the global scope.
  *
  * @param mixed $var The variable to dump.
- * @param bool $return Return output? (Default: false)
- * @param ?string $title string|null Alternate title for the dump.
- * @param ?string $background Override the default background.
- * @param string $mode Default "auto", can be: "cli" or "web".
+ * @param array $mode
+ *          return = bool
+ *          title = string
+ *          background = string
+ *          mode = string: "console", "cli" or "web"
+ *          string_callback = function
  * @return ?string
  */
-function d ($var, bool $return = false, ?string $title = null, ?string $background = null, string $mode = 'auto'): ?string
+function d ($var, array $mode = [])
 {
-	if ($title === null) {
-		$title = [
+	if (!isset($mode['title'])) {
+		$mode['title'] = [
 			'steps' => 1,
 			'match' => '/d\((.*)/'
 		];
 	}
-	return var_dump($var, $return, $title, $background, $mode);
+	return var_dump($var, $mode);
 }
 
-/**
- * Dumps a varialble from the global scope terminal style. No colours, no tags, no web escapes.
+ /**
+ * Dumps a varialble from the global scope console style. No colours, no tags, no web escapes.
  *
  * @param mixed $var The variable to dump.
- * @param bool $return Return output? (Default: false)
- * @param ?string $title string|null Alternate title for the dump.
- * @param ?string $background Override the default background.
+ * @param array $mode
+ *          return = bool
+ *          title = string
+ *          background = string
+ *          string_callback = function
  * @return ?string
  */
-function terminal_dump ($var, bool $return = false, ?string $title = null, ?string $background = 'black'): ?string
+function console_dump ($var, array $mode = []): ?string
 {
-	if ($title === null) {
-		$title = [
+	if (!isset($mode['title'])) {
+		$mode['title'] = [
 			'steps' => 1,
-			'match' => '/terminal_dump\((.*)/'
+			'match' => '/console_dump\((.*)/'
 		];
 	}
-	return var_dump($var, $return, $title, $background, 'terminal');
+	$mode['mode'] = 'console';
+	return var_dump($var, $mode);
 }
 
-/**
+ /**
  * Dumps a varialble from the global scope cli style. Cli colours, no tags, no web escapes.
  *
  * @param mixed $var The variable to dump.
- * @param bool $return Return output? (Default: false)
- * @param ?string $title string|null Alternate title for the dump.
- * @param ?string $background Override the default background.
+ * @param array $mode
+ *          return = bool
+ *          title = string
+ *          background = string
+ *          string_callback = function
  * @return ?string
  */
-function cli_dump ($var, bool $return = false, ?string $title = null, ?string $background = 'black'): ?string
+function cli_dump ($var, array $mode = []): ?string
 {
-	if ($title === null) {
-		$title = [
+	if (!isset($mode['title'])) {
+		$mode['title'] = [
 			'steps' => 1,
 			'match' => '/cli_dump\((.*)/'
 		];
 	}
-	return var_dump($var, $return, $title, $background, 'cli');
+	$mode['mode'] = 'cli';
+	return var_dump($var, $mode);
 }
 
 /**
  * Dumps a varialble from the global scope web style. Web colours, Tags, Web escapes.
  *
  * @param mixed $var The variable to dump.
- * @param bool $return Return output? (Default: false)
- * @param ?string $title string|null Alternate title for the dump.
- * @param ?string $background Override the default background.
+ * @param array $mode
+ *          return = bool
+ *          title = string
+ *          background = string
+ *          string_callback = function
  * @return ?string
  */
-function web_dump ($var, bool $return = false, ?string $title = null, ?string $background = null): ?string
+function web_dump ($var, array $mode = []): ?string
 {
-	if ($title === null) {
-		$title = [
+	if (!isset($mode['title'])) {
+		$mode['title'] = [
 			'steps' => 1,
 			'match' => '/web_dump\((.*)/'
 		];
 	}
-	return var_dump($var, $return, $title, $background, 'web');
+	$mode['mode'] = 'web';
+	return var_dump($var, $mode);
 }
 
 /**
  * Dumps a varialble from the global scope.
  *
  * @param mixed $var The variable to dump.
- * @param bool $return Return output? (Default: false)
- * @param ?string $title string|bool|array Alternate title for the dump, or to backtrace.
- * @param ?string $background Override the default background.
- * @param string $mode Default "auto", can be: "cli" or "web".
+ * @param array $mode
+ *          return = bool
+ *          title = string
+ *          background = string
+ *          mode = string: "console", "cli" or "web"
+ *          string_callback = function
  * @return ?string
  */
-function var_dump ($var, bool $return = false, $title = null, ?string $background = null, ?string $mode = 'auto'): ?string
+function var_dump ($var, array $mode = []): ?string
 {
-	if ($background === null) {
-		$background = 'white';
+	if (!isset($mode['background'])) {
+		$mode['background'] = 'white';
 	}
 
-	if ($mode === 'auto') {
+	if (!isset($mode['mode'])) {
+		$mode['mode'] = 'auto';
+	}
+
+	if ($mode['mode'] === 'auto') {
 		$webmode = (ENV_MODE & ENV_WEB ? true : false);
 	}
-	elseif ($mode === 'web') {
+	elseif ($mode['mode'] === 'web') {
 		$webmode = true;
 	}
-	elseif ($mode === 'cli') {
+	elseif ($mode['mode'] === 'cli') {
 		$webmode = false;
 	}
-	elseif ($mode === 'terminal') {
+	elseif ($mode['mode'] === 'console') {
 		$webmode = false;
 	}
 	else {
@@ -119,12 +137,15 @@ function var_dump ($var, bool $return = false, $title = null, ?string $backgroun
 		if (in_array($name, ['[\'pass\']', '[\'password\']', '[\'PHP_AUTH_PW\']'])) {
 			$value = '********';
 		}
+		elseif (isset($mode['string_callback'])) {
+			$value = $mode['string_callback']($value, $mode);
+		}
 		else {
 			$fix = [
-				"\r\n" => colorize('¤¶', 'gray', $background, $mode) . "\n", // Windows linefeed.
-				"\n\r" => colorize('¶¤', 'gray', $background, $mode) . "\n\n", // Erronumous (might be interpeted as double) linefeed.
-				"\n"   => colorize('¶', 'gray', $background, $mode) . "\n", // UNIX linefeed.
-				"\r"   => colorize('¤', 'gray', $background, $mode) . "\n" // Old mac linefeed.
+				"\r\n" => colorize('¤¶', 'gray', $mode['background'], $mode['mode']) . "\n", // Windows linefeed.
+				"\n\r" => colorize('¶¤', 'gray', $mode['background'], $mode['mode']) . "\n\n", // Erronumous (might be interpeted as double) linefeed.
+				"\n"   => colorize('¶', 'gray', $mode['background'], $mode['mode']) . "\n", // UNIX linefeed.
+				"\r"   => colorize('¤', 'gray', $mode['background'], $mode['mode']) . "\n" // Old mac linefeed.
 			];
 			$value = strtr(($htmlspecial ? htmlspecialchars($value) : $value), $fix);
 		}
@@ -133,7 +154,7 @@ function var_dump ($var, bool $return = false, $title = null, ?string $backgroun
 
 	$recursionClasses = [];
 
-	$dodump = function ($var, ?string $var_name = null, int $indent = 0, array $params = []) use (&$dodump, &$fixDumpString, &$background, &$webmode, &$mode, &$recursionClasses): void {
+	$dodump = function ($var, ?string $var_name = null, int $indent = 0, array $params = []) use (&$dodump, &$fixDumpString, &$webmode, &$mode, &$recursionClasses): void {
 		if (is_object($var)) {
 			if (!empty($recursionClasses)) {
 				$add = true;
@@ -151,37 +172,37 @@ function var_dump ($var, bool $return = false, $title = null, ?string $backgroun
 			}
 		}
 
-		$doDump_indent = colorize('|', 'lightgray', $background, $mode) . '   ';
-		echo str_repeat($doDump_indent, $indent) . colorize(($webmode === true ? htmlentities($var_name) : $var_name), 'varname', $background, $mode);
+		$doDump_indent = colorize('|', 'lightgray', $mode['background'], $mode['mode']) . '   ';
+		echo str_repeat($doDump_indent, $indent) . colorize(($webmode === true ? htmlentities($var_name) : $var_name), 'varname', $mode['background'], $mode['mode']);
 
 		if (is_callable($var)) {
-			echo ' ' . colorize('=', 'black', $background, $mode) . ' ' . colorize('*CALLABLE*', 'recursion', $background, $mode);
+			echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ' . colorize('*CALLABLE*', 'recursion', $mode['background'], $mode['mode']);
 		}
 		elseif (is_array($var)) {
-			echo ' ' . colorize('=>', 'black', $background, $mode) . ' ' . colorize('Array (' . count($var) . ')', 'gray', $background, $mode) . "\n" . str_repeat($doDump_indent, $indent) . colorize('(', 'lightgray', $background, $mode) . "\n";
+			echo ' ' . colorize('=>', 'black', $mode['background'], $mode['mode']) . ' ' . colorize('Array (' . count($var) . ')', 'gray', $mode['background'], $mode['mode']) . "\n" . str_repeat($doDump_indent, $indent) . colorize('(', 'lightgray', $mode['background'], $mode['mode']) . "\n";
 			foreach ($var as $key => $value) {
 				if (is_callable($var[$key])) {
-					$doDump_indent = colorize('|', 'lightgray', $background, $mode) . '   ';
-					echo str_repeat($doDump_indent, $indent + 1) . colorize('[\'' . ($webmode === true ? htmlentities($key) : $key) . '\']', 'varname', $background, $mode);
-					echo ' ' . colorize('=', 'black', $background, $mode) . ' ';
+					$doDump_indent = colorize('|', 'lightgray', $mode['background'], $mode['mode']) . '   ';
+					echo str_repeat($doDump_indent, $indent + 1) . colorize('[\'' . ($webmode === true ? htmlentities($key) : $key) . '\']', 'varname', $mode['background'], $mode['mode']);
+					echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ';
 					if (!is_string($var[$key])) {
-						echo colorize('*CALLABLE*', 'recursion', $background, $mode);
+						echo colorize('*CALLABLE*', 'recursion', $mode['background'], $mode['mode']);
 					}
 					else {
-						echo colorize('\'' . (string) $var[$key] . '\'', 'recursion', $background, $mode);
+						echo colorize('\'' . (string) $var[$key] . '\'', 'recursion', $mode['background'], $mode['mode']);
 					}
 					echo "\n";
 					continue;
 				}
 				if (strpos(print_r($var[$key], true), '*RECURSION*') !== false) {
-					$doDump_indent = colorize('|', 'lightgray', $background, $mode) . '   ';
-					echo str_repeat($doDump_indent, $indent + 1) . colorize('[\'' . ($webmode === true ? htmlentities((string) $key) : $key) . '\']', 'varname', $background, $mode);
-					echo ' ' . colorize('=', 'black', $background, $mode) . ' ';
+					$doDump_indent = colorize('|', 'lightgray', $mode['background'], $mode['mode']) . '   ';
+					echo str_repeat($doDump_indent, $indent + 1) . colorize('[\'' . ($webmode === true ? htmlentities((string) $key) : $key) . '\']', 'varname', $mode['background'], $mode['mode']);
+					echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ';
 					if (!is_string($var[$key])) {
-						echo colorize('*RECURSION*', 'recursion', $background, $mode);
+						echo colorize('*RECURSION*', 'recursion', $mode['background'], $mode['mode']);
 					}
 					else {
-						echo colorize('\'' . (string) $var[$key] . '\'', 'recursion', $background, $mode);
+						echo colorize('\'' . (string) $var[$key] . '\'', 'recursion', $mode['background'], $mode['mode']);
 					}
 					echo "\n";
 					continue;
@@ -194,17 +215,17 @@ function var_dump ($var, bool $return = false, $title = null, ?string $backgroun
 						}
 					}
 					if ($same === true) {
-						$doDump_indent = colorize('|', 'lightgray', $background, $mode) . '   ';
-						echo str_repeat($doDump_indent, $indent + 1) . colorize('[\'' . ($webmode === true ? htmlentities((string) $key) : $key) . '\']', 'varname', $background, $mode);
-						echo ' ' . colorize('=', 'black', $background, $mode) . ' ';
-						echo colorize(get_class($value) . '()', 'recursion', $background, $mode);
+						$doDump_indent = colorize('|', 'lightgray', $mode['background'], $mode['mode']) . '   ';
+						echo str_repeat($doDump_indent, $indent + 1) . colorize('[\'' . ($webmode === true ? htmlentities((string) $key) : $key) . '\']', 'varname', $mode['background'], $mode['mode']);
+						echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ';
+						echo colorize(get_class($value) . '()', 'recursion', $mode['background'], $mode['mode']);
 						echo "\n";
 					}
 					elseif (get_class($value) === 'Closure') {
-						$doDump_indent = colorize('|', 'lightgray', $background, $mode) . '   ';
-						echo str_repeat($doDump_indent, $indent + 1) . colorize('[\'' . ($webmode === true ? htmlentities($key) : $key) . '\']', 'varname', $background, $mode);
-						echo ' ' . colorize('=', 'black', $background, $mode) . ' ';
-						echo colorize(get_class($value) . '()', 'recursion', $background, $mode);
+						$doDump_indent = colorize('|', 'lightgray', $mode['background'], $mode['mode']) . '   ';
+						echo str_repeat($doDump_indent, $indent + 1) . colorize('[\'' . ($webmode === true ? htmlentities($key) : $key) . '\']', 'varname', $mode['background'], $mode['mode']);
+						echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ';
+						echo colorize(get_class($value) . '()', 'recursion', $mode['background'], $mode['mode']);
 						echo "\n";
 					}
 					else {
@@ -214,21 +235,21 @@ function var_dump ($var, bool $return = false, $title = null, ?string $backgroun
 				}
 				$dodump($value, '[\'' . $key . '\']', $indent + 1);
 			}
-			echo str_repeat($doDump_indent, $indent) . colorize(')', 'lightgray', $background, $mode);
+			echo str_repeat($doDump_indent, $indent) . colorize(')', 'lightgray', $mode['background'], $mode['mode']);
 		}
 		elseif (is_string($var)) {
 			if ((isset($params['error'])) && ($params['error'] === true)) {
-				echo ' ' . colorize('=', 'black', $background, $mode) . ' ' . colorize('Error: ' . $fixDumpString($var_name, $var, $webmode), 'error', $background, $mode);
+				echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ' . colorize('Error: ' . $fixDumpString($var_name, $var, $webmode), 'error', $mode['background'], $mode['mode']);
 			}
 			else {
-				echo ' ' . colorize('=', 'black', $background, $mode) . ' ' . colorize('String(' . strlen($var) . ')', 'gray', $background, $mode) . ' ' . colorize('\'' . $fixDumpString($var_name, $var, $webmode) . '\'', 'string', $background, $mode);
+				echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ' . colorize('String(' . strlen($var) . ')', 'gray', $mode['background'], $mode['mode']) . ' ' . colorize('\'' . $fixDumpString($var_name, $var, $webmode) . '\'', 'string', $mode['background'], $mode['mode']);
 			}
 		}
 		elseif (is_int($var)) {
-			echo ' ' . colorize('=', 'black', $background, $mode) . ' ' . colorize('Integer(' . strlen((string) $var) . ')', 'gray', $background, $mode) . ' ' . colorize((string) $var, 'int', $background, $mode);
+			echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ' . colorize('Integer(' . strlen((string) $var) . ')', 'gray', $mode['background'], $mode['mode']) . ' ' . colorize((string) $var, 'int', $mode['background'], $mode['mode']);
 		}
 		elseif (is_bool($var)) {
-			echo ' ' . colorize('=', 'black', $background, $mode) . ' ' . colorize('Boolean', 'gray', $background, $mode) . ' ' . colorize(($var === true ? 'true' : 'false'), 'bool', $background, $mode);
+			echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ' . colorize('Boolean', 'gray', $mode['background'], $mode['mode']) . ' ' . colorize(($var === true ? 'true' : 'false'), 'bool', $mode['background'], $mode['mode']);
 		}
 		elseif (is_object($var)) {
 			$class = new \ReflectionObject($var);
@@ -245,11 +266,11 @@ function var_dump ($var, bool $return = false, $title = null, ?string $backgroun
 
 
 			if ($var instanceof Iterator) {
-				echo ' ' . colorize('=>', 'black', $background, $mode) . ' ' . colorize($class->getName() . ' Object (Iterator)' . $parents, 'gray', $background, $mode) . "\n" . str_repeat($doDump_indent, $indent) . colorize('(', 'lightgray', $background, $mode) . "\n";
+				echo ' ' . colorize('=>', 'black', $mode['background'], $mode['mode']) . ' ' . colorize($class->getName() . ' Object (Iterator)' . $parents, 'gray', $mode['background'], $mode['mode']) . "\n" . str_repeat($doDump_indent, $indent) . colorize('(', 'lightgray', $mode['background'], $mode['mode']) . "\n";
 				var_dump($var);
 			}
 			else {
-				echo ' ' . colorize('=>', 'black', $background, $mode) . ' ' . colorize($class->getName() . ' Object' . $parents, 'gray', $background, $mode) . "\n" . str_repeat($doDump_indent, $indent) . colorize('(', 'lightgray', $background, $mode) . "\n";
+				echo ' ' . colorize('=>', 'black', $mode['background'], $mode['mode']) . ' ' . colorize($class->getName() . ' Object' . $parents, 'gray', $mode['background'], $mode['mode']) . "\n" . str_repeat($doDump_indent, $indent) . colorize('(', 'lightgray', $mode['background'], $mode['mode']) . "\n";
 
 				$dblcheck = [];
 				foreach ((array) $var as $key => $value) {
@@ -331,10 +352,10 @@ function var_dump ($var, bool $return = false, $title = null, ?string $backgroun
 								}
 							}
 							if ($same === true) {
-								$doDump_indent = colorize('|', 'lightgray', $background, $mode) . '   ';
-								echo str_repeat($doDump_indent, $indent + 1) . colorize('[\'' . ($webmode === true ? htmlentities($prop->name . '\'' . $append) : $prop->name . '\'' . $append) . ']', 'varname', $background, $mode);
-								echo ' ' . colorize('=', 'black', $background, $mode) . ' ';
-								echo colorize(get_class($value) . '()', 'recursion', $background, $mode);
+								$doDump_indent = colorize('|', 'lightgray', $mode['background'], $mode['mode']) . '   ';
+								echo str_repeat($doDump_indent, $indent + 1) . colorize('[\'' . ($webmode === true ? htmlentities($prop->name . '\'' . $append) : $prop->name . '\'' . $append) . ']', 'varname', $mode['background'], $mode['mode']);
+								echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ';
+								echo colorize(get_class($value) . '()', 'recursion', $mode['background'], $mode['mode']);
 								echo "\n";
 							}
 							else {
@@ -357,34 +378,34 @@ function var_dump ($var, bool $return = false, $title = null, ?string $backgroun
 				if (!empty($methods)) {
 					foreach ($methods as $method) {
 
-						$doDump_indent = colorize('|', 'lightgray', $background, $mode) . '   ';
+						$doDump_indent = colorize('|', 'lightgray', $mode['background'], $mode['mode']) . '   ';
 						echo str_repeat($doDump_indent, $indent + 1);
 
 						if ($method->getModifiers() & \ReflectionMethod::IS_ABSTRACT) {
-							echo colorize('abstract ', 'gray', $background, $mode);
+							echo colorize('abstract ', 'gray', $mode['background'], $mode['mode']);
 						}
 						elseif ($method->getModifiers() & \ReflectionMethod::IS_FINAL) {
-							echo colorize('final ', 'gray', $background, $mode);
+							echo colorize('final ', 'gray', $mode['background'], $mode['mode']);
 						}
 
 						if ($method->getModifiers() & \ReflectionMethod::IS_PUBLIC) {
-							echo colorize('public ', 'gray', $background, $mode);
+							echo colorize('public ', 'gray', $mode['background'], $mode['mode']);
 						}
 						elseif ($method->getModifiers() & \ReflectionMethod::IS_PROTECTED) {
-							echo colorize('protected ', 'gray', $background, $mode);
+							echo colorize('protected ', 'gray', $mode['background'], $mode['mode']);
 						}
 						elseif ($method->getModifiers() & \ReflectionMethod::IS_PRIVATE) {
-							echo colorize('private ', 'gray', $background, $mode);
+							echo colorize('private ', 'gray', $mode['background'], $mode['mode']);
 						}
 
-						echo colorize($method->class, 'gray', $background, $mode);
+						echo colorize($method->class, 'gray', $mode['background'], $mode['mode']);
 
 						$type = '->';
 						if ($method->getModifiers() & \ReflectionMethod::IS_STATIC) {
 							$type = '::';
 						}
 
-						echo colorize($type . $method->name . '(', 'recursion', $background, $mode);
+						echo colorize($type . $method->name . '(', 'recursion', $mode['background'], $mode['mode']);
 
 						$reflectMethod = new \ReflectionMethod($method->class, $method->name);
 						$methodParams = $reflectMethod->getParameters();
@@ -413,16 +434,16 @@ function var_dump ($var, bool $return = false, $title = null, ?string $backgroun
 									catch (\Exception $e) {
 										$default = 'Unknown';
 									}
-									$mParams[] = colorize(($mParam->isPassedByReference() ? '&amp;' : '') . '$' . $mParam->name . ' = ' . $default, 'gray', $background, $mode);
+									$mParams[] = colorize(($mParam->isPassedByReference() ? '&amp;' : '') . '$' . $mParam->name . ' = ' . $default, 'gray', $mode['background'], $mode['mode']);
 								}
 								else {
-									$mParams[] = colorize(($mParam->isPassedByReference() ? '&amp;' : '') . '$' . $mParam->name, 'black', $background, $mode);
+									$mParams[] = colorize(($mParam->isPassedByReference() ? '&amp;' : '') . '$' . $mParam->name, 'black', $mode['background'], $mode['mode']);
 								}
 							}
 							echo implode(', ', $mParams);
 						}
 
-						echo colorize(')', 'recursion', $background, $mode);
+						echo colorize(')', 'recursion', $mode['background'], $mode['mode']);
 						echo "\n";
 
 					}
@@ -430,19 +451,19 @@ function var_dump ($var, bool $return = false, $title = null, ?string $backgroun
 				unset($props, $reflect);
 			}
 			unset($class);
-			echo str_repeat($doDump_indent, $indent) . colorize(')', 'lightgray', $background, $mode);
+			echo str_repeat($doDump_indent, $indent) . colorize(')', 'lightgray', $mode['background'], $mode['mode']);
 		}
 		elseif (is_null($var)) {
-			echo ' ' . colorize('=', 'black', $background, $mode) . ' ' . colorize('null', 'black', $background, $mode);
+			echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ' . colorize('null', 'black', $mode['background'], $mode['mode']);
 		}
 		elseif (is_float($var)) {
-			echo ' ' . colorize('=', 'black', $background, $mode) . ' ' . colorize('Float(' . strlen((string) $var) . ')', 'gray', $background) . ' ' . colorize((string) $var, 'float', $background, $mode);
+			echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ' . colorize('Float(' . strlen((string) $var) . ')', 'gray', $mode['background']) . ' ' . colorize((string) $var, 'float', $mode['background'], $mode['mode']);
 		}
 		elseif (is_resource($var)) {
-			echo ' ' . colorize('=', 'black', $background, $mode) . ' ' . colorize('Resource', 'gray', $background, $mode) . ' ' . $var;
+			echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ' . colorize('Resource', 'gray', $mode['background'], $mode['mode']) . ' ' . $var;
 		}
 		else {
-			echo ' ' . colorize('=', 'black', $background, $mode) . ' ' . colorize('Unknown', 'gray', $background, $mode) . ' ' . $var;
+			echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ' . colorize('Unknown', 'gray', $mode['background'], $mode['mode']) . ' ' . $var;
 		}
 		echo "\n";
 	};
@@ -450,11 +471,18 @@ function var_dump ($var, bool $return = false, $title = null, ?string $backgroun
 	$prefix = 'unique';
 	$suffix = 'value';
 
-	if ($return === true) {
+	if ((isset($mode['return'])) && ($mode['return'] === true)) {
 		ob_start();
 	}
 	if ($webmode) {
 		echo '<pre class="vardump">';
+	}
+
+	if (isset($mode['title'])) {
+		$title = $mode['title'];
+	}
+	else {
+		$title = null;
 	}
 
 	if (($title === null) || (is_array($title))) {
@@ -506,7 +534,7 @@ function var_dump ($var, bool $return = false, $title = null, ?string $backgroun
 	if ($webmode) {
 		echo "</pre>\n";
 	}
-	if ($return === true) {
+	if ((isset($mode['return'])) && ($mode['return'] === true)) {
 		$out = ob_get_contents();
 		ob_end_clean();
 		return $out;
