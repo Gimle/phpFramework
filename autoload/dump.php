@@ -331,7 +331,7 @@ function var_dump ($var, array $mode = []): ?string
 							$dodump($var->{$match}, '[\'' . $match . '\']', $indent + 1, []);
 						}
 						else {
-							$dodump('(object value omitted)', '[\'' . $match . '\'' . ' append' . ']', $indent + 1, ['omitted' => true]);
+							$dodump('(object value omitted)', '[\'' . $match . '\']', $indent + 1, ['omitted' => true]);
 						}
 					}
 				}
