@@ -2,7 +2,6 @@
 declare(strict_types=1);
 namespace gimle;
 
-
 /**
  * Dumps a varialble from the global scope.
  *
@@ -241,6 +240,9 @@ function var_dump ($var, array $mode = []): ?string
 			if ((isset($params['error'])) && ($params['error'] === true)) {
 				echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ' . colorize('Error: ' . $fixDumpString($var_name, $var, $webmode), 'error', $mode['background'], $mode['mode']);
 			}
+			elseif ((isset($params['omitted'])) && ($params['omitted'] === true)) {
+				echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ' . colorize('Omitted: ' . $fixDumpString($var_name, $var, $webmode), 'recursion', $mode['background'], $mode['mode']);
+			}
 			else {
 				echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ' . colorize('String(' . strlen($var) . ')', 'gray', $mode['background'], $mode['mode']) . ' ' . colorize('\'' . $fixDumpString($var_name, $var, $webmode) . '\'', 'string', $mode['background'], $mode['mode']);
 			}
@@ -312,6 +314,27 @@ function var_dump ($var, array $mode = []): ?string
 				unset($constants);
 
 				$props = $reflect->getProperties();
+				ob_start();
+				\var_dump($var);
+				$hiddenProps = ob_get_contents();
+				ob_end_clean();
+				preg_match_all('/\  \[\"([^\"]+)\"\]\=\>\n/', $hiddenProps, $matches);
+				$reflectionPropsFound = [];
+				if (!empty($props)) {
+					foreach ($props as $prop) {
+						$reflectionPropsFound[] = $prop->name;
+					}
+				}
+				foreach ($matches[1] as $match) {
+					if ((!in_array($match, $reflectionPropsFound)) && (property_exists($var, $match))) {
+						if (!is_object($var->{$match})) {
+							$dodump($var->{$match}, '[\'' . $match . '\']', $indent + 1, []);
+						}
+						else {
+							$dodump('(object value omitted)', '[\'' . $match . '\'' . ' append' . ']', $indent + 1, ['omitted' => true]);
+						}
+					}
+				}
 				if (!empty($props)) {
 					foreach ($props as $prop) {
 						$append = '';
