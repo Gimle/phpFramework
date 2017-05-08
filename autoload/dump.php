@@ -453,6 +453,15 @@ function var_dump ($var, array $mode = []): ?string
 						if (!empty($methodParams)) {
 							$mParams = [];
 							foreach ($methodParams as $mParam) {
+								$pre = '';
+								$mPropType = $mParam->getType();
+								if ($mPropType !== null) {
+									if ($mPropType->allowsNull() === true) {
+										$pre = '?';
+									}
+									$pre .= (string) $mPropType . ' ';
+								}
+
 								if ($mParam->isOptional()) {
 									try {
 										$default = $mParam->getDefaultValue();
@@ -475,16 +484,25 @@ function var_dump ($var, array $mode = []): ?string
 									catch (\Exception $e) {
 										$default = 'Unknown';
 									}
-									$mParams[] = colorize(($mParam->isPassedByReference() ? '&amp;' : '') . '$' . $mParam->name . ' = ' . $default, 'gray', $mode['background'], $mode['mode']);
+									$mParams[] = colorize($pre, 'string') . colorize(($mParam->isPassedByReference() ? '&amp;' : '') . '$' . $mParam->name . ' = ' . $default, 'gray', $mode['background'], $mode['mode']);
 								}
 								else {
-									$mParams[] = colorize(($mParam->isPassedByReference() ? '&amp;' : '') . '$' . $mParam->name, 'black', $mode['background'], $mode['mode']);
+									$mParams[] = colorize($pre, 'string') . colorize(($mParam->isPassedByReference() ? '&amp;' : '') . '$' . $mParam->name, 'black', $mode['background'], $mode['mode']);
 								}
 							}
 							echo implode(', ', $mParams);
 						}
 
 						echo colorize(')', 'recursion', $mode['background'], $mode['mode']);
+						$returnType = $method->getReturnType();
+						if ($returnType !== null) {
+							$pre = ': ';
+							if ($returnType->allowsNull() === true) {
+								$pre .= '?';
+							}
+							echo colorize($pre . (string) $returnType, 'string');
+						}
+
 						echo "\n";
 
 					}
