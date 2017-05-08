@@ -103,6 +103,7 @@ function web_dump ($var, array $mode = []): ?string
  *          title = string
  *          background = string
  *          mode = string: "console", "cli" or "web"
+ *          document = bool
  *          string_callback = function
  * @return ?string
  */
@@ -153,7 +154,22 @@ function var_dump ($var, array $mode = []): ?string
 
 	$recursionClasses = [];
 
-	$dodump = function ($var, ?string $var_name = null, int $indent = 0, array $params = []) use (&$dodump, &$fixDumpString, &$webmode, &$mode, &$recursionClasses): void {
+	$showComment = function ($block, $indent) use (&$mode) {
+		if ((isset($mode['document'])) && ($mode['document'] === true)) {
+			$comment = $block->getDocComment();
+			if ($comment !== false) {
+				$doDump_indent = colorize('|', 'lightgray', $mode['background'], $mode['mode']) . '   ';
+				echo str_repeat($doDump_indent, $indent + 1) . "\n";
+				$comment = preg_replace('/^\s+/m', ' ', $comment);
+				$lines = explode("\n", $comment);
+				foreach ($lines as $line) {
+					echo str_repeat($doDump_indent, $indent + 1) . colorize($line, 'gray') . "\n";
+				}
+			}
+		}
+	};
+
+	$dodump = function ($var, ?string $var_name = null, int $indent = 0, array $params = []) use (&$dodump, &$fixDumpString, &$webmode, &$mode, &$recursionClasses, &$showComment): void {
 		if (is_object($var)) {
 			if (!empty($recursionClasses)) {
 				$add = true;
@@ -337,6 +353,7 @@ function var_dump ($var, array $mode = []): ?string
 				}
 				if (!empty($props)) {
 					foreach ($props as $prop) {
+						$showComment($prop, $indent);
 						$append = '';
 						$error = false;
 						if ($prop->isPrivate()) {
@@ -400,6 +417,7 @@ function var_dump ($var, array $mode = []): ?string
 				$methods = $reflect->getMethods();
 				if (!empty($methods)) {
 					foreach ($methods as $method) {
+						$showComment($method, $indent);
 
 						$doDump_indent = colorize('|', 'lightgray', $mode['background'], $mode['mode']) . '   ';
 						echo str_repeat($doDump_indent, $indent + 1);
