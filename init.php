@@ -5,6 +5,10 @@ namespace gimle;
 mb_internal_encoding('utf-8');
 
 foreach (new \RecursiveDirectoryIterator(__DIR__ . '/autoload/', \FilesystemIterator::SKIP_DOTS) as $fileInfo) {
+	$filename = $fileInfo->getFilename();
+	if (substr($filename, 0, 1) === '.') {
+		continue;
+	}
 	include __DIR__ . '/autoload/' . $fileInfo->getFilename();
 }
 
