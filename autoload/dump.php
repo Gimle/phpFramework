@@ -460,6 +460,7 @@ function var_dump ($var, array $mode = []): ?string
 										$pre = '?';
 									}
 									$pre .= (string) $mPropType . ' ';
+									$pre = colorize($pre, (in_array((string) $mPropType, ['string', 'int', 'bool', 'float', 'array']) ? (string) $mPropType : 'gray'));
 								}
 
 								if ($mParam->isOptional()) {
@@ -484,10 +485,10 @@ function var_dump ($var, array $mode = []): ?string
 									catch (\Exception $e) {
 										$default = 'Unknown';
 									}
-									$mParams[] = colorize($pre, 'string') . colorize(($mParam->isPassedByReference() ? '&amp;' : '') . '$' . $mParam->name . ' = ' . $default, 'gray', $mode['background'], $mode['mode']);
+									$mParams[] = $pre . colorize(($mParam->isPassedByReference() ? '&amp;' : '') . '$' . $mParam->name . ' = ' . $default, 'gray', $mode['background'], $mode['mode']);
 								}
 								else {
-									$mParams[] = colorize($pre, 'string') . colorize(($mParam->isPassedByReference() ? '&amp;' : '') . '$' . $mParam->name, 'black', $mode['background'], $mode['mode']);
+									$mParams[] = $pre . colorize(($mParam->isPassedByReference() ? '&amp;' : '') . '$' . $mParam->name, 'black', $mode['background'], $mode['mode']);
 								}
 							}
 							echo implode(', ', $mParams);
@@ -500,7 +501,8 @@ function var_dump ($var, array $mode = []): ?string
 							if ($returnType->allowsNull() === true) {
 								$pre .= '?';
 							}
-							echo colorize($pre . (string) $returnType, 'string');
+							echo colorize($pre . (string) $returnType, (in_array((string) $returnType, ['string', 'int', 'bool', 'float', 'array']) ? (string) $returnType : 'gray'));
+//							echo colorize($pre . (string) $returnType, 'string');
 						}
 
 						echo "\n";

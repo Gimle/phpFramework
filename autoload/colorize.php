@@ -136,6 +136,12 @@ function colorize (string $content, string $color, ?string $background = null, s
 		}
 		return sprintf($template, 'dodgerblue', $content);
 	}
+	elseif ($color === 'array') {
+		if ($climode) {
+			return sprintf($template, '38;5;69', $content);
+		}
+		return sprintf($template, 'blue', $content);
+	}
 	elseif ($color === 'error') {
 		if ($climode) {
 			return sprintf($template, '38;5;198', $content);
