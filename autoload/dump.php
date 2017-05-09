@@ -11,6 +11,7 @@ namespace gimle;
  *          title = string
  *          background = string
  *          mode = string: "console", "cli" or "web"
+ *          document = bool
  *          string_callback = function
  * @return ?string
  */
