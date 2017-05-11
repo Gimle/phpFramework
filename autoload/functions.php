@@ -79,12 +79,13 @@ namespace gimle
 	/**
 	 * Set some default values on session start.
 	 *
+	 * @throws gimle\ErrorException If session.use_only_cookies can not be set.
 	 * @return void
 	 */
 	function session_start (): void
 	{
 		if (ini_set('session.use_only_cookies', '1') === false) {
-			throw new \Exception('Could not start session.');
+			throw new Exception('Could not start session.');
 		}
 
 		$secure = false;
@@ -212,6 +213,7 @@ namespace gimle
 	 * For ini files, this is similar to the parse_ini_file function, but keeps typecasting and require "" around strings.
 	 * For php files this function will use the return value.
 	 *
+	 * @throws gimle\ErrorException If confog file is not valid.
 	 * @param string $filename the full path to the file to parse.
 	 * @return array or null. Array with the read configuration file, or false upon failure.
 	 */
@@ -292,7 +294,7 @@ namespace gimle
 						$value = json_decode($line[1], true);
 					}
 					else {
-						throw new \Exception('Unknown value in ini file on line ' . ($linenum + 1) . ': ' . $linestr);
+						throw new Exception('Unknown value in ini file on line ' . ($linenum + 1) . ': ' . $linestr);
 					}
 					if (isset($value)) {
 						if (!isset($lastkey)) {
@@ -321,7 +323,7 @@ namespace gimle
 	{
 		$filename = tempnam(TEMP_DIR, 'gimle_exec_');
 		touch($filename);
-		exec($command . ' 2> ' . $filename, $stout, $return);
+		\exec($command . ' 2> ' . $filename, $stout, $return);
 		$sterr = explode("\n", trim(file_get_contents($filename)));
 		unlink($filename);
 		return ['stout' => $stout, 'sterr' => $sterr, 'return' => $return];
@@ -454,5 +456,99 @@ namespace gimle
 	function normalize_space (string $string): string
 	{
 		return preg_replace('/\s+/s', ' ', $string);
+	}
+
+	/**
+	 * Get mime information about a file.
+	 *
+	 * @throws gimle\ErrorException If the file is not readable.
+	 * @param string $file The file to get mime information about.
+	 * @return array With mime and charset
+	 */
+	function get_mimetype (string $file): array
+	{
+		if (!is_readable($file)) {
+			throw new Exception('get_mimetype(' . $file . '): failed to open stream: Permission denied');
+		}
+		$result = exec('file --brief --mime ' . escapeshellarg($file));
+
+		if (($result['return'] !== 0) || (!isset($result['stout'][0]))) {
+			$finfo = finfo_open(FILEINFO_MIME_TYPE | FILEINFO_MIME_ENCODING);
+			$result = finfo_file($finfo, $file);
+		}
+		else {
+			$result = $result['stout'][0];
+		}
+
+		$regexp = '/^([a-z\-]+\/[a-z0-9\-\.\+]+); charset=(.+)?$/';
+
+		if (!preg_match($regexp, $result, $matches)) {
+			return ['mime' => 'application/octet-stream', 'charset' => 'binary'];
+		}
+
+		if ($matches[2] === 'binary') {
+			if ($matches[1] === 'application/octet-stream') {
+				$size = filesize($file);
+				if ($size > 12) {
+					$fp = fopen($file, 'r');
+					$check1 = fread($fp, 4);
+					fseek($fp, 8);
+					$check2 = fread($fp, 4);
+
+					fclose($fp);
+
+					if (($check1 === 'RIFF') && (($check2 === 'WEBP'))) {
+						$matches[1] = 'image/webp';
+					}
+				}
+			}
+
+			if ($matches[1] === 'application/octet-stream') {
+				$size = filesize($file);
+				if ($size > 7) {
+					$fp = fopen($file, 'r');
+					$check1 = fread($fp, 7);
+
+					fclose($fp);
+
+					if ($check1 === 'BLENDER') {
+						$matches[1] = 'application/vnd.blender.blend';
+					}
+				}
+			}
+
+			if ($matches[1] === 'application/octet-stream') {
+				$size = filesize($file);
+				if ($size > 4) {
+					$fp = fopen($file, 'r');
+					$check1 = fread($fp, 4);
+
+					fclose($fp);
+
+					if ($check1 === 'wOF2') {
+						$matches[1] = 'application/x-font-woff';
+					}
+				}
+			}
+
+			if ($matches[1] === 'application/octet-stream') {
+				$exec = 'avprobe -v 0 -show_format -show_streams ' . escapeshellarg($file) . ' -of json 2>&1';
+				\exec($exec, $out, $exitCode);
+				if ($exitCode === 0) {
+					$json = json_decode(implode('', $out), true);
+					if ((is_array($json)) && (!empty($json))) {
+						if (isset($json['streams'][0])) {
+							foreach ($json['streams'] as $stream) {
+								if ($stream['codec_name'] === 'h264') {
+									$matches[1] = 'video/x-unknown';
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return ['mime' => $matches[1], 'charset' => $matches[2]];
 	}
 }
