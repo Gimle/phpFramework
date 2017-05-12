@@ -282,7 +282,7 @@ namespace gimle
 						$value = -bindec(substr($line[1], 3));
 					}
 					elseif (filter_var($line[1], FILTER_VALIDATE_FLOAT) !== false) {
-						$value = (float)$line[1];
+						$value = (float) $line[1];
 					}
 					elseif (defined($line[1])) {
 						$value = constant($line[1]);
