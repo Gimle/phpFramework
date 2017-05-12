@@ -148,6 +148,12 @@ class FileStreamStatic extends FileStreamBase
 }
 stream_wrapper_register('static', __NAMESPACE__ . '\\FileStreamStatic');
 
+class SiteStreamStatic extends FileStreamBase
+{
+	protected $base = SITE_DIR;
+}
+stream_wrapper_register('site', __NAMESPACE__ . '\\SiteStreamStatic');
+
 
 $getBase = function (): string {
 	$base = 'http';
@@ -450,6 +456,12 @@ class FileStreamMainStatic extends FileStreamBase
 	protected $base = MAIN_STATIC_DIR;
 }
 stream_wrapper_register('main-static', __NAMESPACE__ . '\\FileStreamMainStatic');
+
+class SiteStreamMainStatic extends FileStreamBase
+{
+	protected $base = MAIN_SITE_DIR;
+}
+stream_wrapper_register('main-site', __NAMESPACE__ . '\\SiteStreamMainStatic');
 
 
 if (isset($config['timezone'])) {
