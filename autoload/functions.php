@@ -256,7 +256,7 @@ namespace gimle
 							}
 						}
 						else {
-							$value = (int)$line[1];
+							$value = (int) $line[1];
 						}
 						unset($num);
 					}
