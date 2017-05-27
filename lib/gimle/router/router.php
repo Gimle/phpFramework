@@ -312,7 +312,12 @@ class Router
 		}
 
 		if ($routeFound === false) {
-			throw new Exception('Route not found.', self::E_ROUTE_NOT_FOUND);
+			$e = new Exception('Route not found.', self::E_ROUTE_NOT_FOUND);
+			$e->set('url', $this->urlString);
+			$e->set('page', \gimle\page());
+			$e->set('GET', $_GET);
+			$e->set('requestMethod', $_SERVER['REQUEST_METHOD']);
+			throw $e;
 		}
 		if ($methodMatch === false) {
 			throw new Exception('Method not found.', self::E_METHOD_NOT_FOUND);
