@@ -96,6 +96,16 @@ class i18n
 	}
 
 	/**
+	 * Gets the currently selected language.
+	 *
+	 * @return string The language
+	 */
+	public function getLanguage (): string
+	{
+		return $this->language;
+	}
+
+	/**
 	 * Translate a message.
 	 *
 	 * @param mixed $message The message to be translated.
