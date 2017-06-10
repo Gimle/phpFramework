@@ -39,8 +39,8 @@ class Mysql extends \mysqli
 			$params = [];
 		}
 		parent::init();
-		$params['pass'] = (isset($params['pass']) ? $params['pass'] : '');
 		$params['user'] = (isset($params['user']) ? $params['user'] : 'root');
+		$params['pass'] = (isset($params['pass']) ? $params['pass'] : '');
 		$params['host'] = (isset($params['host']) ? $params['host'] : '127.0.0.1');
 		$params['port'] = (isset($params['port']) ? $params['port'] : 3306);
 		$params['timeout'] = (isset($params['timeout']) ? $params['timeout'] : 30);
