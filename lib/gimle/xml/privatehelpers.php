@@ -42,7 +42,7 @@ trait PrivateHelpers
 	private function isDom ($ref): bool
 	{
 		try {
-			if ((get_class($ref)) || (is_subclass_of($ref, '\DomNode'))) {
+			if ((get_class($ref)) && (is_subclass_of($ref, '\DomNode'))) {
 				return true;
 			}
 		}
