@@ -130,7 +130,7 @@ function var_dump ($var, array $mode = []): ?string
 			foreach ($var as $key => $value) {
 				if (is_callable($var[$key])) {
 					$doDump_indent = colorize('|', 'lightgray', $mode['background'], $mode['mode']) . '   ';
-					echo str_repeat($doDump_indent, $indent + 1) . colorize('[\'' . ($webmode === true ? htmlentities($key) : $key) . '\']', 'varname', $mode['background'], $mode['mode']);
+					echo str_repeat($doDump_indent, $indent + 1) . colorize('[\'' . ($webmode === true ? htmlentities((string) $key) : (string) $key) . '\']', 'varname', $mode['background'], $mode['mode']);
 					echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ';
 					if (!is_string($var[$key])) {
 						echo colorize('*CALLABLE*', 'recursion', $mode['background'], $mode['mode']);
@@ -143,7 +143,7 @@ function var_dump ($var, array $mode = []): ?string
 				}
 				if (strpos(print_r($var[$key], true), '*RECURSION*') !== false) {
 					$doDump_indent = colorize('|', 'lightgray', $mode['background'], $mode['mode']) . '   ';
-					echo str_repeat($doDump_indent, $indent + 1) . colorize('[\'' . ($webmode === true ? htmlentities((string) $key) : $key) . '\']', 'varname', $mode['background'], $mode['mode']);
+					echo str_repeat($doDump_indent, $indent + 1) . colorize('[\'' . ($webmode === true ? htmlentities((string) $key) : (string) $key) . '\']', 'varname', $mode['background'], $mode['mode']);
 					echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ';
 					if (!is_string($var[$key])) {
 						echo colorize('*RECURSION*', 'recursion', $mode['background'], $mode['mode']);
@@ -163,14 +163,14 @@ function var_dump ($var, array $mode = []): ?string
 					}
 					if ($same === true) {
 						$doDump_indent = colorize('|', 'lightgray', $mode['background'], $mode['mode']) . '   ';
-						echo str_repeat($doDump_indent, $indent + 1) . colorize('[\'' . ($webmode === true ? htmlentities((string) $key) : $key) . '\']', 'varname', $mode['background'], $mode['mode']);
+						echo str_repeat($doDump_indent, $indent + 1) . colorize('[\'' . ($webmode === true ? htmlentities((string) $key) : (string) $key) . '\']', 'varname', $mode['background'], $mode['mode']);
 						echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ';
 						echo colorize(get_class($value) . '()', 'recursion', $mode['background'], $mode['mode']);
 						echo "\n";
 					}
 					elseif (get_class($value) === 'Closure') {
 						$doDump_indent = colorize('|', 'lightgray', $mode['background'], $mode['mode']) . '   ';
-						echo str_repeat($doDump_indent, $indent + 1) . colorize('[\'' . ($webmode === true ? htmlentities($key) : $key) . '\']', 'varname', $mode['background'], $mode['mode']);
+						echo str_repeat($doDump_indent, $indent + 1) . colorize('[\'' . ($webmode === true ? htmlentities((string) $key) : (string) $key) . '\']', 'varname', $mode['background'], $mode['mode']);
 						echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ';
 						echo colorize(get_class($value) . '()', 'recursion', $mode['background'], $mode['mode']);
 						echo "\n";
