@@ -203,8 +203,11 @@ class Curl
 		$return['reply'] = '';
 		if ($result !== false) {
 			$return['reply'] = substr($result, $header_size);
+			$return['header'] = array_values(array_diff(explode("\r\n", substr($result, 0, $header_size)), ['']));
 		}
-		$return['header'] = array_values(array_diff(explode("\r\n", substr($result, 0, $header_size)), ['']));
+		else {
+			$return['header'] = [];
+		}
 		$return['info'] = curl_getinfo($ch);
 		$return['error'] = curl_errno($ch);
 
