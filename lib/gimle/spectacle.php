@@ -259,6 +259,31 @@ class Spectacle
 	}
 
 	/**
+	 * Clean up old spectacle files
+	 *
+	 * @param ?int $ttl Hov long to keep spectacle files.
+	 * @return void.
+	 */
+	public static function clean (int $ttl = 600): void
+	{
+		if (ENV_MODE & ENV_LIVE) {
+			return;
+		}
+		if (file_exists(self::$dir)) {
+			foreach (new \DirectoryIterator(self::$dir) as $fileInfo) {
+				$filename = $fileInfo->getFilename();
+				if ((substr($filename, 0, 1) === '.') || (!$fileInfo->isFile())) {
+					continue;
+				}
+
+				if (($ttl === null) || ($ttl < time() - $fileInfo->getMTime())) {
+					unlink(self::$dir . $filename);
+				}
+			}
+		}
+	}
+
+	/**
 	 * Retrieve a spectacle file.
 	 *
 	 * @param string $id The name of the file to load.

@@ -42,8 +42,8 @@ trait Edit
 		$return = [];
 		foreach ($refs as $ref) {
 			$dom = dom_import_simplexml($ref);
-			$dom->parentNode->replaceChild($import, $dom);
-			$return[] = $this->domToSxml($ref);
+			$dom->parentNode->replaceChild($element, $dom);
+			$return[] = $ref;
 		}
 		return $return;
 	}
