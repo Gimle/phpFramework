@@ -88,7 +88,7 @@ abstract class FileStreamBase
 	public function mkdir (string $path, int $mode, int $options): bool
 	{
 		$this->setPath($path);
-		$recursive = ($options & STREAM_MKDIR_RECURSIVE);
+		$recursive = (bool) ($options & STREAM_MKDIR_RECURSIVE);
 		return mkdir($this->path, $mode, $recursive);
 	}
 
