@@ -72,6 +72,32 @@ namespace
 			return true;
 		}
 	}
+
+	if (!function_exists('pam_auth')) {
+		/**
+		 * Authenticate a user.
+		 *
+		 * This fallback function uses perl to authenticate a user.
+		 *
+		 * Make sure the PAM module is installed:
+		 * apt install libauthen-pam-perl
+		 *
+		 * Make sure apache has permissions:
+		 * usermod -a -G shadow www-data
+		 *
+		 * @param string $username The username.
+		 * @param string $password The password.
+		 * @return bool Tre if the user exists and the password is correct, otherwise false.
+		 */
+		function pam_auth ($username, $password) {
+			$exec = \gimle\SITE_DIR . 'module/' . \gimle\MODULE_GIMLE . '/exec/pam_auth.pl ' . escapeshellarg($username) . ' ' . escapeshellarg($password);
+			exec($exec, $result);
+			if ((isset($result[0])) && ($result[0] === 'true')) {
+				return true;
+			}
+			return false;
+		}
+	}
 }
 
 namespace gimle
