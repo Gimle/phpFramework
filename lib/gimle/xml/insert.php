@@ -15,7 +15,7 @@ trait Insert
 	 * @param string $value If specified, the value of the child element.
 	 * @return SimpleXmlElement The child added to the XML node.
 	 */
-	public function prependChild (string $name, $value = false): self
+	public function prependChild (string $name, $value = ''): self
 	{
 		$dom = dom_import_simplexml($this);
 		$new = $dom->ownerDocument->createElement($name, $value);
