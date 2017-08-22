@@ -26,7 +26,7 @@ class Form
 	 * @param ?string $retrieve null to create a new, or a valid form id to retrieve one.
 	 * @return ?string The form id if a new was created.
 	 */
-	public function __construct (?string $retrieve = null): ?string
+	public function __construct (?string $retrieve = null)
 	{
 		if ($retrieve === null) {
 			$form = $this->createNewFormInternal();
@@ -125,7 +125,7 @@ class Form
 	 *
 	 * @return ?array The new form, or null if more than 10 forms exist.
 	 */
-	private function createNewFormInternal () ?array
+	private function createNewFormInternal (): ?array
 	{
 		if (isset($_SESSION['gimle']['module']['form'])) {
 			if (count($_SESSION['gimle']['module']['form']) > 10) {
