@@ -31,6 +31,8 @@ trait Multiton
 
 	/**
 	 * Get all instances of this object.
+	 *
+	 * @return array The instances created.
 	 */
 	public static function getInstances (): array
 	{
