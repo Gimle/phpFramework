@@ -21,6 +21,16 @@ class Exception extends \Exception
 		$this->params = array_merge_distinct($this->params, string_to_nested_array($key, $value));
 	}
 
+	public function setMessage (string $message): void
+	{
+		$this->message = $message;
+	}
+
+	public function setCode (int $code): void
+	{
+		$this->code = $code;
+    }
+
 	/**
 	 * Get a custom property to the exception.
 	 *
