@@ -33,6 +33,15 @@ class Canvas
 	private static $magic = [];
 
 	/**
+	 * Different values might want different implode keys.
+	 *
+	 * @var array
+	 */
+	private static $implodeValues = [
+		'title' => ' | '
+	];
+
+	/**
 	 * Load a canvas.
 	 *
 	 * @param string $filename
@@ -48,6 +57,18 @@ class Canvas
 		ob_start();
 		return $return;
 	}
+
+	/**
+	 * Sets a custom implode value for a variable name.
+	 *
+	 * @param string $name
+	 * @param string $value
+	 * @return void
+	 */
+	 public static function _setImplodeValue (string $name, string $value): void
+	 {
+		 self::$implodeValues[$name] = $value;
+	 }
 
 	/**
 	 * Override a previously set canvas.
@@ -82,10 +103,17 @@ class Canvas
 					$withTmp = [];
 					foreach ($with as $value) {
 						if (!is_array($value)) {
-							$withTmp[] = $value;
+							if ($value !== null) {
+								$withTmp[] = $value;
+							}
 						}
 					}
-					$with = implode("\n", $withTmp);
+					if (isset(self::$implodeValues[$replace])) {
+						$with = implode(self::$implodeValues[$replace], $withTmp);
+					}
+					else {
+						$with = implode("\n", $withTmp);
+					}
 					unset($withTmp);
 				}
 				$replaces[] = '%' . $replace . '%';
@@ -114,8 +142,6 @@ class Canvas
 	 * Set or get custom variables.
 	 *
 	 * This method will overwrite previous value by default.
-	 * To append instead of overwrite, set second parameter to true.
-	 * To unset a value, set the value to null.
 	 *
 	 * <p>Example setting a value.</p>
 	 * <code>Canvas::title('My page');</code>
@@ -123,11 +149,21 @@ class Canvas
 	 * <p>Example appending a value.</p>
 	 * <code>Canvas::title('My page', true);</code>
 	 *
-	 * <p>Example setting a value at a position (You can also use named positions).</p>
+	 * <p>Example prepending a value.</p>
+	 * <code>Canvas::title('My page', -1);</code>
+	 *
+	 * <p>Example setting a value at a position (Mainly used for named positions).</p>
 	 * <code>Canvas::title('My page', $pos);</code>
+	 *
+	 * <p>Same as above, but prepend it instead if no key with this name exists yet.</p>
+	 * <code>Canvas::title('My page', $pos, -1);</code>
 	 *
 	 * <p>Example removing a variable.</p>
 	 * <code>Canvas::title(null);</code>
+	 *
+	 * <p>Example reserving variable position.</p>
+	 * <code>Canvas::title(null, 'template');</code>
+	 * <code>Canvas::title('Site name', 'canvas');</code>
 	 *
 	 * @param string $method
 	 * @param array $params
@@ -155,7 +191,17 @@ class Canvas
 		}
 		else {
 			if (($params[1] !== null) && (!is_bool($params[1]))) {
-				self::$magic[$method][$params[1]] = $params[0];
+				if (($params[1] === -1) && (isset(self::$magic[$method]))) {
+					array_unshift(self::$magic[$method], $params[0]);
+				}
+				else {
+					if ((isset($params[2])) && ($params[2] === -1) && (isset(self::$magic[$method])) && (!array_key_exists($params[1], self::$magic[$method]))) {
+						self::$magic[$method] = array_merge([$params[1] => $params[0]], self::$magic[$method]);
+					}
+					else {
+						self::$magic[$method][$params[1]] = $params[0];
+					}
+				}
 			}
 			elseif ($params[1] === true) {
 				self::$magic[$method][] = $params[0];
