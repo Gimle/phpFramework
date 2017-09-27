@@ -39,7 +39,7 @@ class Exception extends \Exception
 	 */
 	public function get (?string $key = null)
 	{
-		if ($key === false) {
+		if ($key === null) {
 			return $this->params;
 		}
 
