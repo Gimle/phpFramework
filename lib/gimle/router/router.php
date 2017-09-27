@@ -10,8 +10,6 @@ use const gimle\ENV_LIVE;
 
 use gimle\canvas\Canvas;
 use gimle\System;
-use gimle\canvas\Exception as CanvasException;
-use gimle\template\Exception as TemplateException;
 
 class Router
 {
@@ -43,6 +41,7 @@ class Router
 	public const E_TEMPLATE_RETURN = 6;
 	public const E_ROUTES_EXHAUSTED = 7;
 	public const E_CANVAS_NOT_SET = 8;
+	public const E_UNKNOWN = 9;
 
 	/**
 	 * The request method for this request.
@@ -92,6 +91,13 @@ class Router
 	 * @var string
 	 */
 	private $urlString = '';
+
+	/**
+	 * If a route fails, store the fail here, for a potential exception to use it later.
+	 *
+	 * @var array
+	 */
+	private $tried = [];
 
 	public function __construct ()
 	{
@@ -249,7 +255,7 @@ class Router
 	public function getCanvas (): string
 	{
 		if ($this->canvas === null) {
-			throw new Exception('No canvas set.', self::E_CANVAS_NOT_SET);
+			$this->except(self::E_CANVAS_NOT_SET);
 		}
 		return $this->canvas;
 	}
@@ -283,10 +289,7 @@ class Router
 		$routeFound = false;
 		$methodMatch = false;
 
-		$recuriveCanvasHolder = $this->canvas;
-
 		foreach ($this->routes as $path => $index) {
-			$route = end($index);
 
 			// Check if the current page matches the route.
 			if (preg_match($path, $this->urlString, $matches)) {
@@ -298,6 +301,7 @@ class Router
 					}
 				}
 
+				$route = end($index);
 				if ($this->requestMethod & $route['requestMethod']) {
 					$route['callback']();
 					$methodMatch = true;
@@ -312,15 +316,10 @@ class Router
 		}
 
 		if ($routeFound === false) {
-			$e = new Exception('Route not found.', self::E_ROUTE_NOT_FOUND);
-			$e->set('url', $this->urlString);
-			$e->set('page', \gimle\page());
-			$e->set('GET', $_GET);
-			$e->set('requestMethod', $_SERVER['REQUEST_METHOD']);
-			throw $e;
+			$this->except(self::E_ROUTES_EXHAUSTED);
 		}
 		if ($methodMatch === false) {
-			throw new Exception('Method not found.', self::E_METHOD_NOT_FOUND);
+			$this->except(self::E_METHOD_NOT_FOUND);
 		}
 
 		if ($this->parseCanvas === true) {
@@ -340,7 +339,7 @@ class Router
 					}
 				}
 				if ($found === false) {
-					throw new Exception('Template "' . $this->template . '" not found.', self::E_TEMPLATE_NOT_FOUND);
+					$this->except(self::E_TEMPLATE_NOT_FOUND);
 				}
 
 				ob_start();
@@ -351,6 +350,7 @@ class Router
 		}
 
 		$found = false;
+		$recuriveCanvasHolder = $this->canvas;
 		if (is_readable(SITE_DIR . 'canvas/' . $this->canvas . '.php')) {
 			$this->canvas = SITE_DIR . 'canvas/' . $this->canvas . '.php';
 			$found = true;
@@ -364,44 +364,123 @@ class Router
 			}
 		}
 		if ($found === false) {
-			throw new Exception('Canvas "' . $this->canvas . '" not found.', self::E_CANVAS_NOT_FOUND);
+			$this->except(self::E_CANVAS_NOT_FOUND);
 		}
 
 		if ($this->parseCanvas === true) {
 			$canvasResult = Canvas::_set($this->canvas);
-			if ((is_array($canvasResult)) && (count($canvasResult) === 2) && (is_string($canvasResult[0])) && (is_int($canvasResult[1]))) {
-				throw new CanvasException(...$canvasResult);
-			}
 			if ($canvasResult === true) {
 				if ($this->template !== null) {
-
-					if ((is_array($templateResult)) && (count($templateResult) === 2) && (is_string($templateResult[0])) && (is_int($templateResult[1]))) {
-						throw new TemplateException(...$templateResult);
-					}
-					if ($templateResult === false) {
-						if (count($this->routes[$path]) > 1) {
+					if ($templateResult !== true) {
+						if (count($this->routes) > 0) {
+							$ctype = null;
+							$headers = headers_list();
+							foreach ($headers as $header) {
+								if (substr($header, 0, 14) === 'Content-type: ') {
+									$ctype = substr($header, 14);
+									$pos = strpos($ctype, ';');
+									if ($pos !== false) {
+										$ctype = substr($ctype, 0, $pos);
+									}
+								}
+							}
+							$this->tried[] = [
+								'route' => $path,
+								'content-type' => $ctype,
+								'canvas' => $this->canvas,
+								'template' => $this->template,
+								'returnValue' => $templateResult
+							];
 							$this->canvas = $recuriveCanvasHolder;
 							array_pop($this->routes[$path]);
+							if (empty($this->routes[$path])) {
+								unset($this->routes[$path]);
+							}
 							$this->dispatch();
 							return;
 						}
 						else {
-							throw new Exception('Routes exhausted.', self::E_ROUTES_EXHAUSTED);
+							$this->except(self::E_ROUTES_EXHAUSTED);
 						}
-					}
-					if ($templateResult !== true) {
-						throw new Exception('Invalid template return value.', self::E_TEMPLATE_RETURN);
 					}
 
 					echo $content;
 				}
 			}
 			else {
-				throw new Exception('Invalid canvas return value.', self::E_CANVAS_RETURN);
+				$this->except(self::E_CANVAS_RETURN, [
+					'returnValue' => $canvasResult
+				]);
 			}
 			Canvas::_create();
 			return;
 		}
 		include $this->canvas;
+	}
+
+	/**
+	 * The router encountered an error, and should throw an exception.
+	 *
+	 * @throws Exception
+	 * @param int $type
+	 * @param array $params
+	 * @return void
+	 */
+	private function except (int $type, array $params = []): void
+	{
+		if (($type === self::E_ROUTES_EXHAUSTED) && (empty($this->tried))) {
+			$type = self::E_ROUTE_NOT_FOUND;
+		}
+		switch ($type) {
+			case self::E_ROUTE_NOT_FOUND:
+				$e = new Exception('Route not found.', $type);
+				break;
+			case self::E_METHOD_NOT_FOUND:
+				$e = new Exception('Method not found.', $type);
+				break;
+			case self::E_CANVAS_NOT_FOUND:
+				$e = new Exception('Canvas not found.', $type);
+				break;
+			case self::E_TEMPLATE_NOT_FOUND:
+				$e = new Exception('Template not found.', $type);
+				break;
+			case self::E_CANVAS_RETURN:
+				$e = new Exception('Invalid canvas return value.', $type);
+				break;
+			case self::E_TEMPLATE_RETURN:
+				$e = new Exception('Invalid template return value.', $type);
+				break;
+			case self::E_ROUTES_EXHAUSTED:
+				$e = new Exception('Routes exhausted.', $type);
+				break;
+			case self::E_CANVAS_NOT_SET:
+				$e = new Exception('No canvas set.', $type);
+				break;
+			default:
+				$e = new Exception('Unknown.', self::E_UNKNOWN);
+		}
+		$e->set('url', $this->urlString);
+		$e->set('page', \gimle\page());
+		$headers = headers_list();
+		$ctype = null;
+		foreach ($headers as $header) {
+			if (substr($header, 0, 14) === 'Content-type: ') {
+				$ctype = substr($header, 14);
+				$pos = strpos($ctype, ';');
+				if ($pos !== false) {
+					$ctype = substr($ctype, 0, $pos);
+				}
+			}
+		}
+		$e->set('content-type', $ctype);
+		$e->set('GET', $_GET);
+		$e->set('requestMethod', $_SERVER['REQUEST_METHOD']);
+		$e->set('tried', $this->tried);
+		$e->set('canvas', $this->canvas);
+		$e->set('template', $this->template);
+		foreach ($params as $key => $value) {
+			$e->set($key, $value);
+		}
+		throw $e;
 	}
 }
