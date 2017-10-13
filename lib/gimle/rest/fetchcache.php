@@ -128,7 +128,6 @@ class FetchCache extends FetchBase
 	/**
 	 * How long to atleast keep the cache.
 	 * The cache will be kept for this long even if the expire is set to renew it.
-	 * If no expire is supplied, the cache also be renewed after this amount of time.
 	 *
 	 * @param int $value In seconds.
 	 * @return self
@@ -141,6 +140,7 @@ class FetchCache extends FetchBase
 
 	/**
 	 * How long to maximum keep the cache.
+	 * If no expire is supplied, the cache also be renewed after this amount of time.
 	 * Renew the cache ater this amount of time, even if the expire says it is not due yet.
 	 * If ttl is null, then do not renew if a cache exist.
 	 * This option is added so a website can utilize a cached value without having to perform a query that might slow the page.
