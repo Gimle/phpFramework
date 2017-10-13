@@ -8,6 +8,7 @@ const FILTER_VALIDATE_DIRNAME = 'gv2';
 const FILTER_SANITIZE_DIRNAME = 'gs2';
 const FILTER_VALIDATE_NAME = 'gv3';
 const FILTER_SANITIZE_NAME = 'gs3';
+const FILTER_VALIDATE_DATE = 'gv4';
 
 function filter_var ($variable, $filter = FILTER_DEFAULT, $options = null)
 {
@@ -65,6 +66,9 @@ function filter_var ($variable, $filter = FILTER_DEFAULT, $options = null)
 			$string = join($delimiter, $newwords);
 		}
 		return $string;
+	}
+	if ($filter === FILTER_VALIDATE_DATE) {
+		return (bool) strtotime($variable);
 	}
 
 	if ($options === null) {
