@@ -113,6 +113,22 @@ class FetchCache extends FetchBase
 	}
 
 	/**
+	 * Reset the object, so it can be reused.
+	 *
+	 * @param ?bool $full Should options and headers be kept?
+	 * @return sef
+	 */
+	public function reset (bool $full = false)
+	{
+		parent::reset($full);
+		$this->expect = null;
+		$this->expire = null;
+		$this->minTtl = 60;
+		$this->maxTtl = 3600;
+		return $this;
+	}
+
+	/**
 	 * A string specifying where to find information in the result about when the server has a new result ready.
 	 * If the expected content is xml, this would be an xpath.
 	 *
@@ -238,10 +254,10 @@ class FetchCache extends FetchBase
 				$result['query']['user'] = get_current_user();
 
 				$cacheIt = true;
-				$test = null;
+				$decoded = null;
 				if ($this->expect === self::XML) {
 					try {
-						$test = new SimpleXmlElement($reply);
+						$decoded = new SimpleXmlElement($reply);
 					}
 					catch (Exception $e) {
 						$validationCallback = null;
@@ -250,22 +266,24 @@ class FetchCache extends FetchBase
 					}
 				}
 				elseif ($this->expect === self::JSON) {
-					json_decode($reply);
-					$test = json_last_error();
-					if ($test !== JSON_ERROR_NONE) {
+					$decoded = json_decode($reply, true);
+					$jerr = json_last_error();
+					if ($jerr !== JSON_ERROR_NONE) {
 						$validationCallback = null;
 						$cacheIt = false;
-						$return['formatError'] = $test;
+						$return['formatError'] = $jerr;
 					}
 				}
 				if ($validationCallback !== null) {
-					$valid = $validationCallback($queryResult, $test);
-					if ((bool) $valid === false) {
-						$cacheIt = false;
-						$return['validationError'] = $valid;
-					}
-					if (is_string($valid)) {
-						$reply = $valid;
+					$valid = $validationCallback($queryResult, $decoded);
+					if ($valid !== true) {
+						if (is_string($valid)) {
+							$reply = $valid;
+						}
+						else {
+							$cacheIt = false;
+							$return['validationError'] = $valid;
+						}
 					}
 				}
 

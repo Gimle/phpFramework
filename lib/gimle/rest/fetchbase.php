@@ -53,7 +53,7 @@ abstract class FetchBase
 	 * @param ?bool $full Should options and headers be kept?
 	 * @return sef
 	 */
-	public function reset (bool $full = false): self
+	public function reset (bool $full = false)
 	{
 		$this->wrapper->reset($full);
 
