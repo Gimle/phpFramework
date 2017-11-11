@@ -218,7 +218,8 @@ class Router
 		}
 		$path = $this->bindToRegex($path, $conditions);
 
-		if (($basePathKey === '*') || ($basePathKey === BASE_PATH_KEY)) {
+		$basePathKey = explode('|', $basePathKey);
+		if ((in_array('*', $basePathKey)) || (in_array(BASE_PATH_KEY, $basePathKey))) {
 
 			$this->routes[$path][] = [
 				'callback' => $callback,
