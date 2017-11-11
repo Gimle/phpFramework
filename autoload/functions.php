@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+use \gimle\Spectacle;
+
 namespace
 {
 	/**
@@ -576,5 +578,10 @@ namespace gimle
 		}
 
 		return ['mime' => $matches[1], 'charset' => $matches[2]];
+	}
+
+	function sp (...$data)
+	{
+		return Spectacle::getInstance()->match(['match' => '/(sp\((.*))/', 'steps' => 2, 'index' => 1])->tab('Spectacle')->push(...$data);
 	}
 }
