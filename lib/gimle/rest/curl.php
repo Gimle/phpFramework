@@ -41,6 +41,13 @@ class Curl
 	private $multipart = false;
 
 	/**
+	 * The body of the request.
+	 *
+	 * @var ?string
+	 */
+	private $body = null;
+
+	/**
 	 * Reset the object, so it can be reused.
 	 *
 	 * @param ?bool $full Should options and headers be kept?
@@ -130,14 +137,7 @@ class Curl
 		}
 	}
 
-	/**
-	 * Send the request.
-	 *
-	 * @param string $endpoint The url to query.
-	 * @param ?string $method The request method to use.
-	 * @return array
-	 */
-	public function query (string $endpoint, ?string $method = null): array
+	private function prepare (string $endpoint, ?string $method = null)
 	{
 		$ch = curl_init();
 
@@ -153,10 +153,10 @@ class Curl
 			}
 
 			if ($this->multipart === true) {
-				curl_setopt($ch, CURLOPT_POSTFIELDS, $this->post);
+				curl_setopt($ch, CURLOPT_POSTFIELDS, $this->body);
 			}
 			elseif (is_array($this->post)) {
-				curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($this->post));
+				$this->body = http_build_query($this->post);
 			}
 			else {
 				if (!isset($this->header['Content-Type'])) {
@@ -166,7 +166,11 @@ class Curl
 					unlink($temp);
 					$this->header['Content-Type'] = implode('; ', $mimetype);
 				}
-				curl_setopt($ch, CURLOPT_POSTFIELDS, $this->post);
+				$this->body = $this->post;
+			}
+
+			if ($this->body !== null) {
+				curl_setopt($ch, CURLOPT_POSTFIELDS, $this->body);
 			}
 		}
 		if (!empty($this->header)) {
@@ -196,6 +200,23 @@ class Curl
 			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
 		}
 
+		curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+
+		return $ch;
+	}
+
+	/**
+	 * Send the request.
+	 *
+	 * @param string $endpoint The url to query.
+	 * @param ?string $method The request method to use.
+	 * @param ?bool $returnBody Include the body in the returned value.
+	 * @return array
+	 */
+	public function query (string $endpoint, ?string $method = null, ?bool $returnBody = false): array
+	{
+		$ch = $this->prepare($endpoint, $method);
+
 		$result = curl_exec($ch);
 
 		$header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
@@ -209,6 +230,9 @@ class Curl
 			$return['header'] = [];
 		}
 		$return['info'] = curl_getinfo($ch);
+		if ($returnBody === true) {
+			$return['info']['request_body'] = $this->body;
+		}
 		$return['error'] = curl_errno($ch);
 
 		curl_close($ch);

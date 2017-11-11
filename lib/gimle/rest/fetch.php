@@ -14,9 +14,9 @@ class Fetch extends FetchBase
 	 * @param ?string $method The request method to use.
 	 * @return array
 	 */
-	public function query (string $endpoint, ?string $method = null): array
+	public function query (string $endpoint, ?string $method = null, ?bool $returnBody = false): array
 	{
-		$return = $this->wrapper->query($endpoint, $method);
+		$return = $this->wrapper->query($endpoint, $method, $returnBody);
 
 		foreach ($return['header'] as $header) {
 			if (substr($header, 0, 7) === 'HTTP/1.') {

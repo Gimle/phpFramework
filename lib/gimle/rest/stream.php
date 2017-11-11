@@ -139,13 +139,22 @@ class Stream
 	 * @throws gimle\ErrorException If the stream can not be opened.
 	 * @param string $endpoint The url to query.
 	 * @param ?string $method The request method to use.
+	 * @param ?bool $returnBody Include the body in the returned value. (Not implemented).
 	 * @return array
 	 */
-	public function query (string $endpoint, ?string $method = null): array
+	public function query (string $endpoint, ?string $method = null, ?bool $returnBody = false): array
 	{
 		$return = [];
 
-		$options = ['http' => ['protocol_version' => 1.1]];
+		$options = [
+			'http' => [
+				'protocol_version' => 1.1
+			],
+			'ssl' => [
+				'verify_peer' => false,
+				'verify_peer_name' => false
+			]
+		];
 
 		if (($this->post !== null) || ($this->multipart === true)) {
 			$options['http']['method'] = 'POST';
