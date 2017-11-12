@@ -112,18 +112,20 @@ namespace gimle
 	 */
 	function session_start (): void
 	{
-		if (ini_set('session.use_only_cookies', '1') === false) {
-			throw new Exception('Could not start session.');
-		}
+		if (session_status() === PHP_SESSION_NONE) {
+			if (ini_set('session.use_only_cookies', '1') === false) {
+				throw new Exception('Could not start session.');
+			}
 
-		$secure = false;
-		if (isset($_SERVER['HTTPS'])) {
-			$secure = true;
-		}
+			$secure = false;
+			if (isset($_SERVER['HTTPS'])) {
+				$secure = true;
+			}
 
-		session_set_cookie_params(0, '/', '', $secure, true);
-		session_name('gimle' . ucfirst(preg_replace('/[^a-zA-Z]/', '', MAIN_SITE_ID)));
-		\session_start();
+			session_set_cookie_params(0, '/', '', $secure, true);
+			session_name('gimle' . ucfirst(preg_replace('/[^a-zA-Z]/', '', MAIN_SITE_ID)));
+			\session_start();
+		}
 	}
 
 	/**
@@ -580,8 +582,36 @@ namespace gimle
 		return ['mime' => $matches[1], 'charset' => $matches[2]];
 	}
 
-	function sp (...$data)
+	/**
+	 * A shorthand to push data to the Spectacles Spectacle tab.
+	 *
+	 * @param mixed ...$data
+	 * @return void
+	 */
+	function sp (...$data): void
 	{
-		return Spectacle::getInstance()->match(['match' => '/(sp\((.*))/', 'steps' => 2, 'index' => 1])->tab('Spectacle')->push(...$data);
+		Spectacle::getInstance()->match(['match' => '/(sp\((.*))/', 'steps' => 2, 'index' => 1])->tab('Spectacle')->push(...$data);
+	}
+
+	/**
+	 * Encodes data with MIME base64url
+	 *
+	 * @param string $data
+	 * @return string
+	 */
+	function base64url_encode (string $data): string
+	{
+		return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+	}
+
+	/**
+	 * Decodes data with MIME base64url
+	 *
+	 * @param string $data
+	 * @return string
+	 */
+	function base64url_decode (string $data): string
+	{
+		return base64_decode(str_pad(strtr($data, '-_', '+/'), strlen($data) % 4, '=', STR_PAD_RIGHT));
 	}
 }
