@@ -30,6 +30,8 @@ class User
 	 */
 	private static $config = null;
 
+	private static $currentUser = null;
+
 	/**
 	 * Passthru for the static methods in the data access layer.
 	 *
@@ -41,11 +43,19 @@ class User
 	 */
 	public static function __callStatic (string $name, $args)
 	{
-		if (self::$config === false) {
+		if (self::$config === null) {
 			self::configure();
 		}
 
 		return call_user_func([self::$config['object'], $name], ...$args);
+	}
+
+	public static function current ()
+	{
+		if ((self::$currentUser === null) && (isset($_SESSION['gimle']['user']))) {
+			self::$currentUser = $_SESSION['gimle']['user'];
+		}
+		return self::$currentUser;
 	}
 
 	/**

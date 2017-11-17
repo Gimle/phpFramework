@@ -102,6 +102,9 @@ class i18n
 	 */
 	public function getLanguage (): string
 	{
+		if ($this->language === null) {
+			$this->setLanguage();
+		}
 		return $this->language;
 	}
 
