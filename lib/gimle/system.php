@@ -44,7 +44,7 @@ class System
 	 */
 	public static function autoloadRegister (string $path, bool $toLowercase = true, bool $initFunction = false): void
 	{
-		self::$autoload[] = ['path' => $path, 'toLowercase' => $toLowercase, 'init' => $initFunction];
+		array_unshift(self::$autoload, ['path' => $path, 'toLowercase' => $toLowercase, 'init' => $initFunction]);
 	}
 
 	/**

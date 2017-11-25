@@ -5,6 +5,7 @@ namespace gimle;
 use gimle\rest\Fetch;
 use gimle\xml\SimpleXmlElement;
 use gimle\user\User;
+use gimle\user\Ldap;
 
 try {
 	session_start();
@@ -27,7 +28,31 @@ try {
 		}
 
 		if ((isset($_POST['username'])) && (isset($_POST['password']))) {
-			$user = User::login($_POST['username'], 'local', $_POST['password']);
+			$user = null;
+			foreach ($config as $key => $value) {
+				if ($key === 'ldap') {
+					$ldap = Ldap::getInstance();
+					$result = null;
+					try {
+						$result = $ldap->login($_POST['username'], $_POST['password']);
+					}
+					catch (Exception $e) {
+					}
+					if ($result !== null) {
+						try {
+							User::getUser($result['username'][0], 'remote');
+						}
+						catch (Exception $e) {
+							User::create($result, 'ldap');
+						}
+						$user = User::login($result['username'][0], 'remote');
+						$user['provider'] = $result;
+					}
+				}
+			}
+			if ($user === null) {
+				$user = User::login($_POST['username'], 'local', $_POST['password']);
+			}
 			$_SESSION['gimle']['user'] = $user;
 		}
 		else {

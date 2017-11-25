@@ -14,7 +14,7 @@ DROP TABLE IF EXISTS `account_disabled`;
 -- Table structure for table `accounts`
 --
 CREATE TABLE `account_disabled` (
-	`id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,
+	`id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
 	`reason` varchar(45) NOT NULL,
 	PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
@@ -32,7 +32,7 @@ CREATE TABLE `accounts` (
 	`email` varchar(255) DEFAULT NULL,
 	`created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`disabled` datetime DEFAULT NULL,
-	`disabled_reason` tinyint(3) unsigned DEFAULT NULL,
+	`disabled_reason` smallint(5) unsigned DEFAULT NULL,
 	PRIMARY KEY (`id`),
 	KEY `fk_auth_accounts_disabled_reason_idx` (`disabled_reason`),
 	CONSTRAINT `fk_auth_accounts_disabled_reason_id` FOREIGN KEY (`disabled_reason`) REFERENCES `account_disabled` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
@@ -62,7 +62,7 @@ CREATE TABLE `account_auth_local` (
 CREATE TABLE `account_auth_remote_providers` (
 	`id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,
 	`name` varchar(60) NOT NULL,
-	`type` ENUM('oauth', 'ldap', 'pam') NOT NULL,
+	`type` ENUM('oauth', 'ldap', 'pam', 'custom') NOT NULL,
 	PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
@@ -89,14 +89,28 @@ CREATE TABLE `account_auth_remote` (
 --
 CREATE TABLE `account_logins` (
 	`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+	`user_ip` varchar(46) NOT NULL,
 	`account_id` int(10) unsigned NOT NULL,
 	`datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	`status` ENUM('OK', 'FAIL') NOT NULL,
+	`status` ENUM('ok', 'fail') NOT NULL,
+	`method` ENUM('local', 'remote') NOT NULL,
+	`remote_provider_id` tinyint(3) unsigned DEFAULT NULL,
 	PRIMARY KEY (`id`),
 	KEY `fk_account_logins_account_id_idx` (`account_id`),
-	CONSTRAINT `fk_account_logins_account_id` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+	CONSTRAINT `fk_account_logins_account_id` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+	CONSTRAINT `fk_account_logins_remote_provider_id` FOREIGN KEY (`remote_provider_id`) REFERENCES `account_auth_remote_providers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
+DELIMITER $$
+CREATE TRIGGER account_logins_before_insert
+	BEFORE INSERT ON `account_logins` FOR EACH ROW
+	BEGIN
+		IF (NEW.method = 'local' AND NEW.remote_provider_id IS NOT NULL) THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'A local signin can not have a remote provider id.';
+		END IF;
+	END;
+$$
+DELIMITER ;
 
 --
 -- Table structure for table `account_known_logins`
