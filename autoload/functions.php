@@ -123,7 +123,9 @@ namespace gimle
 			}
 
 			session_set_cookie_params(0, '/', '', $secure, true);
-			session_name('gimle' . ucfirst(preg_replace('/[^a-zA-Z]/', '', MAIN_SITE_ID)));
+			if (ENV_MODE & ENV_WEB) {
+				session_name('gimle' . ucfirst(preg_replace('/[^a-zA-Z]/', '', MAIN_SITE_ID)));
+			}
 			\session_start();
 		}
 	}
