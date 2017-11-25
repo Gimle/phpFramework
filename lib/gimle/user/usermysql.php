@@ -149,7 +149,9 @@ class UserMysql
 		;";
 		$db->query($query);
 
-		$query = "INSERT INTO `account_logins` (`account_id`, `status`, `method`, `remote_provider_id`) VALUES ({$user['id']}, 'ok', '{$type}', null);";
+		$query = sprintf("INSERT INTO `account_logins` (`account_id`, `user_ip`, `status`, `method`, `remote_provider_id`) VALUES ({$user['id']}, '%s', 'ok', '{$type}', null);",
+			$db->real_escape_string($_SERVER['REMOTE_ADDR'])
+		);
 		$db->query($query);
 
 		return $user;

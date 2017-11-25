@@ -30,7 +30,7 @@ try {
 		if ((isset($_POST['username'])) && (isset($_POST['password']))) {
 			$user = null;
 			foreach ($config as $key => $value) {
-				if ($key === 'ldap') {
+				if (($value !== false) && ($key === 'ldap')) {
 					$ldap = Ldap::getInstance();
 					$result = null;
 					try {
