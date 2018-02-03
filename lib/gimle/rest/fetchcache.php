@@ -7,6 +7,7 @@ use \gimle\Exception;
 use const \gimle\FILTER_SANITIZE_FILENAME;
 use const \gimle\FILTER_VALIDATE_DATE;
 use const \gimle\ENV_MODE;
+use const \gimle\CACHE_DIR;
 use function \gimle\filter_var;
 use function \gimle\d;
 
@@ -100,6 +101,16 @@ class FetchCache extends FetchBase
 	 */
 	private $maxTtl = 3600; // Default one hour.
 
+	private $namespace = null;
+	private $baseDir = null;
+
+	public function __construct (string $namespace = 'default')
+	{
+		parent::__construct();
+		$this->namespace = $namespace;
+		$this->baseDir = 'cache://gimle/fetchCache/' . filter_var($this->namespace, FILTER_SANITIZE_FILENAME, ['replace_char' => '★']) . '/';
+	}
+
 	/**
 	 * What type of content to expect.
 	 *
@@ -192,7 +203,12 @@ class FetchCache extends FetchBase
 		];
 		// Also the result will contain an array with info about the last successful query.
 
-		$dir = 'cache://gimle/fetchCache/' . filter_var($url, FILTER_SANITIZE_FILENAME, ['replace_char' => '★']) . '/';
+		$dir = filter_var($url, FILTER_SANITIZE_FILENAME, ['replace_char' => '★']);
+		if (mb_strlen($dir) > 250) {
+			$dir = md5($dir) . '-' . substr($dir, 0, 200);
+		}
+
+		$dir = $this->baseDir . $dir . '/';
 
 		if ((!file_exists($dir . 'reply')) || (!file_exists($dir . 'meta'))) {
 			// There is no cache, so have to query.
