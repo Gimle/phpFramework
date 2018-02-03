@@ -213,7 +213,7 @@ FROM
 	`accounts`
 LEFT JOIN
 	(SELECT
-		CONCAT('["', GROUP_CONCAT(G_JSON_STRING(`account_auth_local`.`id`) SEPARATOR '","'), '"]') AS `id`,
+		CONCAT('[{', GROUP_CONCAT('"id":"', G_JSON_STRING(`account_auth_local`.`id`), '","verification":', IF(`account_auth_local`.`verification` IS NOT NULL, G_JSON_STRING(`account_auth_local`.`verification`), 'null') SEPARATOR ','), '}]') AS `id`,
 		`account_auth_local`.`account_id` AS `account_id`
 	FROM
 		`account_auth_local`
