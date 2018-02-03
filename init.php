@@ -158,16 +158,21 @@ stream_wrapper_register('site', __NAMESPACE__ . '\\SiteStreamStatic');
 $getBase = function (): string {
 	$base = 'http';
 	$port = '';
-	if (isset($_SERVER['HTTPS'])) {
-		$base .= 's';
-		if ($_SERVER['SERVER_PORT'] !== '443') {
+	if ((isset($_SERVER['HTTP_X_FORWARDED_PROTO'])) && ($_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')) {
+		$base .= 's://';
+	}
+	else {
+		if (isset($_SERVER['HTTPS'])) {
+			$base .= 's';
+			if ($_SERVER['SERVER_PORT'] !== '443') {
+				$port = ':' . $_SERVER['SERVER_PORT'];
+			}
+		}
+		elseif ($_SERVER['SERVER_PORT'] !== '80') {
 			$port = ':' . $_SERVER['SERVER_PORT'];
 		}
+		$base .= '://';
 	}
-	elseif ($_SERVER['SERVER_PORT'] !== '80') {
-		$port = ':' . $_SERVER['SERVER_PORT'];
-	}
-	$base .= '://';
 	$host = explode(':', $_SERVER['HTTP_HOST']);
 	$base .= $host[0] . $port . '/';
 	unset($host, $port);
