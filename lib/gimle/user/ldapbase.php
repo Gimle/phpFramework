@@ -17,8 +17,8 @@ abstract class LdapBase
 	public const USER_NOT_FOUND = 3;
 	public const INVALID_PASSWORD_OR_DISABLED = 4;
 
-	private $config = null;
-	private $masterConnection = null;
+	protected $config = null;
+	protected $masterConnection = null;
 
 	protected function __construct ()
 	{
@@ -169,15 +169,14 @@ abstract class LdapBase
 			}
 		}
 		if (($entries['count'] > 0) && (isset($entries[0]['userprincipalname'][0]))) {
-			$entry = $entries[0];
+			$entry = $this->handleEntry($entries[0]);
 			$userConnection = ldap_connect($this->config['server']);
 
 			if ((isset($this->config['utf8'])) && ($this->config['utf8'] === false)) {
-				$entry = $this->entryToUtf8($entry);
 				$password = utf8_decode($password);
 			}
 			try {
-				ldap_bind($userConnection, $entry['userprincipalname'][0], $password);
+				ldap_bind($userConnection, $entries[0]['userprincipalname'][0], $password);
 				ldap_unbind($userConnection);
 			}
 			catch (\Exception $e) {
@@ -187,7 +186,7 @@ abstract class LdapBase
 		else {
 			throw new Exception('User not found in ldap.', self::USER_NOT_FOUND);
 		}
-		return $this->handleEntry($entry);
+		return $entry;
 	}
 
 	private function connect ()
