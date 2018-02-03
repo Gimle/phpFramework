@@ -22,6 +22,10 @@ class User
 	public const USER_NOT_FOUND = 6;
 	public const INVALID_PASSWORD = 7;
 	public const USER_NOT_VALIDATED = 8;
+	public const STATE_ERROR = 9;
+	public const OAUTH_ERROR = 10;
+	public const OAUTH_REJECT = 11;
+	public const OTHER_ERROR = 12;
 
 	/**
 	 * Holder for configuration.
@@ -72,6 +76,23 @@ class User
 		}
 
 		return self::$config;
+	}
+
+	/**
+	 * Generate a random password.
+	 */
+	public static function generatePassword (): string
+	{
+		$length = rand(18, 26);
+		$return = '';
+		$characters = '!#$%&()+-./:;<=>?@\\~|abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+		$count = mb_strlen($characters);
+		for ($i = 0; $i < $length; $i++) {
+			$random = rand(0, $count);
+			$return .= mb_substr($characters, $random, 1);
+		}
+
+		return $return;
 	}
 
 	/**
