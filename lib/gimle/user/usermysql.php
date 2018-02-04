@@ -116,6 +116,24 @@ class UserMysql
 		return $exists;
 	}
 
+	public static function updateActive ()
+	{
+		$current = User::current();
+		if ($current === null) {
+			return;
+		}
+
+		$db = Mysql::getInstance('gimle');
+
+		$query = "INSERT INTO `account_active`
+				(`account_id`, `datetime`)
+			VALUES
+				({$current['id']}, NOW())
+			ON DUPLICATE KEY
+				 UPDATE `datetime` = NOW()";
+		$result = $db->query($query);
+	}
+
 	public static function create ($data, $type)
 	{
 		$db = Mysql::getInstance('gimle');

@@ -127,6 +127,8 @@ namespace gimle
 				session_name('gimle' . ucfirst(preg_replace('/[^a-zA-Z]/', '', MAIN_SITE_ID)));
 			}
 			\session_start();
+
+			\gimle\user\User::updateActive();
 		}
 	}
 

@@ -8,7 +8,16 @@ DROP TABLE IF EXISTS `account_auth_remote_providers`;
 DROP TABLE IF EXISTS `account_auth_local`;
 DROP TABLE IF EXISTS `accounts`;
 DROP TABLE IF EXISTS `account_disabled`;
+DROP TABLE IF EXISTS `account_active`;
 
+--
+-- Table structure for table `account_active`
+--
+CREATE TABLE `flypso`.`account_active` (
+	`account_id` int(10) NOT NULL,
+	`datetime` datetime NOT NULL,
+	PRIMARY KEY (`account_id`)
+) ENGINE=MEMORY DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `accounts`
