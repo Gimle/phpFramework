@@ -92,8 +92,7 @@ CREATE TABLE `account_logins` (
 	`user_ip` varchar(46) NOT NULL,
 	`account_id` int(10) unsigned NOT NULL,
 	`datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	`status` ENUM('ok', 'fail') NOT NULL,
-	`method` ENUM('local', 'remote') NOT NULL,
+	`status` ENUM('ok', 'passfail', 'notverified') NOT NULL,
 	`remote_provider_id` tinyint(3) unsigned DEFAULT NULL,
 	PRIMARY KEY (`id`),
 	KEY `fk_account_logins_account_id_idx` (`account_id`),
@@ -101,16 +100,16 @@ CREATE TABLE `account_logins` (
 	CONSTRAINT `fk_account_logins_remote_provider_id` FOREIGN KEY (`remote_provider_id`) REFERENCES `account_auth_remote_providers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
-DELIMITER $$
-CREATE TRIGGER account_logins_before_insert
-	BEFORE INSERT ON `account_logins` FOR EACH ROW
-	BEGIN
-		IF (NEW.method = 'local' AND NEW.remote_provider_id IS NOT NULL) THEN
-			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'A local signin can not have a remote provider id.';
-		END IF;
-	END;
-$$
-DELIMITER ;
+-- DELIMITER $$
+-- CREATE TRIGGER account_logins_before_insert
+-- 	BEFORE INSERT ON `account_logins` FOR EACH ROW
+-- 	BEGIN
+-- 		IF (NEW.method = 'local' AND NEW.remote_provider_id IS NOT NULL) THEN
+-- 			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'A local signin can not have a remote provider id.';
+-- 		END IF;
+-- 	END;
+-- $$
+-- DELIMITER ;
 
 --
 -- Table structure for table `account_known_logins`
