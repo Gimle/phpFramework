@@ -40,12 +40,12 @@ try {
 					}
 					if ($result !== null) {
 						try {
-							User::getUser($result['username'][0], 'remote');
+							User::getUser($result['username'][0], 'ldap');
 						}
 						catch (Exception $e) {
 							User::create($result, 'ldap');
 						}
-						$user = User::login($result['username'][0], 'remote');
+						$user = User::login($result['username'][0], 'ldap');
 						$user['provider'] = $result;
 					}
 				}

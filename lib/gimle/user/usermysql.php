@@ -89,6 +89,9 @@ class UserMysql
 			if ($row['remote'] !== null) {
 				$row['remote'] = json_decode($row['remote'], true);
 			}
+			if ($row['groups'] !== null) {
+				$row['groups'] = json_decode($row['groups'], true);
+			}
 			return $row;
 		}
 

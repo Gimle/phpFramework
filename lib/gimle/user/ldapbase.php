@@ -22,7 +22,7 @@ abstract class LdapBase
 
 	protected function __construct ()
 	{
-		$this->config = User::getConfig()['ldap'];
+		$this->config = User::getConfig()['auth']['ldap'];
 		$this->connect();
 	}
 

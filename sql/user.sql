@@ -160,6 +160,7 @@ INSERT INTO `account_groups` VALUES
 CREATE TABLE `account_group_connections` (
 	`account_id` int(10) unsigned NOT NULL,
 	`group_id` mediumint(8) unsigned NOT NULL,
+	UNIQUE KEY `fk_account_group_connections_unique` (`account_id`,`group_id`),
 	KEY `fk_account_group_connections_account_id_idx` (`account_id`),
 	KEY `fk_account_group_connections_group_id_idx` (`group_id`),
 	CONSTRAINT `fk_account_group_connections_account_id` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
