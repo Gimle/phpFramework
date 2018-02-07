@@ -141,20 +141,65 @@ class UserMysql
 	{
 		$db = Mysql::getInstance('gimle');
 
+		$providerId = null;
 		$user = [];
-		if ($type === 'ldap') {
-			$user = [
-				'username' => $data['username'][0],
-				'first_name' => $data['first_name'][0],
-				'last_name' => $data['last_name'][0],
-				'email' => $data['email'][0],
-			];
-		}
-		elseif ($type === 'local') {
+		if ($type === 'local') {
 			$user = $data;
 			if (!isset($user['email'])) {
 				$user['email'] = $user['username'];
 			}
+		}
+		else {
+			$auth = Config::get('user.auth.' . $type);
+			if ($auth !== null) {
+				if (strpos($type, '.') !== false) {
+					$type2 = explode('.', $type);
+					$query = sprintf("SELECT `id` FROM `account_auth_remote_providers` WHERE `name` = '%s' AND `type` = '%s';",
+						$db->real_escape_string($type2[1]),
+						$db->real_escape_string($type2[0])
+					);
+				}
+				else {
+					$query = sprintf("SELECT `id` FROM `account_auth_remote_providers` WHERE `type` = '%s';",
+						$db->real_escape_string($type)
+					);
+				}
+				$result = $db->query($query);
+				$row = $result->get_assoc();
+				if ($row === false) {
+					throw new Exception('Unknown signin type.', User::UNKNOWN_OPERATION);
+				}
+
+				$providerId = $row['id'];
+
+				if ($type === 'ldap') {
+					$user = [
+						'username' => $data['username'][0],
+						'first_name' => $data['first_name'][0],
+						'last_name' => $data['last_name'][0],
+						'email' => $data['email'][0],
+					];
+				}
+				elseif ($type === 'oauth.google') {
+					$user = [
+						'username' => $data['sub'],
+						'first_name' => (isset($data['given_name']) ? $data['given_name'] : null),
+						'last_name' => (isset($data['family_name']) ? $data['family_name'] : null),
+						'email' => (((isset($data['email'])) && (filter_var($data['email'], FILTER_VALIDATE_EMAIL))) ? $data['email'] : null),
+					];
+				}
+				elseif ($type === 'oauth.facebook') {
+					$user = [
+						'username' => $data['id'],
+						'first_name' => (isset($data['first_name']) ? $data['first_name'] : null),
+						'last_name' => (isset($data['last_name']) ? $data['last_name'] : null),
+						'email' => (((isset($data['email'])) && (filter_var($data['email'], FILTER_VALIDATE_EMAIL))) ? $data['email'] : null),
+					];
+				}
+			}
+		}
+		if (($type !== 'local') && ($providerId === null)) {
+			throw new Exception('Unknown signin operation.', User::UNKNOWN_OPERATION);
 		}
 
 		$query = sprintf("INSERT INTO `accounts` (`first_name`, `last_name`, `email`) VALUES (%s, %s, %s);",
@@ -184,7 +229,7 @@ class UserMysql
 			$query = sprintf("INSERT INTO `account_auth_remote` (`id`, `account_id`, `provider_id`, `data`) VALUES ('%s', %u, %u, '%s');",
 				$db->real_escape_string($user['username']),
 				$accountid,
-				Config::get('user.ldap.providerId'),
+				$providerId,
 				$db->real_escape_string(json_encode($data))
 			);
 		}

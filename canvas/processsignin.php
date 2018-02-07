@@ -39,10 +39,8 @@ try {
 					catch (Exception $e) {
 					}
 					if ($result !== null) {
-						try {
-							User::getUser($result['username'][0], 'ldap');
-						}
-						catch (Exception $e) {
+						if (!User::exists($result['username'][0], 'ldap')) {
+							// @todo: Check if autocreate is enabled.
 							User::create($result, 'ldap');
 						}
 						$user = User::login($result['username'][0], 'ldap');
@@ -133,11 +131,13 @@ try {
 				throw new Exception('Google plus sub missing.', User::OTHER_ERROR);
 			}
 
+			if (!User::exists($res['sub'], 'oauth.google')) {
+				// @todo: Check if autocreate is enabled.
+				User::create($res, 'oauth.google');
+			}
 			$user = User::login($res['sub'], 'oauth.google');
-			$_SESSION['gimle']['user'] = $user;
 		}
-
-		if ($key === 'facebook') {
+		elseif ($key === 'facebook') {
 
 			$fetch = new Fetch();
 			$fetch->connectionTimeout(2);
@@ -157,9 +157,16 @@ try {
 				throw new Exception('Facebook id missing.', User::OTHER_ERROR);
 			}
 
+			if (!User::exists($res['id'], 'oauth.facebook')) {
+				// @todo: Check if autocreate is enabled.
+				User::create($res, 'oauth.facebook');
+			}
 			$user = User::login($res['id'], 'oauth.facebook');
-			$_SESSION['gimle']['user'] = $user;
 		}
+		else {
+			throw new Exception('Unknown signin operation.', User::UNKNOWN_OPERATION);
+		}
+		$_SESSION['gimle']['user'] = $user;
 	}
 }
 catch (Exception $e) {
