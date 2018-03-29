@@ -86,4 +86,18 @@ trait Helpers
 			dom_import_simplexml($ref)->nodeValue = $string;
 		}
 	}
+
+	public function asDateTime ($input = null)
+	{
+		if ($input === null) {
+			return date('Y-m-d\TH:i:s');
+		}
+		else if (is_int($input)) {
+			return date('Y-m-d\TH:i:s', $input);
+		}
+		else if (is_string($input)) {
+			return date('Y-m-d\TH:i:s', strtotime($input));
+		}
+		return null;
+	}
 }
