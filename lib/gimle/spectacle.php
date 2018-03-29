@@ -75,10 +75,10 @@ class Spectacle
 		header('X-Gimle-chrome-id: ' . $file);
 		header('X-Gimle-spectacle-id: ' . $file);
 		if ($base = Config::get('spectacle.base')) {
-			header('X-Gimle-base-path: ' . $base);
+			header('X-Gimle-base-path: ' . utf8_decode($base));
 		}
 		else {
-			header('X-Gimle-base-path: ' . BASE_PATH);
+			header('X-Gimle-base-path: ' . utf8_decode(BASE_PATH));
 		}
 		$this->id = $file;
 
