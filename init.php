@@ -542,7 +542,9 @@ if (is_executable(SITE_DIR . 'lib/')) {
 
 set_exception_handler(function (\Throwable $e): void {
 	if (ENV_MODE & ENV_WEB) {
-		ob_clean();
+		if (ob_get_level() > 0) {
+			ob_clean();
+		}
 		$getCanvas = function (string $canvas): ?string {
 			if ((substr($canvas, 0, strlen(SITE_DIR)) === SITE_DIR) && (is_readable($canvas))) {
 				return $canvas;
