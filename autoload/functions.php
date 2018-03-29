@@ -128,7 +128,9 @@ namespace gimle
 			}
 			\session_start();
 
-			\gimle\user\User::updateActive();
+			if (Config::exists('user')) {
+				\gimle\user\User::updateActive();
+			}
 		}
 	}
 
