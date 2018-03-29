@@ -135,6 +135,33 @@ namespace gimle
 	}
 
 	/**
+	 * Convert domain name to IDNA ASCII form.
+	 *
+	 * @param string $domain The domain / url to convert, which must be UTF-8 encoded.
+	 * @return mixed The domain name / url encoded in ASCII-compatible form, or FALSE on failure.
+	 */
+	function idn_to_ascii (string $domain): string
+	{
+		$proto = '';
+		$path = '';
+		$start = strpos($domain, '://');
+		if ($start !== false) {
+			$proto = substr($domain, 0, $start + 3);
+			$domain = substr($domain, $start + 3);
+		}
+		$start = strpos($domain, '/');
+		if ($start !== false) {
+			$path = substr($domain, $start);
+			$domain = substr($domain, 0, $start);
+		}
+		$domain = \idn_to_ascii($domain);
+		if ($domain === false) {
+			return false;
+		}
+		return $proto . $domain . $path;
+	}
+
+	/**
 	 * Get information about the current url.
 	 *
 	 * @param mixed $part The part you want returned. (Optional).
