@@ -58,8 +58,13 @@ trait Insert
 				}
 			}
 			elseif ($mode === self::BLOCK) {
-				preg_match('/^[\s]+/s', $dom->parentNode->nodeValue, $leadingWhitespace);
-				$leadingWhitespace = ($leadingWhitespace[0] ?? null);
+				if ($dom->parentNode->nodeValue !== null) {
+					preg_match('/^[\s]+/s', $dom->parentNode->nodeValue, $leadingWhitespace);
+					$leadingWhitespace = ($leadingWhitespace[0] ?? null);
+				}
+				else {
+					$leadingWhitespace = '';
+				}
 				$insertBefore = $leadingWhitespace . "\t";
 
 				$node = new \DomDocument();
