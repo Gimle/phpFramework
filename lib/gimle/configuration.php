@@ -7,7 +7,7 @@ abstract class Configuration
 	/**
 	 * The holder for the config.
 	 */
-	private static $config = [];
+	protected static $config = [];
 
 	/**
 	 * Set a config value if not set.
@@ -20,7 +20,7 @@ abstract class Configuration
 	{
 		if (!self::exists($key)) {
 			$set = string_to_nested_array($key, $value);
-			self::$config = array_merge_distinct(self::$config, $set);
+			static::$config = array_merge_distinct(static::$config, $set);
 			return true;
 		}
 		return false;
@@ -34,7 +34,7 @@ abstract class Configuration
 	 */
 	public static function setAll (array $config): void
 	{
-		self::$config = $config;
+		static::$config = $config;
 	}
 
 	/**
@@ -44,7 +44,7 @@ abstract class Configuration
 	 */
 	public static function getAll (): array
 	{
-		return self::$config;
+		return static::$config;
 	}
 
 	/**
@@ -56,7 +56,7 @@ abstract class Configuration
 	public static function exists (string $key): bool
 	{
 		$params = explode('.', $key);
-		$check = self::$config;
+		$check = static::$config;
 		foreach ($params as $param) {
 			if (isset($check[$param])) {
 				$check = $check[$param];
@@ -77,7 +77,7 @@ abstract class Configuration
 	public static function get (string $key)
 	{
 		$params = explode('.', $key);
-		$return = self::$config;
+		$return = static::$config;
 		foreach ($params as $param) {
 			if (isset($return[$param])) {
 				$return = $return[$param];

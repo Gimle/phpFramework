@@ -4,4 +4,8 @@ namespace gimle;
 
 class Config extends Configuration
 {
+	/**
+	 * The holder for the config.
+	 */
+	protected static $config = [];
 }
