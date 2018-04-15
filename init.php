@@ -516,6 +516,9 @@ if ((isset($config['server']['override'])) && (is_array($config['server']['overr
 }
 
 Config::setAll($config);
+if (IS_SUBSITE === false) {
+	MainConfig::setAll($config);
+}
 
 unset($config);
 
