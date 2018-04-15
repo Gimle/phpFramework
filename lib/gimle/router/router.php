@@ -7,6 +7,7 @@ use const gimle\BASE_PATH_KEY;
 use const gimle\GIMLE5;
 use const gimle\ENV_MODE;
 use const gimle\ENV_LIVE;
+use const \gimle\MODULE_GIMLE;
 
 use gimle\canvas\Canvas;
 use gimle\System;
@@ -269,7 +270,7 @@ class Router
 	 *               If a valid part is part is passed in, that part is returned as a string.
 	 *               If part was not found, null will be returned.
 	 */
-	function page ($part = null)
+	public function page ($part = null)
 	{
 		if ($part !== null) {
 			if (isset($this->url[$part])) {
@@ -278,6 +279,51 @@ class Router
 			return null;
 		}
 		return $this->url;
+	}
+
+	/**
+	 * Returns the absolute path for a template or null if not found.
+	 *
+	 * @param string Template name.
+	 * @return ?string Full path or null if not found.
+	 */
+	public static function getTemplatePath (string $template): ?string
+	{
+		return self::pathResolver($template, 'template');
+	}
+
+	/**
+	 * Returns the absolute path for a canvas or null if not found.
+	 *
+	 * @param string Canvas name.
+	 * @return ?string Full path or null if not found.
+	 */
+	public static function getCanvasPath (string $canvas): ?string
+	{
+		return self::pathResolver($canvas, 'canvas');
+	}
+
+	/**
+	 * Returns the absolute path for a file in a location or null if not found.
+	 *
+	 * @param string $template File name.
+	 * @param string $dir The directory.
+	 * @return ?string Full path or null if not found.
+	 */
+	private static function pathResolver (string $template, string $dir): ?string
+	{
+		if (is_readable(SITE_DIR . $dir . '/' . $template . '.php')) {
+			return SITE_DIR . $dir . '/' . $template . '.php';
+		}
+		foreach (System::getModules(MODULE_GIMLE) as $module) {
+			if (is_readable(SITE_DIR . 'module/' . $module . '/' . $dir . '/' . $template . '.php')) {
+				return SITE_DIR . 'module/' . $module . '/' . $dir . '/' . $template . '.php';
+			}
+		}
+		if (is_readable(SITE_DIR . 'module/' . MODULE_GIMLE . '/' . $dir . '/' . $template . '.php')) {
+			return SITE_DIR . 'module/' . MODULE_GIMLE . '/' . $dir . '/' . $template . '.php';
+		}
+		return null;
 	}
 
 	/**
@@ -326,20 +372,8 @@ class Router
 		if ($this->parseCanvas === true) {
 
 			if ($this->template !== null) {
-				$found = false;
-				if (is_readable(SITE_DIR . 'template/' . $this->template . '.php')) {
-					$this->template = SITE_DIR . 'template/' . $this->template . '.php';
-					$found = true;
-				}
-				else {
-					foreach (System::getModules() as $module) {
-						if (is_readable(SITE_DIR . 'module/' . $module . '/template/' . $this->template . '.php')) {
-							$this->template = SITE_DIR . 'module/' . $module . '/template/' . $this->template . '.php';
-							$found = true;
-						}
-					}
-				}
-				if ($found === false) {
+				$this->template = self::getTemplatePath($this->template);
+				if ($this->template === null) {
 					$this->except(self::E_TEMPLATE_NOT_FOUND);
 				}
 
@@ -350,22 +384,10 @@ class Router
 			}
 		}
 
-		$found = false;
 		$recuriveCanvasHolder = $this->canvas;
-		if (is_readable(SITE_DIR . 'canvas/' . $this->canvas . '.php')) {
-			$this->canvas = SITE_DIR . 'canvas/' . $this->canvas . '.php';
-			$found = true;
-		}
-		else {
-			foreach (System::getModules() as $module) {
-				if (is_readable(SITE_DIR . 'module/' . $module . '/canvas/' . $this->canvas . '.php')) {
-					$this->canvas = SITE_DIR . 'module/' . $module . '/canvas/' . $this->canvas . '.php';
-					$found = true;
-				}
-			}
-		}
-		if ($found === false) {
-			$this->except(self::E_CANVAS_NOT_FOUND);
+		$this->canvas = self::getCanvasPath($this->canvas);
+		if ($this->canvas === null) {
+			$this->except(self::E_TEMPLATE_NOT_FOUND);
 		}
 
 		if ($this->parseCanvas === true) {
