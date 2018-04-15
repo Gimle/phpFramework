@@ -13,7 +13,7 @@ DROP TABLE IF EXISTS `account_active`;
 --
 -- Table structure for table `account_active`
 --
-CREATE TABLE `flypso`.`account_active` (
+CREATE TABLE `account_active` (
 	`account_id` int(10) NOT NULL,
 	`datetime` datetime NOT NULL,
 	PRIMARY KEY (`account_id`)
