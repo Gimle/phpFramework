@@ -312,16 +312,20 @@ class Router
 	 */
 	private static function pathResolver (string $template, string $dir): ?string
 	{
-		if (is_readable(SITE_DIR . $dir . '/' . $template . '.php')) {
-			return SITE_DIR . $dir . '/' . $template . '.php';
+		if (strpos($template, '.') === false) {
+			$template .= '.php';
+		}
+
+		if (is_readable(SITE_DIR . $dir . '/' . $template)) {
+			return SITE_DIR . $dir . '/' . $template;
 		}
 		foreach (System::getModules(MODULE_GIMLE) as $module) {
-			if (is_readable(SITE_DIR . 'module/' . $module . '/' . $dir . '/' . $template . '.php')) {
-				return SITE_DIR . 'module/' . $module . '/' . $dir . '/' . $template . '.php';
+			if (is_readable(SITE_DIR . 'module/' . $module . '/' . $dir . '/' . $template)) {
+				return SITE_DIR . 'module/' . $module . '/' . $dir . '/' . $template;
 			}
 		}
-		if (is_readable(SITE_DIR . 'module/' . MODULE_GIMLE . '/' . $dir . '/' . $template . '.php')) {
-			return SITE_DIR . 'module/' . MODULE_GIMLE . '/' . $dir . '/' . $template . '.php';
+		if (is_readable(SITE_DIR . 'module/' . MODULE_GIMLE . '/' . $dir . '/' . $template)) {
+			return SITE_DIR . 'module/' . MODULE_GIMLE . '/' . $dir . '/' . $template;
 		}
 		return null;
 	}
