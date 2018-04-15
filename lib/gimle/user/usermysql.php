@@ -31,7 +31,19 @@ class UserMysql
 			return $current;
 		}
 
-		if ($type === 'local') {
+		if (($type === null) && (is_int($id))) {
+			$query = sprintf("SELECT
+					`account_info_view`.*
+				FROM
+					`account_info_view`
+				WHERE
+					`account_info_view`.`id` = %u
+				;",
+				$id
+			);
+			$result = $db->query($query);
+		}
+		else if ($type === 'local') {
 			$query = sprintf("SELECT
 					`account_info_view`.*
 				FROM
