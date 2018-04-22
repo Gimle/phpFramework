@@ -21,7 +21,7 @@ class UserMysql
 	 * @param ?string $type Based on auth type, or null to use user id.
 	 * @return array
 	 */
-	public static function getUser ($id = null, ?string $type = null): array
+	public static function getUser ($id = null, ?string $type = null): ?array
 	{
 		$db = Mysql::getInstance('gimle');
 
@@ -149,6 +149,31 @@ class UserMysql
 		$result = $db->query($query);
 	}
 
+	/**
+	 * Set a new password for the user.
+	 *
+	 * @param string $where reset_code or local auth id.
+	 * @param string $password The new password.
+	 * @return bool If the operation was successful or not.
+	 */
+	public static function setNewPassword (string $where, string $password): bool
+	{
+		$db = Mysql::getInstance('gimle');
+
+		$hash = self::hashPassword($password);
+
+		$query = sprintf("UPDATE `account_auth_local` SET `password` = '%s', `reset_code` = null, `reset_datetime` = null WHERE (`reset_code` = '%2\$s' OR `id` = '%2\$s');",
+			$db->real_escape_string($hash),
+			$db->real_escape_string($where)
+		);
+		$result = $db->query($query);
+		if (($result === true) && ($db->affected_rows > 0)) {
+			return true;
+		}
+		return false;
+
+	}
+
 	public static function create ($data, $type)
 	{
 		$db = Mysql::getInstance('gimle');
@@ -224,12 +249,7 @@ class UserMysql
 
 		if ($type === 'local') {
 			$verification = sha1(openssl_random_pseudo_bytes(16));
-			$cost = Config::get('user.local.passwordCost');
-			$options = [
-				'cost' => ($cost === null ? 12 : $cost),
-			];
-
-			$hash = password_hash($user['password'], PASSWORD_BCRYPT, $options);
+			$hash = self::hashPassword($user['password']);
 			$query = sprintf("INSERT INTO `account_auth_local` (`id`, `account_id`, `password`, `verification`) VALUES ('%s', %u, '%s', '%s');",
 				$db->real_escape_string($user['username']),
 				$accountid,
@@ -246,6 +266,17 @@ class UserMysql
 			);
 		}
 		$result = $db->query($query);
+	}
+
+	public static function hashPassword (string $password): string
+	{
+		$cost = Config::get('user.local.passwordCost');
+		$options = [
+			'cost' => ($cost === null ? 12 : $cost),
+		];
+
+		$hash = password_hash($password, PASSWORD_BCRYPT, $options);
+		return $hash;
 	}
 
 	/**
