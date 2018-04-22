@@ -12,6 +12,20 @@ use function \gimle\sp;
 class UserMysql
 {
 	/**
+	 * Holder for the first signin value.
+	 *
+	 * @var bool
+	 */
+	private static $isFirstSignin = false;
+
+	/**
+	 * Holder for if the signin was performed.
+	 *
+	 * @var bool
+	 */
+	private static $signinPerformed = false;
+
+	/**
 	 * Fetch information about a user.
 	 *
 	 * @throws gimle\Exception If the user could not be found.
@@ -131,7 +145,14 @@ class UserMysql
 		return $exists;
 	}
 
-	public static function updateActive ()
+	/**
+	 * Updates the database with the active user.
+	 *
+	 * @throws mysqli_sql_exception If there was a mysql problem.
+	 *
+	 * @return void
+	 */
+	public static function updateActive (): void
 	{
 		$current = User::current();
 		if ($current === null) {
@@ -152,6 +173,8 @@ class UserMysql
 	/**
 	 * Set a new password for the user.
 	 *
+	 * @throws mysqli_sql_exception If there was a mysql problem.
+	 *
 	 * @param string $where reset_code or local auth id.
 	 * @param string $password The new password.
 	 * @return bool If the operation was successful or not.
@@ -171,10 +194,47 @@ class UserMysql
 			return true;
 		}
 		return false;
-
 	}
 
-	public static function create ($data, $type)
+	/**
+	 * Was this the first time this user have ever signed in?
+	 *
+	 * @return bool
+	 */
+	public static function isFirstSignin (): bool
+	{
+		if (isset($_SESSION['gimle']['first_signin'])) {
+			self::$isFirstSignin = true;
+			unset($_SESSION['gimle']['first_signin']);
+		}
+		return self::$isFirstSignin;
+	}
+
+	/**
+	 * Was the signin just performed?
+	 *
+	 * @return bool
+	 */
+	public static function signinPerformed (): bool
+	{
+		if (isset($_SESSION['gimle']['signin_performed'])) {
+			self::$signinPerformed = true;
+			unset($_SESSION['gimle']['signin_performed']);
+		}
+		return self::$signinPerformed;
+	}
+
+	/**
+	 * Create a new user.
+	 *
+	 * @throws gimle\Exception if the signin type was not understood.
+	 * @throws mysqli_sql_exception If there was a mysql problem.
+	 *
+	 * @var array $data Information about the user.
+	 * @var string $type The signin type.
+	 * @return void
+	 */
+	public static function create (array $data, string $type): void
 	{
 		$db = Mysql::getInstance('gimle');
 
@@ -361,6 +421,15 @@ class UserMysql
 			$providerId
 		);
 		$db->query($query);
+
+		if ($user['first_signin'] === null) {
+			$query = "UPDATE `accounts` SET `first_signin` = NOW() WHERE `id` = {$user['id']};";
+			$db->query($query);
+
+			$_SESSION['gimle']['first_signin'] = true;
+		}
+
+		$_SESSION['gimle']['signin_performed'] = true;
 
 		return $user;
 	}

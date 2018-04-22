@@ -34,6 +34,11 @@ class User
 	 */
 	private static $config = null;
 
+	/**
+	 * Holder for the current user.
+	 *
+	 * @var ?array
+	 */
 	private static $currentUser = null;
 
 	/**
@@ -54,6 +59,11 @@ class User
 		return call_user_func([self::$config['object'], $name], ...$args);
 	}
 
+	/**
+	 * Get the currently signed in user.
+	 *
+	 * return ?array User data.
+	 */
 	public static function current ()
 	{
 		if ((self::$currentUser === null) && (isset($_SESSION['gimle']['user']))) {

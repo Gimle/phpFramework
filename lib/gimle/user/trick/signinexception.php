@@ -7,6 +7,13 @@ use \gimle\Exception;
 trait SigninException
 {
 	/**
+	 * Holder for the signin exception.
+	 *
+	 * @var ?Exception
+	 */
+	private static $signinException = null;
+
+	/**
 	 * Used by the signin procedure to store an exception.
 	 *
 	 * @param Exception $e
@@ -22,12 +29,15 @@ trait SigninException
 	 *
 	 * @return ?Exception
 	 */
-	public static function getSigninException ()
+	public static function getSigninException (bool $clear = true)
 	{
 		if (isset($_SESSION['gimle']['signinException'])) {
-			return $_SESSION['gimle']['signinException'];
+			self::$signinException = $_SESSION['gimle']['signinException'];
+			if ($clear === true) {
+				unset($_SESSION['gimle']['signinException']);
+			}
 		}
-		return null;
+		return self::$signinException;
 	}
 
 	/**
@@ -40,5 +50,6 @@ trait SigninException
 		if (isset($_SESSION['gimle']['signinException'])) {
 			unset($_SESSION['gimle']['signinException']);
 		}
+		self::$signinException = null;
 	}
 }
