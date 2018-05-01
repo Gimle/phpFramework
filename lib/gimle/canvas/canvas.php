@@ -76,9 +76,11 @@ class Canvas
 	 * @param string $filename
 	 * @return mixed The return value of the file.
 	 */
-	public static function _override (string $filename)
+	public static function _override (?string $filename = null)
 	{
-		ob_end_clean();
+		if (ob_get_level() > 0) {
+			ob_end_clean();
+		}
 		return self::_set($filename);
 	}
 
