@@ -290,23 +290,55 @@ class Router
 	/**
 	 * Returns the absolute path for a template or null if not found.
 	 *
-	 * @param string Template name.
+	 * @param string $template Template name.
+	 * @param ?mixed $params Optional format parameters.
 	 * @return ?string Full path or null if not found.
 	 */
-	public static function getTemplatePath (string $template): ?string
+	public static function getTemplatePath (string $template, ...$params): ?string
 	{
+		if (!empty($params)) {
+			return self::formattedPathResolver($template, 'template', $params);
+		}
 		return self::pathResolver($template, 'template');
 	}
 
 	/**
 	 * Returns the absolute path for a canvas or null if not found.
 	 *
-	 * @param string Canvas name.
+	 * @param string $template Canvas name.
+	 * @param ?mixed $params Optional format parameters.
 	 * @return ?string Full path or null if not found.
 	 */
-	public static function getCanvasPath (string $canvas): ?string
+	public static function getCanvasPath (string $canvas, ...$params): ?string
 	{
+		if (!empty($params)) {
+			return self::formattedPathResolver($template, 'canvas', $params);
+		}
 		return self::pathResolver($canvas, 'canvas');
+	}
+
+	/**
+	 * Returns the absolute path for a file in a location or null if not found.
+	 *
+	 * @param string $template File name.
+	 * @param string $dir The directory.
+	 * @param array $params Format parameters.
+	 * @return ?string Full path or null if not found.
+	 */
+	private static function formattedPathResolver (string $template, string $dir, array $params): ?string
+	{
+		foreach ($params as $param) {
+			if (is_array($param)) {
+				$check = self::pathResolver(vsprintf($template, $param), $dir);
+			}
+			else {
+				$check = self::pathResolver(sprintf($template, $param), $dir);
+			}
+			if ($check !== null) {
+				return $check;
+			}
+		}
+		return null;
 	}
 
 	/**
