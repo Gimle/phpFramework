@@ -60,6 +60,9 @@ class Android
 			if (isset($properties['quantity'])) {
 				$query = '//plurals[@name=' . current($this->sxml)->real_escape_string($lookup) . ']/item[@quantity="' . $properties['quantity'] . '"]';
 			}
+			elseif (isset($properties['form'])) {
+				$query = '//string[@name=' . current($this->sxml)->real_escape_string($lookup) . '][@form="' . $properties['form'] . '"]';
+			}
 			elseif (in_array('array', $properties)) {
 				$query = '//string-array[@name=' . current($this->sxml)->real_escape_string($lookup) . ']';
 			}
@@ -92,6 +95,9 @@ class Android
 						$return[] = str_replace(['\\\'', '\\"'], ['\'', '"'], $result);
 					}
 					return $return;
+				}
+				elseif (isset($properties['form'])) {
+					return $this->_(...$message);
 				}
 			}
 		}
