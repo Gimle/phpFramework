@@ -131,7 +131,7 @@ class UserMysql
 	 *
 	 * @param ?mixed $id If type is null, The user id, else the auth id, or null to use currently signed in user.
 	 * @param ?string $type Based on auth type, or null to use user id.
-	 * @return array
+	 * @return bool
 	 */
 	public static function exists ($id = null, ?string $type = null): bool
 	{
