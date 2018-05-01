@@ -8,9 +8,15 @@ use const gimle\GIMLE5;
 use const gimle\ENV_MODE;
 use const gimle\ENV_LIVE;
 use const \gimle\MODULE_GIMLE;
+use const \gimle\FILTER_VALIDATE_DIRNAME;
 
 use gimle\canvas\Canvas;
 use gimle\System;
+
+use function \gimle\filter_var;
+use function \gimle\inc;
+use function \gimle\sp;
+use function \gimle\d;
 
 class Router
 {
@@ -337,112 +343,182 @@ class Router
 	 */
 	public function dispatch (): void
 	{
-		$routeFound = false;
-		$methodMatch = false;
+		try {
+			$routeFound = false;
+			$methodMatch = false;
 
-		foreach ($this->routes as $path => $index) {
+			foreach ($this->routes as $path => $index) {
 
-			// Check if the current page matches the route.
-			if (preg_match($path, $this->urlString, $matches)) {
-				$routeFound = true;
+				// Check if the current page matches the route.
+				if (preg_match($path, $this->urlString, $matches)) {
+					$routeFound = true;
 
-				foreach ($matches as $key => $url) {
-					if (!is_int($key)) {
-						$this->url[$key] = $url;
+					foreach ($matches as $key => $url) {
+						if (!is_int($key)) {
+							$this->url[$key] = $url;
+						}
+					}
+
+					$route = end($index);
+					if ($this->requestMethod & $route['requestMethod']) {
+						$route['callback']();
+						$methodMatch = true;
+						break;
+					}
+					elseif (count($this->routes[$path]) > 1) {
+						array_pop($this->routes[$path]);
+						$this->dispatch();
+						return;
 					}
 				}
-
-				$route = end($index);
-				if ($this->requestMethod & $route['requestMethod']) {
-					$route['callback']();
-					$methodMatch = true;
-					break;
-				}
-				elseif (count($this->routes[$path]) > 1) {
-					array_pop($this->routes[$path]);
-					$this->dispatch();
-					return;
-				}
 			}
-		}
 
-		if ($routeFound === false) {
-			$this->except(self::E_ROUTES_EXHAUSTED);
-		}
-		if ($methodMatch === false) {
-			$this->except(self::E_METHOD_NOT_FOUND);
-		}
-
-		if ($this->parseCanvas === true) {
-
-			if ($this->template !== null) {
-				$this->template = self::getTemplatePath($this->template);
-				if ($this->template === null) {
-					$this->except(self::E_TEMPLATE_NOT_FOUND);
-				}
-
-				ob_start();
-				$templateResult = include $this->template;
-				$content = ob_get_contents();
-				ob_end_clean();
+			if ($routeFound === false) {
+				$this->except(self::E_ROUTES_EXHAUSTED);
 			}
-		}
+			if ($methodMatch === false) {
+				$this->except(self::E_METHOD_NOT_FOUND);
+			}
 
-		$recuriveCanvasHolder = $this->canvas;
-		$this->canvas = self::getCanvasPath($this->canvas);
-		if ($this->canvas === null) {
-			$this->except(self::E_TEMPLATE_NOT_FOUND);
-		}
+			if ($this->parseCanvas === true) {
 
-		if ($this->parseCanvas === true) {
-			$canvasResult = Canvas::_set($this->canvas);
-			if ($canvasResult === true) {
 				if ($this->template !== null) {
-					if ($templateResult !== true) {
-						if (count($this->routes) > 0) {
-							$ctype = null;
-							$headers = headers_list();
-							foreach ($headers as $header) {
-								if (substr($header, 0, 14) === 'Content-type: ') {
-									$ctype = substr($header, 14);
-									$pos = strpos($ctype, ';');
-									if ($pos !== false) {
-										$ctype = substr($ctype, 0, $pos);
+					$this->template = self::getTemplatePath($this->template);
+					if ($this->template === null) {
+						$this->except(self::E_TEMPLATE_NOT_FOUND);
+					}
+
+					ob_start();
+					$templateResult = include $this->template;
+					$content = ob_get_contents();
+					ob_end_clean();
+				}
+			}
+
+			$recuriveCanvasHolder = $this->canvas;
+			$this->canvas = self::getCanvasPath($this->canvas);
+			if ($this->canvas === null) {
+				$this->except(self::E_TEMPLATE_NOT_FOUND);
+			}
+
+			if ($this->parseCanvas === true) {
+				$canvasResult = Canvas::_set($this->canvas);
+				if ($canvasResult === true) {
+					if ($this->template !== null) {
+						if ($templateResult !== true) {
+							if (count($this->routes) > 0) {
+								$ctype = null;
+								$headers = headers_list();
+								foreach ($headers as $header) {
+									if (substr($header, 0, 14) === 'Content-type: ') {
+										$ctype = substr($header, 14);
+										$pos = strpos($ctype, ';');
+										if ($pos !== false) {
+											$ctype = substr($ctype, 0, $pos);
+										}
 									}
 								}
+								$this->tried[] = [
+									'route' => $path,
+									'content-type' => $ctype,
+									'canvas' => $this->canvas,
+									'template' => $this->template,
+									'returnValue' => $templateResult
+								];
+								$this->canvas = $recuriveCanvasHolder;
+								array_pop($this->routes[$path]);
+								if (empty($this->routes[$path])) {
+									unset($this->routes[$path]);
+								}
+								$this->dispatch();
+								return;
 							}
-							$this->tried[] = [
-								'route' => $path,
-								'content-type' => $ctype,
-								'canvas' => $this->canvas,
-								'template' => $this->template,
-								'returnValue' => $templateResult
-							];
-							$this->canvas = $recuriveCanvasHolder;
-							array_pop($this->routes[$path]);
-							if (empty($this->routes[$path])) {
-								unset($this->routes[$path]);
+							else {
+								$this->except(self::E_ROUTES_EXHAUSTED);
 							}
-							$this->dispatch();
-							return;
 						}
-						else {
-							$this->except(self::E_ROUTES_EXHAUSTED);
-						}
-					}
 
-					echo $content;
+						echo $content;
+					}
+				}
+				else {
+					$this->except(self::E_CANVAS_RETURN, [
+						'returnValue' => $canvasResult
+					]);
+				}
+				Canvas::_create();
+				return;
+			}
+			include $this->canvas;
+		}
+		catch (\Exception $e) {
+			$this->catch($e);
+		}
+	}
+
+	private function catch ($e)
+	{
+		$html = false;
+		foreach (headers_list() as $header) {
+			if (substr($header, 0, 24) === 'Content-type: text/html;') {
+				$html = true;
+				break;
+			}
+		}
+
+		$tried = $e->get('tried');
+		if ($tried !== null) {
+			foreach ($tried as $trial) {
+				if ($trial['returnValue'] === 403) {
+					if ($html === true) {
+						Canvas::_set(self::getCanvasPath('unsigned'));
+						include self::getTemplatePath('account/signin');
+					}
+					else {
+						header('HTTP/1.1 403 Forbidden');
+					}
+					Canvas::_create();
+					return true;
 				}
 			}
-			else {
-				$this->except(self::E_CANVAS_RETURN, [
-					'returnValue' => $canvasResult
-				]);
-			}
-			Canvas::_create();
-			return;
 		}
-		include $this->canvas;
+
+		$error = 500;
+		if (($e->getCode() === self::E_ROUTES_EXHAUSTED) || ($e->getCode() === self::E_ROUTE_NOT_FOUND)) {
+			$url = $e->get('url');
+			if ((filter_var($url, FILTER_VALIDATE_DIRNAME)) && (substr($url, 0, 7) === 'module/') && (strpos($url, '../') === false)) {
+				$url = substr($url, 7);
+				$pos = strpos($url, '/');
+				$module = substr($url, 0, $pos);
+				$url = substr($url, $pos);
+				if (($url !== false) && (is_readable(SITE_DIR . 'module/' . $module . '/public/' . $url))) {
+					$mime = get_mimetype(SITE_DIR . 'module/' . $module . '/public/' . $url);
+					if ($mime['mime'] === 'text/plain') {
+						if (substr($url, -4, 4) === '.css') {
+							$mime['mime'] = 'text/css';
+						}
+						elseif (substr($url, -3, 3) === '.js') {
+							$mime['mime'] = 'application/javascript';
+						}
+					}
+					header('Content-Type: ' . $mime['mime']);
+					readfile(SITE_DIR . 'module/' . $module . '/public/' . $url);
+					return true;
+				}
+			}
+
+			$error = 404;
+		}
+
+		if ($html === true) {
+			Canvas::_override(self::getCanvasPath('html'));
+		}
+		else {
+			Canvas::_override(self::getCanvasPath('json'));
+		}
+		sp($e);
+		inc(self::getTemplatePath('error/' . $error), $e);
+		Canvas::_create();
 	}
 
 	/**
