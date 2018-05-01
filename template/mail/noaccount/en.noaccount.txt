@@ -1,0 +1,5 @@
+*Notification from %sitename%!*
+
+Someone asked to reset the password for this email, but an account was not found.
+If you attempted this, please visit %url% to create a new account.
+If you do not recognize this activity, you can just delete this email.

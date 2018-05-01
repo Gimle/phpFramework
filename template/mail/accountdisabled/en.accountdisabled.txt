@@ -1,0 +1,6 @@
+*Notification from %sitename%!*
+
+Someone asked to reset the password for this email, but this account is disabled.
+An account may become disabled due to suspicious activity,
+and will only be opened again if a moderator manually do do.
+If you do not recognize this activity, you can just delete this email.
