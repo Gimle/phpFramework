@@ -49,7 +49,12 @@ try {
 				}
 			}
 			if ($user === null) {
-				$user = User::login($_POST['username'], 'local', $_POST['password']);
+				if ((isset($config['auth']['local'])) && ($config['auth']['local'] !== false) && ($config['auth']['local'] !== null)) {
+					$user = User::login($_POST['username'], 'local', $_POST['password']);
+				}
+				else {
+					throw new Exception('User not found.', User::USER_NOT_FOUND);
+				}
 			}
 			$_SESSION['gimle']['user'] = $user;
 		}
