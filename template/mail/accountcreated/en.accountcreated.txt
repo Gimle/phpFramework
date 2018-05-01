@@ -1,0 +1,5 @@
+*Welcome to %sitename%!*
+
+Your new account is ready.
+
+To confirm this email address, please visit: %url%

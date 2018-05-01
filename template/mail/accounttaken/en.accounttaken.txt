@@ -1,0 +1,7 @@
+*Notification from %sitename%!*
+
+Someone just attempted to create a new account using this email.
+If you attempted this, know that you already have an account.
+You may vist %signin% to sign in.
+If you forgot the password, please visit %reset% to request a password reset.
+If you do not recognize this activity, you can just delete this email.
