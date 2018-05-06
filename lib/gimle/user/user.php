@@ -5,8 +5,19 @@ namespace gimle\user;
 use \gimle\Exception;
 use \gimle\Config;
 use \gimle\MainConfig;
+use \gimle\System;
+use \WhichBrowser\Parser as UserAgentParser;
 
+use const \gimle\SITE_DIR;
 use const \gimle\IS_SUBSITE;
+
+/**
+ * This class requires Parser-PHP to be installed as a submodule.
+ *
+ * mkdir vendor; cd vendor; git submodule add https://github.com/WhichBrowser/Parser-PHP.git
+ */
+
+System::autoloadRegister(SITE_DIR . 'vendor/Parser-PHP/src/', ['stripRootNamespace' => true]);
 
 class User
 {
@@ -40,6 +51,13 @@ class User
 	 * @var ?array
 	 */
 	private static $currentUser = null;
+
+	/**
+	 * Holder for the user agent.
+	 *
+	 * @var ?array
+	 */
+	private static $userAgent = null;
 
 	/**
 	 * Passthru for the static methods in the data access layer.
@@ -160,5 +178,29 @@ class User
 				throw new Exception('Invalid oauth configuration.');
 			}
 		}
+	}
+
+	/**
+	 * Get information about the user agent.
+	 *
+	 * @return array
+	 */
+	public static function userAgent (): array
+	{
+		if (self::$userAgent === null) {
+			if (isset($_SERVER['HTTP_USER_AGENT'])) {
+				$browser = new UserAgentParser($_SERVER['HTTP_USER_AGENT']);
+				self::$userAgent['os'] = $browser->os->name;
+				self::$userAgent['browser'] = $browser->browser->name;
+			}
+		}
+
+		if (self::$userAgent === null) {
+			self::$userAgent = [
+				'os' => null,
+				'browser' => null
+			];
+		}
+		return self::$userAgent;
 	}
 }
