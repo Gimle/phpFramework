@@ -10,7 +10,7 @@ class System
 	 * @var array
 	 */
 	private static $autoload = [
-		['path' => SITE_DIR . 'module/' . MODULE_GIMLE . '/lib/', 'options' => ['toLowercase' => true, 'init' => false]]
+		['path' => SITE_DIR . 'module/' . MODULE_GIMLE . '/lib/', 'options' => ['toLowercase' => true]]
 	];
 
 	/**
@@ -57,22 +57,24 @@ class System
 	{
 		foreach (static::$autoload as $autoload) {
 			$file = $autoload['path'];
+			$class = $name;
+
 			if ((isset($autoload['options']['stripRootNamespace'])) && ($autoload['options']['stripRootNamespace'] === true)) {
-				$pos = strpos($name, '\\');
+				$pos = strpos($class, '\\');
 				if ($pos !== false) {
-					$name = substr($name, $pos + 1);
+					$class = substr($name, $pos + 1);
 				}
 			}
 			if ((isset($autoload['options']['toLowercase'])) && ($autoload['options']['toLowercase'] === true)) {
-				$file .= str_replace('\\', '/', strtolower($name)) . '.php';
+				$file .= str_replace('\\', '/', strtolower($class)) . '.php';
 			}
 			else {
-				$file .= str_replace('\\', '/', $name) . '.php';
+				$file .= str_replace('\\', '/', $class) . '.php';
 			}
 			if (is_readable($file)) {
 				include $file;
-				if ((isset($autoload['options']['init'])) && ($autoload['options']['init'] !== false) && (method_exists($name, $autoload['options']['init']))) {
-					call_user_func([$name, $autoload['options']['init']]);
+				if ((isset($autoload['options']['init'])) && ($autoload['options']['init'] !== false) && (method_exists($class, $autoload['options']['init']))) {
+					call_user_func([$class, $autoload['options']['init']]);
 				}
 				break;
 			}

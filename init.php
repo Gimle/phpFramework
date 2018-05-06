@@ -524,7 +524,7 @@ unset($config);
 
 foreach (System::getModules(MODULE_GIMLE) as $name) {
 	if (is_executable(SITE_DIR . 'module/' . $name . '/lib/')) {
-		System::autoloadRegister(SITE_DIR . 'module/' . $name . '/lib/');
+		System::autoloadRegister(SITE_DIR . 'module/' . $name . '/lib/', ['toLowercase' => true, 'log' => true]);
 	}
 	$loadfiles = [];
 	if (is_executable(SITE_DIR . 'module/' . $name . '/autoload/')) {
@@ -540,8 +540,10 @@ foreach (System::getModules(MODULE_GIMLE) as $name) {
 }
 
 if (is_executable(SITE_DIR . 'lib/')) {
-	System::autoloadRegister(SITE_DIR . 'lib/');
+	System::autoloadRegister(SITE_DIR . 'lib/', ['toLowercase' => true, 'log' => true]);
 }
+
+$s = Spectacle::getInstance();
 
 set_exception_handler(function (\Throwable $e): void {
 	if (ENV_MODE & ENV_WEB) {
