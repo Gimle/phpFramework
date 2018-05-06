@@ -433,4 +433,26 @@ class UserMysql
 
 		return $user;
 	}
+
+	public static function getUserAgentId ()
+	{
+		$userAgent = User::userAgent();
+		$db = Mysql::getInstance('gimle');
+
+		$query = sprintf("SELECT `id` FROM `account_browser_os` WHERE (`os` = %s AND `browser` = %s);",
+			(is_string($userAgent['os']) ? "'" . $db->real_escape_string($userAgent['os']) . "'" : 'null'),
+			(is_string($userAgent['browser']) ? "'" . $db->real_escape_string($userAgent['browser']) . "'" : 'null')
+		);
+		$result = $db->query($query);
+		$row = $result->get_assoc();
+		if ($row === false) {
+			$query = sprintf("INSERT INTO `account_browser_os` (`os`, `browser`) VALUES (%s, %s);",
+				(is_string($userAgent['os']) ? "'" . $db->real_escape_string($userAgent['os']) . "'" : 'null'),
+				(is_string($userAgent['browser']) ? "'" . $db->real_escape_string($userAgent['browser']) . "'" : 'null')
+			);
+			$db->query($query);
+			return $db->insert_id;
+		}
+		return $row['id'];
+	}
 }
