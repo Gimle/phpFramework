@@ -10,7 +10,7 @@ class System
 	 * @var array
 	 */
 	private static $autoload = [
-		['path' => SITE_DIR . 'module/' . MODULE_GIMLE . '/lib/', 'toLowercase' => true, 'init' => false]
+		['path' => SITE_DIR . 'module/' . MODULE_GIMLE . '/lib/', 'options' => ['toLowercase' => true, 'init' => false]]
 	];
 
 	/**
@@ -42,9 +42,9 @@ class System
 	 * @param bool $initFunction Run init when loading.
 	 * @return void
 	 */
-	public static function autoloadRegister (string $path, bool $toLowercase = true, bool $initFunction = false): void
+	public static function autoloadRegister (string $path, array $options = []): void
 	{
-		array_unshift(self::$autoload, ['path' => $path, 'toLowercase' => $toLowercase, 'init' => $initFunction]);
+		array_unshift(self::$autoload, ['path' => $path, 'options' => $options]);
 	}
 
 	/**
@@ -57,7 +57,13 @@ class System
 	{
 		foreach (static::$autoload as $autoload) {
 			$file = $autoload['path'];
-			if ($autoload['toLowercase'] === true) {
+			if ((isset($autoload['options']['stripRootNamespace'])) && ($autoload['options']['stripRootNamespace'] === true)) {
+				$pos = strpos($name, '\\');
+				if ($pos !== false) {
+					$name = substr($name, $pos + 1);
+				}
+			}
+			if ((isset($autoload['options']['toLowercase'])) && ($autoload['options']['toLowercase'] === true)) {
 				$file .= str_replace('\\', '/', strtolower($name)) . '.php';
 			}
 			else {
@@ -65,8 +71,8 @@ class System
 			}
 			if (is_readable($file)) {
 				include $file;
-				if (($autoload['init'] !== false) && (method_exists($name, $autoload['init']))) {
-					call_user_func([$name, $autoload['init']]);
+				if ((isset($autoload['options']['init'])) && ($autoload['options']['init'] !== false) && (method_exists($name, $autoload['options']['init']))) {
+					call_user_func([$name, $autoload['options']['init']]);
 				}
 				break;
 			}
