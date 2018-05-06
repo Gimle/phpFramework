@@ -10,9 +10,8 @@ use \PHPMailer\PHPMailer\PHPMailer;
  * mkdir vendor; cd vendor; git submodule add https://github.com/PHPMailer/PHPMailer.git
  */
 
-require SITE_DIR . 'vendor/PHPMailer/src/Exception.php';
-require SITE_DIR . 'vendor/PHPMailer/src/PHPMailer.php';
-require SITE_DIR . 'vendor/PHPMailer/src/SMTP.php';
+System::autoloadRegister(SITE_DIR . 'vendor/PHPMailer/src/', ['stripRootNamespace' => 2]);
+
 
 /**
  * Mail utility class
