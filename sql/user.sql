@@ -2,6 +2,7 @@
 DROP TABLE IF EXISTS `account_group_connections`;
 DROP TABLE IF EXISTS `account_groups`;
 DROP TABLE IF EXISTS `account_known_logins`;
+DROP TABLE IF EXISTS `account_auth_tokens`;
 DROP TABLE IF EXISTS `account_logins`;
 DROP TABLE IF EXISTS `account_auth_remote`;
 DROP TABLE IF EXISTS `account_auth_remote_providers`;
@@ -9,6 +10,20 @@ DROP TABLE IF EXISTS `account_auth_local`;
 DROP TABLE IF EXISTS `accounts`;
 DROP TABLE IF EXISTS `account_disabled`;
 DROP TABLE IF EXISTS `account_active`;
+DROP TABLE IF EXISTS `account_browser_os`;
+
+
+--
+-- Table structure for table `account_browser_os`
+--
+CREATE TABLE `account_browser_os` (
+	`id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+	`os` varchar(20),
+	`browser` varchar(20),
+	PRIMARY KEY (`id`),
+	UNIQUE KEY `account_browser_os_unique_1` (`os`,`browser`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
 
 --
 -- Table structure for table `account_active`
@@ -40,6 +55,7 @@ CREATE TABLE `accounts` (
 	`screen_name` varchar(45) DEFAULT NULL,
 	`email` varchar(255) DEFAULT NULL,
 	`created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`first_signin` datetime,
 	`disabled` datetime DEFAULT NULL,
 	`disabled_reason` smallint(5) unsigned DEFAULT NULL,
 	PRIMARY KEY (`id`),
@@ -54,10 +70,10 @@ CREATE TABLE `accounts` (
 CREATE TABLE `account_auth_local` (
 	`id` varchar(255) NOT NULL,
 	`account_id` int(10) unsigned NOT NULL,
-	`password` varchar(60) NOT NULL,
+	`password` char(60) NOT NULL,
 	`last_used` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	`verification` varchar(40) DEFAULT NULL,
-	`reset_code` varchar(40) DEFAULT NULL,
+	`verification` char(40) DEFAULT NULL,
+	`reset_code` char(40) DEFAULT NULL,
 	`reset_datetime` datetime DEFAULT NULL,
 	PRIMARY KEY (`id`),
 	KEY `fk_auth_local_account_id_idx` (`account_id`),
@@ -101,24 +117,36 @@ CREATE TABLE `account_logins` (
 	`user_ip` varchar(46) NOT NULL,
 	`account_id` int(10) unsigned NOT NULL,
 	`datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	`status` ENUM('ok', 'passfail', 'notverified') NOT NULL,
+	`status` ENUM('ok', 'passfail', 'notverified', 'disabled') NOT NULL,
 	`remote_provider_id` tinyint(3) unsigned DEFAULT NULL,
+	`browser_os` mediumint(8) unsigned NOT NULL,
 	PRIMARY KEY (`id`),
 	KEY `fk_account_logins_account_id_idx` (`account_id`),
 	CONSTRAINT `fk_account_logins_account_id` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-	CONSTRAINT `fk_account_logins_remote_provider_id` FOREIGN KEY (`remote_provider_id`) REFERENCES `account_auth_remote_providers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+	KEY `fk_account_logins_remote_provider_id_idx` (`account_id`),
+	CONSTRAINT `fk_account_logins_remote_provider_id` FOREIGN KEY (`remote_provider_id`) REFERENCES `account_auth_remote_providers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+	KEY `fk_account_logins_browser_os_idx` (`account_id`),
+	CONSTRAINT `fk_account_logins_browser_os` FOREIGN KEY (`browser_os`) REFERENCES `account_browser_os` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
--- DELIMITER $$
--- CREATE TRIGGER account_logins_before_insert
--- 	BEFORE INSERT ON `account_logins` FOR EACH ROW
--- 	BEGIN
--- 		IF (NEW.method = 'local' AND NEW.remote_provider_id IS NOT NULL) THEN
--- 			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'A local signin can not have a remote provider id.';
--- 		END IF;
--- 	END;
--- $$
--- DELIMITER ;
+
+--
+-- Table structure for table `account_auth_tokens`
+--
+CREATE TABLE `account_auth_tokens` (
+	`id` char(12) NOT NULL,
+	`hash` char(64) NOT NULL,
+	`account_id` int(10) unsigned NOT NULL,
+	`created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`last_used` datetime,
+	`browser_os` mediumint(8) unsigned NOT NULL,
+	PRIMARY KEY (`id`),
+	KEY `fk_account_auth_tokens_account_id_idx` (`account_id`),
+	CONSTRAINT `fk_account_auth_tokens_account_id` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+	KEY `fk_account_auth_tokens_browser_os_idx` (`account_id`),
+	CONSTRAINT `fk_account_auth_tokens_browser_os` FOREIGN KEY (`browser_os`) REFERENCES `account_browser_os` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
 
 --
 -- Table structure for table `account_known_logins`
@@ -127,11 +155,13 @@ CREATE TABLE `account_known_logins` (
 	`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 	`account_id` int(10) unsigned NOT NULL,
 	`last_used` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	`checksum` varchar(40) NOT NULL,
 	`confirmed` BOOLEAN NOT NULL,
+	`browser_os` mediumint(8) unsigned NOT NULL,
 	PRIMARY KEY (`id`),
 	KEY `fk_account_known_logins_id_idx` (`account_id`),
-	CONSTRAINT `fk_account_known_logins_id` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+	CONSTRAINT `fk_account_known_logins_id` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+	KEY `fk_account_known_logins_browser_os_idx` (`account_id`),
+	CONSTRAINT `fk_account_known_logins_browser_os` FOREIGN KEY (`browser_os`) REFERENCES `account_browser_os` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 
@@ -143,7 +173,7 @@ CREATE TABLE `account_groups` (
 	`name` varchar(45) DEFAULT NULL,
 	`description` varchar(200) DEFAULT NULL,
 	PRIMARY KEY (`id`),
-	UNIQUE KEY `name_UNIQUE` (`name`)
+	UNIQUE KEY `account_groups_unique_1` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1000001 DEFAULT CHARSET=utf8;
 
 
@@ -160,10 +190,10 @@ INSERT INTO `account_groups` VALUES
 CREATE TABLE `account_group_connections` (
 	`account_id` int(10) unsigned NOT NULL,
 	`group_id` mediumint(8) unsigned NOT NULL,
-	UNIQUE KEY `fk_account_group_connections_unique` (`account_id`,`group_id`),
+	UNIQUE KEY `account_group_connections_unique_1` (`account_id`,`group_id`),
 	KEY `fk_account_group_connections_account_id_idx` (`account_id`),
-	KEY `fk_account_group_connections_group_id_idx` (`group_id`),
 	CONSTRAINT `fk_account_group_connections_account_id` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+	KEY `fk_account_group_connections_group_id_idx` (`group_id`),
 	CONSTRAINT `fk_account_group_connections_group_id` FOREIGN KEY (`group_id`) REFERENCES `account_groups` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -213,6 +243,7 @@ SELECT
 	IF (isnull(`accounts`.`screen_name`), `accounts`.`first_name`, `accounts`.`screen_name`) as `screen_name`,
 	`accounts`.`email`,
 	`accounts`.`created`,
+	`accounts`.`first_signin`,
 	`accounts`.`disabled`,
 	`accounts`.`disabled_reason`,
 	`account_auth_local`.`id` AS `local`,
