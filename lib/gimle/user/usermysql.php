@@ -434,7 +434,12 @@ class UserMysql
 		return $user;
 	}
 
-	public static function getUserAgentId ()
+	/**
+	 * Get the user agent id.
+	 *
+	 * @return int
+	 */
+	public static function getUserAgentId (): int
 	{
 		$userAgent = User::userAgent();
 		$db = Mysql::getInstance('gimle');
