@@ -59,10 +59,22 @@ class System
 			$file = $autoload['path'];
 			$class = $name;
 
-			if ((isset($autoload['options']['stripRootNamespace'])) && ($autoload['options']['stripRootNamespace'] === true)) {
-				$pos = strpos($class, '\\');
-				if ($pos !== false) {
-					$class = substr($name, $pos + 1);
+			if (isset($autoload['options']['stripRootNamespace'])) {
+				$rounds = false;
+				if ($autoload['options']['stripRootNamespace'] === true) {
+					$rounds = 1;
+				}
+				elseif (is_int($autoload['options']['stripRootNamespace'])) {
+					$rounds = $autoload['options']['stripRootNamespace'];
+				}
+
+				if (is_int($rounds)) {
+					for ($i = 0; $i < $rounds; $i++) {
+						$pos = strpos($class, '\\');
+						if ($pos !== false) {
+							$class = substr($class, $pos + 1);
+						}
+					}
 				}
 			}
 			if ((isset($autoload['options']['toLowercase'])) && ($autoload['options']['toLowercase'] === true)) {
