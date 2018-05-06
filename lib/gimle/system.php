@@ -88,7 +88,9 @@ class System
 				if ((isset($autoload['options']['init'])) && ($autoload['options']['init'] !== false) && (method_exists($class, $autoload['options']['init']))) {
 					call_user_func([$class, $autoload['options']['init']]);
 				}
-				break;
+				if (class_exists($name, false)) {
+					break;
+				}
 			}
 		}
 	}
