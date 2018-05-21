@@ -102,13 +102,14 @@ try {
 	$mail->AltBody = file_get_contents(Router::getTemplatePath('mail/accountcreated/%s.accountcreated.txt', $lang, 'en'));
 	$mail->bind('url', BASE_PATH . $postfix . 'account/verify?' . current($newUser['local'])['verification']);
 	if ($generatePassword === true) {
+		$text = sprintf(_('Your password is: %s'), htmlspecialchars($data['password']));
+		$mail->bind('htmlPass', '<code>' . $text . '</code>');
 		$text = sprintf(_('Your password is: %s'), $data['password']);
-		$mail->bind('htmlPass', '<p>' . $text . '</p>');
-		$mail->bind('txtPass', "\n{$text}\n");
+		$mail->bind('textPass', "\n{$text}\n");
 	}
 	else {
 		$mail->bind('htmlPass', '');
-		$mail->bind('txtPass', '');
+		$mail->bind('textPass', '');
 	}
 	$mail->send();
 }

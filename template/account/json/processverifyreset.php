@@ -40,9 +40,6 @@ if ($verified === false) {
 
 $password = null;
 
-// c1915f548e7b53cadc469b123b16a713290b92f2
-// 2018-04-15 19:29:16
-
 if ((isset($_POST['generate_password'])) && ($_POST['generate_password'] === 'true')) {
 	$password = User::generatePassword();
 
@@ -58,7 +55,8 @@ if ((isset($_POST['generate_password'])) && ($_POST['generate_password'] === 'tr
 
 		$mail->Body = file_get_contents(Router::getTemplatePath('mail/newpassword/%s.newpassword.html', $lang, 'en'));
 		$mail->AltBody = file_get_contents(Router::getTemplatePath('mail/newpassword/%s.newpassword.txt', $lang, 'en'));
-		$mail->bind('password', '<code>' . $password . '</code>');
+		$mail->bind('htmlPass', '<code>' . htmlspecialchars($password) . '</code>');
+		$mail->bind('textPass', "\n{$password}\n");
 		$mail->bind('url', BASE_PATH . $postfix . 'account/signin');
 		$mail->send();
 

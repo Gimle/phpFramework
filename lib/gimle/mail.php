@@ -126,7 +126,7 @@ class Mail extends PHPMailer
 	{
 		foreach ($this->bindVars as $key => $value) {
 			$this->Body = str_replace('%' . $key . '%', $value, $this->Body);
-			$this->AltBody = str_replace('%' . $key . '%', strip_tags($value), $this->AltBody);
+			$this->AltBody = str_replace('%' . $key . '%', $value, $this->AltBody);
 		}
 		if ($this->Subject === '') {
 			$this->Subject = $this->getTitle();

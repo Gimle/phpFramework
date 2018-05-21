@@ -123,7 +123,7 @@ if ($verified === false) {
 			document.getElementById('gimle-newpasswordform').innerHTML = `<?=_('An email with the password has been sent. Check your email.')?>`;
 		}
 		else if (json.newpass !== undefined) {
-			document.getElementById('gimle-newpasswordform').innerHTML = `<?=sprintf(_('Your new password had been set to: %s'), '<span class="selectable">${json.newpass}</span>')?>
+			document.getElementById('gimle-newpasswordform').innerHTML = `<?=sprintf(_('Your new password had been set to: %s'), '<code class="selectable">${json.newpass}</code>')?>
 				<br/><?=_('Make sure to copy the password from above before you leave this page.')?>
 				<br/>
 				<br/><?=sprintf(_('You can now %s.'), sprintf('<a href="#account/signin">%s</a>', _('sign in')))?>

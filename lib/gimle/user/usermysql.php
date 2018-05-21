@@ -365,18 +365,18 @@ class UserMysql
 			$result = $db->query($query);
 			$row = $result->fetch_assoc();
 			if (!password_verify($password, $row['password'])) {
-				$query = sprintf("INSERT INTO `account_logins` (`account_id`, `user_ip`, `status`, `remote_provider_id`) VALUES ({$user['id']}, '%s', 'passfail', null);",
+				$query = sprintf("INSERT INTO `account_logins` (`account_id`, `user_ip`, `status`, `remote_provider_id`, `browser_os`) VALUES ({$user['id']}, '%s', 'passfail', null, %u);",
 					$db->real_escape_string($_SERVER['REMOTE_ADDR']),
-					$providerId
+					self::getUserAgentId()
 				);
 				$db->query($query);
 
 				throw new Exception('Incorrect password.', User::INVALID_PASSWORD);
 			}
 			if ($row['verification'] !== null) {
-				$query = sprintf("INSERT INTO `account_logins` (`account_id`, `user_ip`, `status`, `remote_provider_id`) VALUES ({$user['id']}, '%s', 'notverified', null);",
+				$query = sprintf("INSERT INTO `account_logins` (`account_id`, `user_ip`, `status`, `remote_provider_id`, `browser_os`) VALUES ({$user['id']}, '%s', 'notverified', null, %u);",
 					$db->real_escape_string($_SERVER['REMOTE_ADDR']),
-					$providerId
+					self::getUserAgentId()
 				);
 				$db->query($query);
 
@@ -416,9 +416,10 @@ class UserMysql
 		;";
 		$db->query($query);
 
-		$query = sprintf("INSERT INTO `account_logins` (`account_id`, `user_ip`, `status`, `remote_provider_id`) VALUES ({$user['id']}, '%s', 'ok', %s);",
+		$query = sprintf("INSERT INTO `account_logins` (`account_id`, `user_ip`, `status`, `remote_provider_id`, `browser_os`) VALUES ({$user['id']}, '%s', 'ok', %s, %u);",
 			$db->real_escape_string($_SERVER['REMOTE_ADDR']),
-			$providerId
+			$providerId,
+			self::getUserAgentId()
 		);
 		$db->query($query);
 

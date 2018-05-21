@@ -157,6 +157,7 @@ CREATE TABLE `account_known_logins` (
 	`last_used` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`confirmed` BOOLEAN NOT NULL,
 	`browser_os` mediumint(8) unsigned NOT NULL,
+	`token` char(64) NOT NULL,
 	PRIMARY KEY (`id`),
 	KEY `fk_account_known_logins_id_idx` (`account_id`),
 	CONSTRAINT `fk_account_known_logins_id` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
