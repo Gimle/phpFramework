@@ -53,7 +53,7 @@ class Spectacle
 	 */
 	public function __construct ()
 	{
-		if (ENV_MODE & ENV_LIVE) {
+		if ((ENV_MODE & ENV_LIVE) || (ENV_MODE & ENV_CLI)) {
 			return;
 		}
 		if (!file_exists(self::$dir)) {
@@ -291,7 +291,7 @@ class Spectacle
 	 */
 	public static function read (string $id): ?string
 	{
-		if (ENV_MODE & ENV_LIVE) {
+		if ((ENV_MODE & ENV_LIVE) || (ENV_MODE & ENV_CLI)) {
 			return null;
 		}
 		if (file_exists(self::$dir . $id)) {
@@ -305,7 +305,7 @@ class Spectacle
 	 */
 	public function __destruct ()
 	{
-		if (ENV_MODE & ENV_LIVE) {
+		if ((ENV_MODE & ENV_LIVE) || (ENV_MODE & ENV_CLI)) {
 			return;
 		}
 		file_put_contents(self::$dir . $this->id, json_encode($this->data) . "\n");
