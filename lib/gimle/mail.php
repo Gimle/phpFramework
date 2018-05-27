@@ -55,14 +55,14 @@ class Mail extends PHPMailer
 			$config = array_merge_distinct($config, Config::get('mail.' . $key));
 		}
 
-		$this->SMTPDebug = 2;
-		$this->isSMTP();
-		$this->Port = 587;
 
 		if (isset($config['host'])) {
 			$this->Host = $config['host'];
 		}
 		if (isset($config['user'])) {
+			$this->SMTPDebug = 2;
+			$this->isSMTP();
+			$this->Port = 587;
 			$this->SMTPAuth = true;
 			$this->Username = $config['user'];
 			if (isset($config['pass'])) {
