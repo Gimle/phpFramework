@@ -108,13 +108,20 @@ abstract class FetchBase
 	 * Sets a post value for the request.
 	 *
 	 * @throws gimle\rest\Exception If tying to add post field to a raw post request, or the other way around.
-	 * @param string $key The post name, or the whole raw post data.
+	 * @param mixed $key The post name, or the whole raw post data.
 	 * @param ?string $value The post value.
 	 * @return sef
 	 */
-	public function post (string $key, $data = null): self
+	public function post ($key, $data = null): self
 	{
-		$this->wrapper->post($key, $data);
+		if (is_array($key)) {
+			foreach ($key as $index => $value) {
+				$this->wrapper->post($index, $value);
+			}
+		}
+		else {
+			$this->wrapper->post($key, $data);
+		}
 		return $this;
 	}
 
