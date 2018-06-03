@@ -35,7 +35,7 @@ CREATE TABLE `account_active` (
 ) ENGINE=MEMORY DEFAULT CHARSET=utf8;
 
 --
--- Table structure for table `accounts`
+-- Table structure for table `account_disabled`
 --
 CREATE TABLE `account_disabled` (
 	`id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
@@ -123,9 +123,9 @@ CREATE TABLE `account_logins` (
 	PRIMARY KEY (`id`),
 	KEY `fk_account_logins_account_id_idx` (`account_id`),
 	CONSTRAINT `fk_account_logins_account_id` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-	KEY `fk_account_logins_remote_provider_id_idx` (`account_id`),
+	KEY `fk_account_logins_remote_provider_id_idx` (`remote_provider_id`),
 	CONSTRAINT `fk_account_logins_remote_provider_id` FOREIGN KEY (`remote_provider_id`) REFERENCES `account_auth_remote_providers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-	KEY `fk_account_logins_browser_os_idx` (`account_id`),
+	KEY `fk_account_logins_browser_os_idx` (`browser_os`),
 	CONSTRAINT `fk_account_logins_browser_os` FOREIGN KEY (`browser_os`) REFERENCES `account_browser_os` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
@@ -143,7 +143,7 @@ CREATE TABLE `account_auth_tokens` (
 	PRIMARY KEY (`id`),
 	KEY `fk_account_auth_tokens_account_id_idx` (`account_id`),
 	CONSTRAINT `fk_account_auth_tokens_account_id` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-	KEY `fk_account_auth_tokens_browser_os_idx` (`account_id`),
+	KEY `fk_account_auth_tokens_browser_os_idx` (`browser_os`),
 	CONSTRAINT `fk_account_auth_tokens_browser_os` FOREIGN KEY (`browser_os`) REFERENCES `account_browser_os` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
@@ -161,7 +161,7 @@ CREATE TABLE `account_known_logins` (
 	PRIMARY KEY (`id`),
 	KEY `fk_account_known_logins_id_idx` (`account_id`),
 	CONSTRAINT `fk_account_known_logins_id` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-	KEY `fk_account_known_logins_browser_os_idx` (`account_id`),
+	KEY `fk_account_known_logins_browser_os_idx` (`browser_os`),
 	CONSTRAINT `fk_account_known_logins_browser_os` FOREIGN KEY (`browser_os`) REFERENCES `account_browser_os` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
