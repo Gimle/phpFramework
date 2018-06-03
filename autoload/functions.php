@@ -154,7 +154,11 @@ namespace gimle
 			$path = substr($domain, $start);
 			$domain = substr($domain, 0, $start);
 		}
-		$domain = \idn_to_ascii($domain);
+		/*
+		 * Seems like php7.2 thinks it is a good idea to have the third parameter to this function call mandatory.
+		 * Guess this just has to be a lingering bug in here until php7.2 support is removed from this project.
+		 */
+		$domain = \idn_to_ascii($domain, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46);
 		if ($domain === false) {
 			return false;
 		}
