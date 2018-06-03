@@ -83,7 +83,7 @@ if ($exists === true) {
 	$mail->send();
 	sleep(1);
 
-	echo json_encode(true);
+	echo json_encode('account_created');
 	return true;
 }
 
@@ -118,6 +118,6 @@ catch (\Exception $e) {
 	sp($e);
 }
 
-echo json_encode(true);
+echo json_encode('account_created');
 
 return true;

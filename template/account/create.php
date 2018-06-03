@@ -190,6 +190,9 @@ foreach ($oauth as $id => $data) {
 					if (json.error !== undefined) {
 						throw json.error;
 					}
+					if (json !== 'account_created') {
+						throw json.error;
+					}
 					success(json);
 				}
 				catch (e) {
