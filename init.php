@@ -534,8 +534,6 @@ if (is_executable(SITE_DIR . 'lib/')) {
 	System::autoloadRegister(SITE_DIR . 'lib/', ['toLowercase' => true]);
 }
 
-$s = Spectacle::getInstance();
-
 set_exception_handler(function (\Throwable $e): void {
 	if (ENV_MODE & ENV_WEB) {
 		if (ob_get_level() > 0) {
