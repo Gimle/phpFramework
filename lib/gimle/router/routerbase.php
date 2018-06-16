@@ -496,7 +496,7 @@ class RouterBase
 			if (substr($header, 0, 14) === 'Content-type: ') {
 				$pos = strpos($header, ';');
 				if ($pos !== false) {
-					$contentType = substr($header, 14, $pos);
+					$contentType = substr($header, 14, $pos - 14);
 				}
 				else {
 					$contentType = substr($header, 14);
