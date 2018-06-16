@@ -49,7 +49,7 @@ if ($signInResult !== null) {
 <?php
 	}
 	else {
-		d($signInResult);
+		sp($signInResult);
 ?>
 <p><?=_('An unknown error occured.')?></p>
 <?php
