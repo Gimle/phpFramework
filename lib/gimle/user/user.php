@@ -8,7 +8,7 @@ use \gimle\MainConfig;
 use \gimle\System;
 use \WhichBrowser\Parser as UserAgentParser;
 
-use const \gimle\SITE_DIR;
+use const \gimle\MAIN_SITE_DIR;
 use const \gimle\IS_SUBSITE;
 
 /**
@@ -17,7 +17,7 @@ use const \gimle\IS_SUBSITE;
  * mkdir vendor; cd vendor; git submodule add https://github.com/WhichBrowser/Parser-PHP.git
  */
 
-System::autoloadRegister(SITE_DIR . 'vendor/Parser-PHP/src/', ['stripRootNamespace' => true]);
+System::autoloadRegister(MAIN_SITE_DIR . 'vendor/Parser-PHP/src/', ['stripRootNamespace' => true]);
 
 class User
 {
