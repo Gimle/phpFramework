@@ -3,16 +3,19 @@ Gimle phpFramework
 
 Gimle phpFramework is a new project based off [Gimle5](https://github.com/Gimle/Gimle5).
 
-What is new?
-------------
+This framework differs a bit from most other frameworks in some ways:
 
-* Branching: The master branch will now be the latest stable master. Features will be in feature branches until ready for merge into master.
-* Tagging: Versions will be tagged on the master branch.
-* Type hinting: All code will now have type hints.
-* Documentation: Add more documentation.
-* Dependencies: Some more system dependences will be added to improve functionality. All dependencies will be available in .deb format for the latest ubuntu server release.
-* Libraries: More libraries will be added in the framework itself instead of in proprietary modules, resulting in a more specific but also more useable framework. One example is a new user management system.
+* The site has a public directory for public files. Other files are stored one level up from the public directory.
+* Designed to work well with git.
+* Designed to be easy to move between environments. No hardcoded locations.
+* Small footprint. Focus on wide project support, quick load times with a small framwork that works well with most libraries.
+* Designed to be easy to host and maintain.
+* Works with apache2, nginx and in cli mode.
+* High focus on internationalization.
+* Sadly some of these differences has some costs as well. The initial setup process is more complex then most other projects.
+* [Documentation](doc/readme.md) is still a work in process, but most implemented features are stable, and the framework is used in production systems.
 
 Want to contribute?
 -------------------
-Does the Gimle5 project appeal to you, and you feel ok with the planned changes, then please join in! More minds working on the same goal can make a better product together :)
+More minds working on the same goal can make a better product together :)
+Contribution is welcome!
