@@ -69,11 +69,10 @@ if (is_readable(SITE_DIR . 'config.php')) {
 }
 
 if ((ENV_MODE | ENV_LIVE) !== ENV_MODE) {
-	if (ini_get('zend.assertions') === '-1') {
-		throw new Exception('zend.assertions can not be set to -1 in development mode.');
+	if (ini_get('zend.assertions') !== '-1') {
+		ini_set('zend.assertions', '1');
+		ini_set('assert.exception', '1');
 	}
-	ini_set('zend.assertions', '1');
-	ini_set('assert.exception', '1');
 }
 
 if ((isset($config['path_info_override'])) && ($config['path_info_override'] !== false)) {
