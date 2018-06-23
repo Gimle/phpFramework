@@ -2,16 +2,17 @@
 declare(strict_types=1);
 namespace gimle\router;
 
-use const gimle\SITE_DIR;
-use const gimle\BASE_PATH_KEY;
-use const gimle\GIMLE5;
-use const gimle\ENV_MODE;
-use const gimle\ENV_LIVE;
+use const \gimle\SITE_DIR;
+use const \gimle\BASE_PATH_KEY;
+use const \gimle\GIMLE5;
+use const \gimle\ENV_MODE;
+use const \gimle\ENV_LIVE;
 use const \gimle\MODULE_GIMLE;
 use const \gimle\FILTER_VALIDATE_DIRNAME;
+use const \gimle\MAIN_SITE_DIR;
 
-use gimle\canvas\Canvas;
-use gimle\System;
+use \gimle\canvas\Canvas;
+use \gimle\System;
 
 use function \gimle\filter_var;
 use function \gimle\get_mimetype;
@@ -158,6 +159,13 @@ class RouterBase
 			$this->bind('*', '__gimle/:id', function () {
 				$this->setCanvas('js');
 				$this->setTemplate('spectacle');
+			});
+		}
+
+		if (file_exists(MAIN_SITE_DIR . 'config/manifest.php')) {
+			$this->bind('*', 'manifest.json', function () {
+				$this->setCanvas('manifest');
+				$this->setTemplate('manifest');
 			});
 		}
 	}
