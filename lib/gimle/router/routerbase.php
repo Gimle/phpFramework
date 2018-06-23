@@ -531,21 +531,31 @@ class RouterBase
 			if ((filter_var($url, FILTER_VALIDATE_DIRNAME)) && (substr($url, 0, 7) === 'module/') && (strpos($url, '../') === false)) {
 				$url = substr($url, 7);
 				$pos = strpos($url, '/');
-				$module = substr($url, 0, $pos);
-				$url = substr($url, $pos);
-				if (($url !== false) && (is_readable(SITE_DIR . 'module/' . $module . '/public/' . $url))) {
-					$mime = get_mimetype(SITE_DIR . 'module/' . $module . '/public/' . $url);
-					if ($mime['mime'] === 'text/plain') {
-						if (substr($url, -4, 4) === '.css') {
+				if ($pos !== false) {
+					$module = substr($url, 0, $pos);
+					$url = substr($url, $pos);
+					if (($url !== false) && (is_readable(SITE_DIR . 'module/' . $module . '/public/' . $url))) {
+						$mime = get_mimetype(SITE_DIR . 'module/' . $module . '/public/' . $url);
+						/*
+						Sometimes the system reports wrong mime type.
+						When serving files for a website from a public folder,
+						we need this little probability override to not cause problems with common mime types.
+						*/
+						if ($mime['mime'] === 'text/plain') {
+							if (substr($url, -4, 4) === '.css') {
+								$mime['mime'] = 'text/css';
+							}
+							elseif (substr($url, -3, 3) === '.js') {
+								$mime['mime'] = 'application/javascript';
+							}
+						}
+						elseif (($mime['mime'] === 'text/x-asm') && (substr($url, -4, 4) === '.css')) {
 							$mime['mime'] = 'text/css';
 						}
-						elseif (substr($url, -3, 3) === '.js') {
-							$mime['mime'] = 'application/javascript';
-						}
+						header('Content-Type: ' . $mime['mime']);
+						readfile(SITE_DIR . 'module/' . $module . '/public/' . $url);
+						return true;
 					}
-					header('Content-Type: ' . $mime['mime']);
-					readfile(SITE_DIR . 'module/' . $module . '/public/' . $url);
-					return true;
 				}
 			}
 
