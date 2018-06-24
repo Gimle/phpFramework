@@ -402,7 +402,10 @@ class RouterBase
 
 					$route = end($index);
 					if ($this->requestMethod & $route['requestMethod']) {
-						$route['callback']();
+						if ($route['callback']() === false) {
+							$routeFound = false;
+							continue;
+						}
 						$methodMatch = true;
 						break;
 					}
