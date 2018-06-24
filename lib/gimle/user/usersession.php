@@ -15,6 +15,20 @@ use function \gimle\d;
 class UserSession
 {
 	/**
+	 * Holder for the first signin value.
+	 *
+	 * @var bool
+	 */
+	private static $isFirstSignin = false;
+
+	/**
+	 * Holder for if the signin was performed.
+	 *
+	 * @var bool
+	 */
+	private static $signinPerformed = false;
+
+	/**
 	 * There is no limit if the user exists or not in a session based sign in.
 	 * However, we might need the result from the provider in the session,
 	 * so we return false here, to catch this in the create method.
@@ -35,6 +49,20 @@ class UserSession
 	 */
 	public static function updateActive (): void
 	{
+	}
+
+	/**
+	 * Was this the first time this user have ever signed in?
+	 *
+	 * @return bool
+	 */
+	public static function isFirstSignin (): bool
+	{
+		if (isset($_SESSION['gimle']['first_signin'])) {
+			self::$isFirstSignin = true;
+			unset($_SESSION['gimle']['first_signin']);
+		}
+		return self::$isFirstSignin;
 	}
 
 	/**
@@ -97,6 +125,7 @@ class UserSession
 
 		return [
 			'id' => null,
+			'full_name' => 'John Doe',
 			'first_name' => 'John',
 			'last_name' => 'Doe',
 			'email' => 'john.doe@example.com',
