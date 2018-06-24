@@ -1,0 +1,78 @@
+* {
+	box-sizing: inherit;
+}
+*:before, *:after {
+	box-sizing: inherit;
+}
+*:focus {
+	outline: none;
+}
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, svg, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	vertical-align: baseline;
+}
+audio, canvas, iframe, img, svg, video {
+	vertical-align: middle;
+}
+pre, code, pre *, code * {
+	font-family: monospace;
+}
+
+html, body {
+	font-size: 1em;
+	line-height: 1.2;
+	font-family: arial, sans-serif;
+	height: 100%;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+textarea {
+	resize: vertical;
+}
+address {
+	font-style: normal;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+hr {
+	display: block;
+	height: 1px;
+	border: 0;
+	border-top: 1px solid currentColor;
+	color: #333;
+	margin: 1em 0;
+	padding: 0;
+}
+
+::selection {
+	background: #b3d4fc;
+	text-shadow: none;
+}
+
+.clearfix:before,
+.clearfix:after {
+	content: " ";
+	display: table;
+}
+
+.clearfix:after {
+	clear: both;
+}
