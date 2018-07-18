@@ -74,12 +74,14 @@ class Spectacle
 		$file = basename(tempnam(self::$dir, ''));
 		header('X-Gimle-chrome-id: ' . $file);
 		header('X-Gimle-spectacle-id: ' . $file);
-		if ($base = Config::get('spectacle.base')) {
-			header('X-Gimle-base-path: ' . utf8_decode($base));
+		$base = Config::get('spectacle.base');
+		if ($base === null) {
+			$base = BASE_PATH;
 		}
-		else {
-			header('X-Gimle-base-path: ' . utf8_decode(BASE_PATH));
-		}
+		$base = preg_replace_callback('#[\pL]#iu', function ($matches) {
+			return urlencode($matches[0]);
+		}, $base);
+		header('X-Gimle-base-path: ' . $base);
 		$this->id = $file;
 
 		register_shutdown_function([$this, 'shutdown']);
