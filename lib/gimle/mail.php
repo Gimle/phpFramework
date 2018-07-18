@@ -55,6 +55,7 @@ class Mail extends PHPMailer
 			$config = array_merge_distinct($config, Config::get('mail.' . $key));
 		}
 
+		$this->CharSet = 'UTF-8';
 
 		if (isset($config['host'])) {
 			$this->Host = $config['host'];
