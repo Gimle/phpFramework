@@ -9,6 +9,8 @@ const FILTER_SANITIZE_DIRNAME = 'gs2';
 const FILTER_VALIDATE_NAME = 'gv3';
 const FILTER_SANITIZE_NAME = 'gs3';
 const FILTER_VALIDATE_DATE = 'gv4';
+const FILTER_VALIDATE_PRINT = 'gv5';
+const FILTER_SANITIZE_PRINT = 'gs6';
 
 function filter_var ($variable, $filter = FILTER_DEFAULT, $options = null)
 {
@@ -31,6 +33,16 @@ function filter_var ($variable, $filter = FILTER_DEFAULT, $options = null)
 			$replaceCharacter = $options['replace_char'];
 		}
 		return preg_replace('/[\x00*:;\\\"<>\|\?]/', $replaceCharacter, $variable);
+	}
+
+	if ($filter === FILTER_VALIDATE_PRINT) {
+		return ($variable === filter_var($variable, FILTER_SANITIZE_PRINT));
+	}
+	if ($filter === FILTER_SANITIZE_PRINT) {
+		$string = str_replace(["\n", "\r", "\t", "\xC2\xA0"], [' ', ' ', ' ', ' '], $variable);
+		$string = trim(preg_replace('/[ ]{2,}/', ' ', $string));
+		$string = preg_replace("#^[:print]$#iu", '', $string);
+		return $string;
 	}
 
 	if ($filter === FILTER_VALIDATE_NAME) {
@@ -69,6 +81,14 @@ function filter_var ($variable, $filter = FILTER_DEFAULT, $options = null)
 	}
 	if ($filter === FILTER_VALIDATE_DATE) {
 		return (bool) strtotime($variable);
+	}
+
+	if (($filter === FILTER_VALIDATE_EMAIL) || ($filter === FILTER_VALIDATE_EMAIL)) {
+		if (substr_count($variable, '@') === 1) {
+			$variable = explode('@', $variable);
+			$variable[1] = idn_to_ascii($variable[1]);
+			$variable = $variable[0] . '@' . $variable[1];
+		}
 	}
 
 	if ($options === null) {
