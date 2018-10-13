@@ -123,6 +123,19 @@ class UserSession
 			];
 		}
 
+		if ($type === 'pam') {
+
+			if (isset($_SESSION['gimle']['userSessionDummyUser'])) {
+				$return = $_SESSION['gimle']['userSessionDummyUser'];
+				unset($_SESSION['gimle']['userSessionDummyUser']);
+				return $return;
+			}
+
+			return [
+				'id' => null,
+			];
+		}
+
 		return [
 			'id' => null,
 			'full_name' => 'John Doe',

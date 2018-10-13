@@ -47,6 +47,17 @@ try {
 						$user['provider'] = $result;
 					}
 				}
+				if (($value !== false) && ($key === 'pam')) {
+					$result = pam_auth($_POST['username'], $_POST['password']);
+					if ($result === true) {
+						if (!User::exists($_POST['username'], 'pam')) {
+							// @todo: Check if autocreate is enabled, and set correct input for create.
+							User::create([], 'pam');
+						}
+						$user = User::login($_POST['username'], 'pam');
+						$user['pam'] = $_POST['username'];
+					}
+				}
 			}
 			if ($user === null) {
 				if ((isset($config['auth']['local'])) && ($config['auth']['local'] !== false) && ($config['auth']['local'] !== null)) {
@@ -179,4 +190,15 @@ catch (Exception $e) {
 }
 
 User::deleteSigninToken();
+if (Config::get('user.reply') === 'json') {
+	header('Content-type: application/json');
+	if (isset($_SESSION['gimle']['signinException'])) {
+		sp($_SESSION['gimle']['signinException']);
+		echo json_encode(false);
+		unset($_SESSION['gimle']['signinException']);
+		return true;
+	}
+	echo json_encode(true);
+	return true;
+}
 return inc(SITE_DIR . 'module/' . MODULE_GIMLE . '/canvas/redirect.php');
