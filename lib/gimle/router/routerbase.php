@@ -495,7 +495,7 @@ class RouterBase
 			}
 			include $this->canvas;
 		}
-		catch (\Exception $e) {
+		catch (\Throwable $e) {
 			$this->catch($e);
 		}
 	}
