@@ -17,7 +17,7 @@ use const \gimle\IS_SUBSITE;
  * mkdir vendor; cd vendor; git submodule add https://github.com/WhichBrowser/Parser-PHP.git
  */
 
-System::autoloadRegister(MAIN_SITE_DIR . 'vendor/Parser-PHP/src/', ['stripRootNamespace' => true]);
+System::autoloadRegister(MAIN_SITE_DIR . 'vendor/Parser-PHP/src/', ['stripRootNamespace' => true], true);
 
 class User
 {

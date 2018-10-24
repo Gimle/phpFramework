@@ -9,7 +9,7 @@ class System
 	 *
 	 * @var array
 	 */
-	private static $autoload = [
+	public static $autoload = [
 		['path' => SITE_DIR . 'module/' . MODULE_GIMLE . '/lib/', 'options' => ['toLowercase' => true]]
 	];
 
@@ -40,10 +40,15 @@ class System
 	 * @param string $path The path.
 	 * @param bool $toLowercase look for lowercase name of the autoload.
 	 * @param bool $initFunction Run init when loading.
+	 * @param bool $end Push to the end instead of first.
 	 * @return void
 	 */
-	public static function autoloadRegister (string $path, array $options = []): void
+	public static function autoloadRegister (string $path, array $options = [], bool $end = false): void
 	{
+		if ($end === true) {
+			array_push(self::$autoload, ['path' => $path, 'options' => $options]);
+			return;
+		}
 		array_unshift(self::$autoload, ['path' => $path, 'options' => $options]);
 	}
 
