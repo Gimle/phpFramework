@@ -519,19 +519,21 @@ class RouterBase
 			$contentType = 'text/html';
 		}
 
-		$tried = $e->get('tried');
-		if ($tried !== null) {
-			foreach ($tried as $trial) {
-				if ($trial['returnValue'] === 403) {
-					if ($contentType === 'text/html') {
-						Canvas::_set(self::getCanvasPath('unsigned'));
-						include self::getTemplatePath('account/signin');
+		if (method_exists($e, 'get')) {
+			$tried = $e->get('tried');
+			if ($tried !== null) {
+				foreach ($tried as $trial) {
+					if ($trial['returnValue'] === 403) {
+						if ($contentType === 'text/html') {
+							Canvas::_set(self::getCanvasPath('unsigned'));
+							include self::getTemplatePath('account/signin');
+						}
+						else {
+							header('HTTP/1.1 403 Forbidden');
+						}
+						Canvas::_create();
+						return true;
 					}
-					else {
-						header('HTTP/1.1 403 Forbidden');
-					}
-					Canvas::_create();
-					return true;
 				}
 			}
 		}
