@@ -157,7 +157,7 @@ class RouterBase
 
 		if ((ENV_MODE | ENV_LIVE) !== ENV_LIVE) {
 			$this->bind('*', '__gimle/:id', function () {
-				$this->setCanvas('js');
+				$this->setCanvas('json');
 				$this->setTemplate('spectacle');
 			});
 		}
@@ -519,19 +519,21 @@ class RouterBase
 			$contentType = 'text/html';
 		}
 
-		$tried = $e->get('tried');
-		if ($tried !== null) {
-			foreach ($tried as $trial) {
-				if ($trial['returnValue'] === 403) {
-					if ($contentType === 'text/html') {
-						Canvas::_set(self::getCanvasPath('unsigned'));
-						include self::getTemplatePath('account/signin');
+		if (method_exists($e, 'get')) {
+			$tried = $e->get('tried');
+			if ($tried !== null) {
+				foreach ($tried as $trial) {
+					if ($trial['returnValue'] === 403) {
+						if ($contentType === 'text/html') {
+							Canvas::_set(self::getCanvasPath('unsigned'));
+							include self::getTemplatePath('account/signin');
+						}
+						else {
+							header('HTTP/1.1 403 Forbidden');
+						}
+						Canvas::_create();
+						return true;
 					}
-					else {
-						header('HTTP/1.1 403 Forbidden');
-					}
-					Canvas::_create();
-					return true;
 				}
 			}
 		}
@@ -544,7 +546,7 @@ class RouterBase
 				$pos = strpos($url, '/');
 				if ($pos !== false) {
 					$module = substr($url, 0, $pos);
-					$url = substr($url, $pos);
+					$url = ltrim(substr($url, $pos), '/');
 					if (($url !== false) && (is_readable(SITE_DIR . 'module/' . $module . '/public/' . $url))) {
 						$mime = get_mimetype(SITE_DIR . 'module/' . $module . '/public/' . $url);
 						/*
@@ -563,8 +565,11 @@ class RouterBase
 						elseif (($mime['mime'] === 'text/x-asm') && (substr($url, -4, 4) === '.css')) {
 							$mime['mime'] = 'text/css';
 						}
+						elseif ($mime['mime'] === 'image/svg') {
+							$mime['mime'] = 'image/svg+xml';
+						}
 						header('Content-Type: ' . $mime['mime']);
-						readfile(SITE_DIR . 'module/' . $module . '/public/' . $url);
+						readfile(SITE_DIR . 'module/' . $module . '/public/' . ltrim($url, '/'));
 						return true;
 					}
 				}
