@@ -544,7 +544,7 @@ class RouterBase
 				$pos = strpos($url, '/');
 				if ($pos !== false) {
 					$module = substr($url, 0, $pos);
-					$url = substr($url, $pos);
+					$url = ltrim(substr($url, $pos), '/');
 					if (($url !== false) && (is_readable(SITE_DIR . 'module/' . $module . '/public/' . $url))) {
 						$mime = get_mimetype(SITE_DIR . 'module/' . $module . '/public/' . $url);
 						/*
@@ -563,8 +563,11 @@ class RouterBase
 						elseif (($mime['mime'] === 'text/x-asm') && (substr($url, -4, 4) === '.css')) {
 							$mime['mime'] = 'text/css';
 						}
+						elseif ($mime['mime'] === 'image/svg') {
+							$mime['mime'] = 'image/svg+xml';
+						}
 						header('Content-Type: ' . $mime['mime']);
-						readfile(SITE_DIR . 'module/' . $module . '/public/' . $url);
+						readfile(SITE_DIR . 'module/' . $module . '/public/' . ltrim($url, '/'));
 						return true;
 					}
 				}
