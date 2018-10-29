@@ -157,7 +157,7 @@ class RouterBase
 
 		if ((ENV_MODE | ENV_LIVE) !== ENV_LIVE) {
 			$this->bind('*', '__gimle/:id', function () {
-				$this->setCanvas('js');
+				$this->setCanvas('json');
 				$this->setTemplate('spectacle');
 			});
 		}
