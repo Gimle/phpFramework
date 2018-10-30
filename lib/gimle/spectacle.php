@@ -312,5 +312,7 @@ class Spectacle
 		}
 		file_put_contents(self::$dir . $this->id, json_encode($this->data) . "\n");
 		chmod(self::$dir . $this->id, 0664);
+		// Autoclean after 8 hours.
+		self::clean(28800);
 	}
 }
