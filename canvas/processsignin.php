@@ -186,6 +186,7 @@ try {
 	}
 }
 catch (Exception $e) {
+	$e->set('post', $_POST);
 	User::setSigninException($e);
 }
 
