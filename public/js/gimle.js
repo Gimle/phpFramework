@@ -31,12 +31,11 @@ window.gimle = (() => {
 	gimle.fn.init.prototype = gimle.fn;
 
 	gimle.BASE_PATH = '';
-
 	for (let index in document.location.href) {
-		gimle.BASE_PATH += document.location.href[index];
 		if (document.location.href[index] !== document.currentScript.src[index]) {
 			break;
 		}
+		gimle.BASE_PATH += document.location.href[index];
 	}
 
 	gimle.const = function () {
