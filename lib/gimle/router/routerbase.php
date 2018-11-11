@@ -102,6 +102,13 @@ class RouterBase
 	private $urlString = '';
 
 	/**
+	 * Custom fallbacks.
+	 *
+	 * @var array
+	 */
+	private $fallback = [];
+
+	/**
 	 * If a route fails, store the fail here, for a potential exception to use it later.
 	 *
 	 * @var array
@@ -500,6 +507,19 @@ class RouterBase
 		}
 	}
 
+	/**
+	 * If a template returns an error code, define a special fallback for it.
+	 *
+	 * @var int $code The return value to match.
+	 * @var callable $callback The callback to run.
+	 *
+	 * @return void
+	 */
+	public function fallback (int $code, callable $callback): void
+	{
+		$this->fallback[$code] = $callback;
+	}
+
 	protected function catch ($e)
 	{
 		$contentType = null;
@@ -523,16 +543,11 @@ class RouterBase
 			$tried = $e->get('tried');
 			if ($tried !== null) {
 				foreach ($tried as $trial) {
-					if ($trial['returnValue'] === 403) {
-						if ($contentType === 'text/html') {
-							Canvas::_set(self::getCanvasPath('unsigned'));
-							include self::getTemplatePath('account/signin');
+					if (isset($this->fallback[$trial['returnValue']])) {
+						$result = $this->fallback[$trial['returnValue']]($contentType);
+						if ($result === true) {
+							return true;
 						}
-						else {
-							header('HTTP/1.1 403 Forbidden');
-						}
-						Canvas::_create();
-						return true;
 					}
 				}
 			}
