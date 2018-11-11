@@ -135,6 +135,12 @@ window.gimle = (() => {
 					selector.removeEventListener(type.split('.')[0], event.callback);
 					delete selector.gimle.eventStore[index];
 				}
+				else if ((type.startsWith('.')) && (event.namespacedType.indexOf('.') !== '-1')) {
+					if (event.type + type === event.namespacedType) {
+						selector.removeEventListener(type.split('.')[0], event.callback);
+						delete selector.gimle.eventStore[index];
+					}
+				}
 			}
 		}
 	};
