@@ -154,29 +154,30 @@ abstract class LdapBase
 			}
 		}
 		else {
-			$ldapSearch = $this->masterConnection;
+			$ldapSearch = [$this->masterConnection];
 		}
 
 		$fields = $this->config['entries'];
 		array_walk($fields, function (&$item) {
 			$item = $item['field'];
 		});
-		$results = ldap_search($ldapSearch, $dn, '(sAMAccountName=' . $username . ')', array_values($fields));
+		$results = ldap_search($ldapSearch, $dn, sprintf($this->config['filter'], $username), array_values($fields));
 		foreach ($results as $result) {
 			$entries = ldap_get_entries($this->masterConnection, $result);
 			if ($entries['count'] > 0) {
 				break;
 			}
 		}
-		if (($entries['count'] > 0) && (isset($entries[0]['userprincipalname'][0]))) {
+		if (($entries['count'] > 0) && (isset($entries[0][$this->config['bind']]))) {
 			$entry = $this->handleEntry($entries[0]);
 			$userConnection = ldap_connect($this->config['server']);
+			ldap_set_option($userConnection, LDAP_OPT_PROTOCOL_VERSION, (isset($this->config['version']) ? $this->config['version'] : 3));
 
 			if ((isset($this->config['utf8'])) && ($this->config['utf8'] === false)) {
 				$password = utf8_decode($password);
 			}
 			try {
-				ldap_bind($userConnection, $entries[0]['userprincipalname'][0], $password);
+				ldap_bind($userConnection, (is_array($entries[0][$this->config['bind']]) ? $entries[0][$this->config['bind']][0] : $entries[0][$this->config['bind']]), $password);
 				ldap_unbind($userConnection);
 			}
 			catch (\Exception $e) {
@@ -193,6 +194,7 @@ abstract class LdapBase
 	{
 		if ($this->masterConnection === null) {
 			$this->masterConnection = ldap_connect($this->config['server']);
+			ldap_set_option($this->masterConnection, LDAP_OPT_PROTOCOL_VERSION, (isset($this->config['version']) ? $this->config['version'] : 3));
 			$bind = ldap_bind($this->masterConnection, $this->config['user'], $this->config['pass']);
 		}
 	}
