@@ -132,12 +132,12 @@ window.gimle = (() => {
 			for (let index in selector.gimle.eventStore) {
 				let event = selector.gimle.eventStore[index];
 				if ((event.type === type) || (event.namespacedType === type)) {
-					selector.removeEventListener(type.split('.')[0], event.callback);
+					selector.removeEventListener(event.type, event.callback);
 					delete selector.gimle.eventStore[index];
 				}
 				else if ((type.startsWith('.')) && (event.namespacedType.indexOf('.') !== '-1')) {
 					if (event.type + type === event.namespacedType) {
-						selector.removeEventListener(type.split('.')[0], event.callback);
+						selector.removeEventListener(event.type, event.callback);
 						delete selector.gimle.eventStore[index];
 					}
 				}

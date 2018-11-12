@@ -58,6 +58,17 @@ try {
 						$user['pam'] = $_POST['username'];
 					}
 				}
+				if (($value !== false) && ($key === 'custom')) {
+					$result = $value['function']($_POST['username'], $_POST['password']);
+					if ($result !== null) {
+						if (!User::exists($_POST['username'], 'custom')) {
+							// @todo: Check if autocreate is enabled, and set correct input for create.
+							User::create([], 'custom');
+						}
+						$user = User::login($_POST['username'], 'custom');
+						$user['provider'] = $result;
+					}
+				}
 			}
 			if ($user === null) {
 				if ((isset($config['auth']['local'])) && ($config['auth']['local'] !== false) && ($config['auth']['local'] !== null)) {
