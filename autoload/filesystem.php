@@ -42,7 +42,8 @@ function clear_dir ($path, $deleteRoot = false)
 	foreach ($files as $file) {
 		if ((is_dir($file)) && (!is_link($file))) {
 			clear_dir($file, true);
-		} else {
+		}
+		else {
 			unlink($file);
 		}
 	}
