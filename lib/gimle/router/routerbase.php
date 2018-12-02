@@ -7,12 +7,10 @@ use const \gimle\BASE_PATH_KEY;
 use const \gimle\GIMLE5;
 use const \gimle\ENV_MODE;
 use const \gimle\ENV_LIVE;
-use const \gimle\MODULE_GIMLE;
 use const \gimle\FILTER_VALIDATE_DIRNAME;
 use const \gimle\MAIN_SITE_DIR;
 
 use \gimle\canvas\Canvas;
-use \gimle\System;
 
 use function \gimle\filter_var;
 use function \gimle\get_mimetype;
@@ -20,7 +18,7 @@ use function \gimle\inc;
 use function \gimle\sp;
 use function \gimle\d;
 
-class RouterBase
+class RouterBase extends PathResolver
 {
 	use \gimle\trick\Singelton;
 
@@ -301,87 +299,6 @@ class RouterBase
 			return null;
 		}
 		return $this->url;
-	}
-
-	/**
-	 * Returns the absolute path for a template or null if not found.
-	 *
-	 * @param string $template Template name.
-	 * @param ?mixed $params Optional format parameters.
-	 * @return ?string Full path or null if not found.
-	 */
-	public static function getTemplatePath (string $template, ...$params): ?string
-	{
-		if (!empty($params)) {
-			return self::formattedPathResolver($template, 'template', $params);
-		}
-		return self::pathResolver($template, 'template');
-	}
-
-	/**
-	 * Returns the absolute path for a canvas or null if not found.
-	 *
-	 * @param string $template Canvas name.
-	 * @param ?mixed $params Optional format parameters.
-	 * @return ?string Full path or null if not found.
-	 */
-	public static function getCanvasPath (string $canvas, ...$params): ?string
-	{
-		if (!empty($params)) {
-			return self::formattedPathResolver($template, 'canvas', $params);
-		}
-		return self::pathResolver($canvas, 'canvas');
-	}
-
-	/**
-	 * Returns the absolute path for a file in a location or null if not found.
-	 *
-	 * @param string $template File name.
-	 * @param string $dir The directory.
-	 * @param array $params Format parameters.
-	 * @return ?string Full path or null if not found.
-	 */
-	private static function formattedPathResolver (string $template, string $dir, array $params): ?string
-	{
-		foreach ($params as $param) {
-			if (is_array($param)) {
-				$check = self::pathResolver(vsprintf($template, $param), $dir);
-			}
-			else {
-				$check = self::pathResolver(sprintf($template, $param), $dir);
-			}
-			if ($check !== null) {
-				return $check;
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Returns the absolute path for a file in a location or null if not found.
-	 *
-	 * @param string $template File name.
-	 * @param string $dir The directory.
-	 * @return ?string Full path or null if not found.
-	 */
-	private static function pathResolver (string $template, string $dir): ?string
-	{
-		if (strpos($template, '.') === false) {
-			$template .= '.php';
-		}
-
-		if (is_readable(SITE_DIR . $dir . '/' . $template)) {
-			return SITE_DIR . $dir . '/' . $template;
-		}
-		foreach (System::getModules(MODULE_GIMLE) as $module) {
-			if (is_readable(SITE_DIR . 'module/' . $module . '/' . $dir . '/' . $template)) {
-				return SITE_DIR . 'module/' . $module . '/' . $dir . '/' . $template;
-			}
-		}
-		if (is_readable(SITE_DIR . 'module/' . MODULE_GIMLE . '/' . $dir . '/' . $template)) {
-			return SITE_DIR . 'module/' . MODULE_GIMLE . '/' . $dir . '/' . $template;
-		}
-		return null;
 	}
 
 	/**
