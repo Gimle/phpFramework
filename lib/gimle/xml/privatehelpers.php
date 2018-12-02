@@ -12,6 +12,11 @@ trait PrivateHelpers
 	 */
 	private function domToSxml (\DomNode $dom): ?self
 	{
+		if (get_class($dom) === 'DOMProcessingInstruction') {
+			// DomProcessingInstruction can not be converted to SimpleXmlElement
+			return null;
+		}
+
 		$sxml = simplexml_import_dom($dom, get_class($this));
 		if ($sxml !== false) {
 			return $sxml;

@@ -369,43 +369,46 @@ class RouterBase extends PathResolver
 				$this->except(self::E_TEMPLATE_NOT_FOUND);
 			}
 
+			$resultHandler = function ($template, $result) use ($path, $recuriveCanvasHolder) {
+				if (count($this->routes) > 0) {
+					$ctype = null;
+					$headers = headers_list();
+					foreach ($headers as $header) {
+						if (substr($header, 0, 14) === 'Content-type: ') {
+							$ctype = substr($header, 14);
+							$pos = strpos($ctype, ';');
+							if ($pos !== false) {
+								$ctype = substr($ctype, 0, $pos);
+							}
+						}
+					}
+					$this->tried[] = [
+						'route' => $path,
+						'content-type' => $ctype,
+						'canvas' => $this->canvas,
+						'template' => $template,
+						'returnValue' => $result
+					];
+					$this->canvas = $recuriveCanvasHolder;
+					array_pop($this->routes[$path]);
+					if (empty($this->routes[$path])) {
+						unset($this->routes[$path]);
+					}
+					$this->dispatch();
+					return;
+				}
+				else {
+					$this->except(self::E_ROUTES_EXHAUSTED);
+				}
+			};
+
 			if ($this->parseCanvas === true) {
 				$canvasResult = Canvas::_set($this->canvas);
 				if ($canvasResult === true) {
 					if ($this->template !== null) {
 						if ($templateResult !== true) {
-							if (count($this->routes) > 0) {
-								$ctype = null;
-								$headers = headers_list();
-								foreach ($headers as $header) {
-									if (substr($header, 0, 14) === 'Content-type: ') {
-										$ctype = substr($header, 14);
-										$pos = strpos($ctype, ';');
-										if ($pos !== false) {
-											$ctype = substr($ctype, 0, $pos);
-										}
-									}
-								}
-								$this->tried[] = [
-									'route' => $path,
-									'content-type' => $ctype,
-									'canvas' => $this->canvas,
-									'template' => $this->template,
-									'returnValue' => $templateResult
-								];
-								$this->canvas = $recuriveCanvasHolder;
-								array_pop($this->routes[$path]);
-								if (empty($this->routes[$path])) {
-									unset($this->routes[$path]);
-								}
-								$this->dispatch();
-								return;
-							}
-							else {
-								$this->except(self::E_ROUTES_EXHAUSTED);
-							}
+							$resultHandler($this->template, $templateResult);
 						}
-
 						echo $content;
 					}
 				}
@@ -417,7 +420,14 @@ class RouterBase extends PathResolver
 				Canvas::_create();
 				return;
 			}
-			include $this->canvas;
+			ob_start();
+			$canvasResult = include $this->canvas;
+			$content = ob_get_contents();
+			ob_end_clean();
+			if ($canvasResult !== true) {
+				$resultHandler(null, $canvasResult);
+			}
+			echo $content;
 		}
 		catch (\Throwable $e) {
 			$this->catch($e);

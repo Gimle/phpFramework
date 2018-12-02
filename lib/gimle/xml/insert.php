@@ -196,7 +196,7 @@ trait Insert
 
 		$return = [];
 		foreach ($refs as $ref) {
-			$dom = dom_import_simplexml($ref);
+			$dom = $this->toDom($ref);
 
 			$insert = $dom->ownerDocument->importNode($element, true);
 			$new = $dom->parentNode->insertBefore($insert, $dom->nextSibling);
