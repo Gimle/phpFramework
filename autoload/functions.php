@@ -5,6 +5,22 @@ namespace gimle;
 use \gimle\Spectacle;
 
 /**
+ * Check if a session is available.
+ *
+ * @return bool
+ */
+function session_available (): bool
+{
+	$sessionName = 'gimle' . ucfirst(preg_replace('/[^a-zA-Z]/', '', MAIN_SITE_ID));
+	if (isset($_COOKIE[$sessionName])) {
+		if (is_readable(session_save_path() . '/sess_' . $_COOKIE[$sessionName])) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
  * Set some default values on session start.
  *
  * @throws gimle\ErrorException If session.use_only_cookies can not be set.
