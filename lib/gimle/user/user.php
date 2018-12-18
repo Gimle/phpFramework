@@ -203,4 +203,15 @@ class User
 		}
 		return self::$userAgent;
 	}
+
+	public static function hashPassword (string $password): string
+	{
+		$cost = Config::get('user.local.passwordCost');
+		$options = [
+			'cost' => ($cost === null ? 12 : $cost),
+		];
+
+		$hash = password_hash($password, PASSWORD_BCRYPT, $options);
+		return $hash;
+	}
 }

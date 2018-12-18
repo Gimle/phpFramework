@@ -183,7 +183,7 @@ class UserMysql
 	{
 		$db = Mysql::getInstance('gimle');
 
-		$hash = self::hashPassword($password);
+		$hash = User::hashPassword($password);
 
 		$query = sprintf("UPDATE `account_auth_local` SET `password` = '%s', `reset_code` = null, `reset_datetime` = null WHERE (`reset_code` = '%2\$s' OR `id` = '%2\$s');",
 			$db->real_escape_string($hash),
@@ -309,7 +309,7 @@ class UserMysql
 
 		if ($type === 'local') {
 			$verification = sha1(openssl_random_pseudo_bytes(16));
-			$hash = self::hashPassword($user['password']);
+			$hash = User::hashPassword($user['password']);
 			$query = sprintf("INSERT INTO `account_auth_local` (`id`, `account_id`, `password`, `verification`) VALUES ('%s', %u, '%s', '%s');",
 				$db->real_escape_string($user['username']),
 				$accountid,
@@ -326,17 +326,6 @@ class UserMysql
 			);
 		}
 		$result = $db->query($query);
-	}
-
-	public static function hashPassword (string $password): string
-	{
-		$cost = Config::get('user.local.passwordCost');
-		$options = [
-			'cost' => ($cost === null ? 12 : $cost),
-		];
-
-		$hash = password_hash($password, PASSWORD_BCRYPT, $options);
-		return $hash;
 	}
 
 	/**

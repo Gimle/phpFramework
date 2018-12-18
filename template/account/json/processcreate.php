@@ -2,7 +2,6 @@
 declare(strict_types=1);
 namespace gimle;
 
-use \gimle\sql\Mysql;
 use \gimle\user\User;
 use \gimle\router\Router;
 
@@ -13,7 +12,6 @@ if (isset($_SESSION['gimle']['user'])) {
 	return true;
 }
 
-$db = Mysql::getInstance('gimle');
 $postfix = (Config::get('applinks') ? '#' : '');
 $lang = (i18n::getInstance())->getLanguage();
 
