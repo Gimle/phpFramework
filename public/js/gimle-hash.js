@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 gimle.hash = {};
 gimle.lastHash = [];

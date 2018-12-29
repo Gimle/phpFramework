@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 window.gimle = (() => {
 	let gimle = (selector, context) => {
@@ -139,12 +139,12 @@ window.gimle = (() => {
 			for (let index in selector.gimle.eventStore) {
 				let event = selector.gimle.eventStore[index];
 				if ((event.type === type) || (event.namespacedType === type)) {
-					selector.removeEventListener(event.type, event.callback);
+					selector.removeEventListener(event.type, event.callback, event.options, event.useCapture);
 					delete selector.gimle.eventStore[index];
 				}
 				else if ((type.startsWith('.')) && (event.namespacedType.indexOf('.') !== '-1')) {
 					if (event.type + type === event.namespacedType) {
-						selector.removeEventListener(event.type, event.callback);
+						selector.removeEventListener(event.type, event.callback, event.options, event.useCapture);
 						delete selector.gimle.eventStore[index];
 					}
 				}
