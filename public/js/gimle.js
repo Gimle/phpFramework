@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 window.gimle = (() => {
 	let gimle = (selector, context) => {
@@ -48,20 +48,27 @@ window.gimle = (() => {
 		return result;
 	};
 
-	gimle.selfOrParentMatch = function (element, selectorString) {
-		if (element.matches(selectorString)) {
-			return true;
+	gimle.selfOrParentMatch = function (element, selector) {
+		if ((typeof selector === 'string') || (selector instanceof String))  {
+			if (element.matches(selector)) {
+				return element;
+			}
 		}
-		return ((element.parentElement) && (gimle.selfOrParentMatch(element.parentElement, selectorString))) || false;
+		else {
+			if (element.isSameNode(selector)) {
+				return element;
+			}
+		}
+		return ((element.parentElement) && (gimle.selfOrParentMatch(element.parentElement, selector))) || null;
 	}
 
 	gimle.parentMatch = function (element, selectorString) {
 		element = element.parentElement;
 		if (!element) {
-			return false;
+			return null;
 		}
 		if (element.matches(selectorString)) {
-			return true;
+			return element;
 		}
 		return gimle.selfOrParentMatch(element, selectorString);
 	}
@@ -114,7 +121,7 @@ window.gimle = (() => {
 			};
 			if (listen !== undefined) {
 				thisEvent.callback = function (e) {
-					if (gimle.selfOrParentMatch(e.target, listen)) {
+					if (gimle.selfOrParentMatch(e.target, listen) !== null) {
 						callback.call(e.target, e);
 					}
 				};
@@ -132,12 +139,12 @@ window.gimle = (() => {
 			for (let index in selector.gimle.eventStore) {
 				let event = selector.gimle.eventStore[index];
 				if ((event.type === type) || (event.namespacedType === type)) {
-					selector.removeEventListener(event.type, event.callback);
+					selector.removeEventListener(event.type, event.callback, event.options, event.useCapture);
 					delete selector.gimle.eventStore[index];
 				}
 				else if ((type.startsWith('.')) && (event.namespacedType.indexOf('.') !== '-1')) {
 					if (event.type + type === event.namespacedType) {
-						selector.removeEventListener(event.type, event.callback);
+						selector.removeEventListener(event.type, event.callback, event.options, event.useCapture);
 						delete selector.gimle.eventStore[index];
 					}
 				}

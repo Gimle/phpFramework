@@ -29,6 +29,57 @@ function dirname (string $path, int $level = 1): string
 	return  '/';
 }
 
+
+/**
+ * Check if a path only travels downwards, as in it has no references to self or parents.
+ *
+ * This function is intended to check if user input to file locations are not manipulated to travel outside intended root.
+ *
+ * @param string $path The path to check.
+ * @param bool $urldecode Should the path be url decoded?
+ * @return ?string The optionally decoded path without leading or trailing slashes.
+ */
+function sub_path (?string $dir, bool $urldecode = true): ?string
+{
+	if ($dir === null) {
+		return null;
+	}
+	if ($urldecode === true) {
+		$dir = urldecode($dir);
+	}
+
+	$dir = trim($dir, '/');
+	if ($dir === '.') {
+		return null;
+	}
+	if ($dir === '..') {
+		return null;
+	}
+	if (strpos($dir, '/../') !== false) {
+		return null;
+	}
+	if (strpos($dir, '/./') !== false) {
+		return null;
+	}
+	if (strpos($dir, '//') !== false) {
+		return null;
+	}
+	if (substr($dir, -3, 3) === '/..') {
+		return null;
+	}
+	if (substr($dir, 0, 3) === '../') {
+		return null;
+	}
+	if (substr($dir, -2, 2) === '/.') {
+		return null;
+	}
+	if (substr($dir, 0, 2) === './') {
+		return null;
+	}
+
+	return $dir;
+}
+
 /**
  * Removes all files and folders within a directory.
  *
@@ -42,7 +93,8 @@ function clear_dir ($path, $deleteRoot = false)
 	foreach ($files as $file) {
 		if ((is_dir($file)) && (!is_link($file))) {
 			clear_dir($file, true);
-		} else {
+		}
+		else {
 			unlink($file);
 		}
 	}

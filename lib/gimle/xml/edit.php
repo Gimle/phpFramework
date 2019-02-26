@@ -17,7 +17,7 @@ trait Edit
 		$refs = $this->resolveReference($ref);
 		$return = [];
 		foreach ($refs as $ref) {
-			$dom = dom_import_simplexml($ref);
+			$dom = $this->toDom($ref);
 			$this->removeWhitespaceHandler($dom, $mode);
 			$res = $dom->parentNode->removeChild($dom);
 			$return[] = $this->domToSxml($res);
@@ -80,11 +80,11 @@ trait Edit
 	/**
 	 * Handle whitespace around the elements.
 	 *
-	 * @param \DomElement $dom
+	 * @param \DomNode $dom
 	 * @param ?int $mode How to handle the whitespace.
 	 * @return void
 	 */
-	private function removeWhitespaceHandler (\DomElement $dom, ?int $mode = null): void
+	private function removeWhitespaceHandler (\DomNode $dom, ?int $mode = null): void
 	{
 		if ($mode === null) {
 			return;

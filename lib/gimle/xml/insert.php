@@ -58,12 +58,10 @@ trait Insert
 				}
 			}
 			elseif ($mode === self::BLOCK) {
+				$leadingWhitespace = '';
 				if ($dom->parentNode->nodeValue !== null) {
 					preg_match('/^[\s]+/s', $dom->parentNode->nodeValue, $leadingWhitespace);
-					$leadingWhitespace = ($leadingWhitespace[0] ?? null);
-				}
-				else {
-					$leadingWhitespace = '';
+					$leadingWhitespace = ($leadingWhitespace[0] ?? '');
 				}
 				$insertBefore = $leadingWhitespace . "\t";
 
@@ -124,9 +122,12 @@ trait Insert
 				}
 			}
 			elseif ($mode !== self::INLINE) {
-				preg_match('/^[\s]+/s', $dom->parentNode->nodeValue, $leadingWhitespace);
-				$leadingWhitespace = ($leadingWhitespace[0] ?? null);
-				$insertAfter = $leadingWhitespace;
+				$leadingWhitespace = '';
+				if ($dom->parentNode->nodeValue !== null) {
+					preg_match('/^[\s]+/s', $dom->parentNode->nodeValue, $leadingWhitespace);
+					$leadingWhitespace = ($leadingWhitespace[0] ?? '');
+					$insertAfter = $leadingWhitespace;
+				}
 
 				$node = new \DomDocument();
 				$node = $node->createTextNode($leadingWhitespace . "\t");
@@ -196,7 +197,7 @@ trait Insert
 
 		$return = [];
 		foreach ($refs as $ref) {
-			$dom = dom_import_simplexml($ref);
+			$dom = $this->toDom($ref);
 
 			$insert = $dom->ownerDocument->importNode($element, true);
 			$new = $dom->parentNode->insertBefore($insert, $dom->nextSibling);

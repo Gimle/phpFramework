@@ -48,6 +48,36 @@ trait ProcessingInstructions
 	}
 
 	/**
+	 * Parse processing instructions from the document with a matching name.
+	 *
+	 * @param callable $callback(string $target, string $contents) The callback function.
+	 * @param ?string $name Only parse processing instructions with the given name. Default = null.
+	 * @param ?bool $searchChildren Do a recursive search for all processing instructions in all children of the reference. Default = false.
+	 * @param ?mixed $ref null = Siblings of self. string = Children of xpath, SimpleXmlElement = Children of reference.
+	 * @return void
+	 */
+	public function parsePi (callable $callback, string $name = null, bool $searchChildren = false, $ref = null): void
+	{
+		$pis = $this->getDomPi($name, $searchChildren, $ref);
+		foreach ($pis as $pi) {
+			$result = $callback($pi->nodeName, $pi->nodeValue);
+			if ($result !== null) {
+				if (!is_array($result)) {
+					$result = [$result];
+				}
+				$parent = $pi->parentNode;
+				$lastInsert = $pi->nextSibling;
+				foreach ($result as $node) {
+					$fragment = $pi->ownerDocument->createDocumentFragment();
+					$fragment->appendXML($node);
+					$this->insertAfter($node, $pi);
+				}
+				$this->remove($pi, self::LTRIM_FIRST);
+			}
+		}
+	}
+
+	/**
 	 * Get processing instructions from the document with a matching name.
 	 *
 	 * To get root level processing instructions, you need to get sibling processing instructions.
