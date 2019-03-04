@@ -87,7 +87,52 @@ trait Helpers
 		}
 	}
 
-	public function asDateTime ($input = null)
+	/**
+	 * Get a node's indentation.
+	 *
+	 * @param mixed $ref null = set new value to self. string = xpath to set new value, SimpleXmlElement = reference to set new value.
+	 * @return ?string null if node not found, or the indentation string of the node.
+	 */
+	public function getIndentation ($ref = null): ?string
+	{
+		$refs = $this->resolveReference($ref);
+		if (!isset($refs[0])) {
+			return null;
+		}
+		$dom = dom_import_simplexml($refs[0]);
+		preg_match('/^[\s]+/s', $dom->parentNode->nodeValue, $leadingWhitespace);
+		$leadingWhitespace = ($leadingWhitespace[0] ?? null);
+		if ($leadingWhitespace !== null) {
+			if (strpos($leadingWhitespace, "\n") !== false) {
+				return substr($leadingWhitespace, strpos($leadingWhitespace, "\n") + 1);
+			}
+		}
+		return $leadingWhitespace;
+	}
+
+	/**
+	 * Get a node's xpath.
+	 *
+	 * @param mixed $ref null = set new value to self. string = xpath to set new value, SimpleXmlElement = reference to set new value.
+	 * @return ?string null if node not found, or a xpath string to the node.
+	 */
+	public function getXpath ($ref = null): ?string
+	{
+		$refs = $this->resolveReference($ref);
+		if (!isset($refs[0])) {
+			return null;
+		}
+		$dom = dom_import_simplexml($refs[0]);
+		return $dom->getNodePath();
+	}
+
+	/**
+	 * Convert a time input to a xml standard formatted date string.
+	 *
+	 * @param mixed $input Input value to convert.
+	 * @return ?string null if input could be converted, or a datetime string.
+	 */
+	public function asDateTime ($input = null): ?string
 	{
 		if ($input === null) {
 			return date('Y-m-d\TH:i:s');
