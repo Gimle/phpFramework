@@ -103,10 +103,17 @@ trait Helpers
 		preg_match('/^[\s]+/s', $dom->parentNode->nodeValue, $leadingWhitespace);
 		$leadingWhitespace = ($leadingWhitespace[0] ?? null);
 		if ($leadingWhitespace !== null) {
-			if (strpos($leadingWhitespace, "\n") !== false) {
-				return substr($leadingWhitespace, strpos($leadingWhitespace, "\n") + 1);
+			$start = strpos($leadingWhitespace, "\n");
+			if ($start !== false) {
+				$leadingWhitespace = substr($leadingWhitespace, $start + 1);
+			}
+			$end = strpos($leadingWhitespace, "\n");
+			if ($end !== false) {
+				$leadingWhitespace = substr($leadingWhitespace, 0, $end);
 			}
 		}
+		\gimle\sp($leadingWhitespace);
+		\gimle\sp($dom->parentNode->nodeValue);
 		return $leadingWhitespace;
 	}
 
