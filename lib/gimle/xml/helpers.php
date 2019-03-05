@@ -112,8 +112,6 @@ trait Helpers
 				$leadingWhitespace = substr($leadingWhitespace, 0, $end);
 			}
 		}
-		\gimle\sp($leadingWhitespace);
-		\gimle\sp($dom->parentNode->nodeValue);
 		return $leadingWhitespace;
 	}
 
