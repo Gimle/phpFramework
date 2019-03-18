@@ -4,9 +4,9 @@ namespace gimle\router;
 
 use const \gimle\SITE_DIR;
 use const \gimle\BASE_PATH_KEY;
-use const \gimle\GIMLE5;
 use const \gimle\ENV_MODE;
 use const \gimle\ENV_LIVE;
+use const \gimle\ENV_CLI;
 use const \gimle\FILTER_VALIDATE_DIRNAME;
 use const \gimle\MAIN_SITE_DIR;
 
@@ -115,6 +115,9 @@ class RouterBase extends PathResolver
 
 	public function __construct ()
 	{
+		if (ENV_MODE & ENV_CLI) {
+			return;
+		}
 		switch ($_SERVER['REQUEST_METHOD']) {
 			case 'GET':
 				$this->requestMethod = self::R_GET;
