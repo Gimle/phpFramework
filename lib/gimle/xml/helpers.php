@@ -132,17 +132,17 @@ trait Helpers
 	}
 
 	/**
-	 * Return a ISO 8601 time string.
+	 * Convert a time input to a ISO 8601 time string.
 	 *
 	 * @param mixed $input null = current time, int = unix time, string = parse time (strtotime).
 	 * @param bool $includeTimeZone Include timezone in the string.
 	 * @return ?string null if input could be converted, or a datetime string.
 	 */
-	public static function asDateTime ($input = null, $includeTimeZone = true)
+	public static function asDateTime ($input = null, bool $includeTimeZone = true): ?string
 	{
-		$format = 'Y-m-d\TH:i:s';
-		if ($includeTimeZone === true) {
-			$format = 'c';
+		$format = 'c';
+		if ($includeTimeZone === false) {
+			$format = 'Y-m-d\TH:i:s';
 		}
 		if ($input === null) {
 			return date($format);
