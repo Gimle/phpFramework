@@ -132,22 +132,93 @@ trait Helpers
 	}
 
 	/**
-	 * Convert a time input to a xml standard formatted date string.
+	 * Return a ISO 8601 time string.
 	 *
-	 * @param mixed $input Input value to convert.
+	 * @param mixed $input null = current time, int = unix time, string = parse time (strtotime).
+	 * @param bool $includeTimeZone Include timezone in the string.
 	 * @return ?string null if input could be converted, or a datetime string.
 	 */
-	public function asDateTime ($input = null): ?string
+	public static function asDateTime ($input = null, $includeTimeZone = true)
 	{
+		$format = 'Y-m-d\TH:i:s';
+		if ($includeTimeZone === true) {
+			$format = 'c';
+		}
 		if ($input === null) {
-			return date('Y-m-d\TH:i:s');
+			return date($format);
 		}
 		else if (is_int($input)) {
-			return date('Y-m-d\TH:i:s', $input);
+			return date($format, $input);
 		}
 		else if (is_string($input)) {
-			return date('Y-m-d\TH:i:s', strtotime($input));
+			return date($format, strtotime($input));
 		}
 		return null;
+	}
+
+	/**
+	 * Get the raw xml contents of a file if exists, or create a new xml string.
+	 *
+	 * @param string $filename The file to open.
+	 * @param mixed $new If the file does not exist, return null or string. (if SimpleXmlElement, return string representation).
+	 * @return ?string
+	 */
+	public static function openXml (string $filename, $new = null): ?string
+	{
+		if (!file_exists($filename)) {
+			if (is_string($new)) {
+				return $new;
+			}
+			else {
+				return $new->asXml();
+			}
+		}
+
+		$f = fopen($filename, 'rb');
+		flock($f, LOCK_SH);
+		$contents = fread($f, filesize($filename));
+		flock($f, LOCK_UN);
+		fclose($f);
+
+		return $contents;
+	}
+
+	/**
+	 * Get a SimpleXmlElement representation of file if exists, or create a new SimpleXmlElement.
+	 *
+	 * @param string $filename The file to open.
+	 * @param mixed $new If the file does not exist, return null or SimpleXmlElement. (SimpleXmlElement will be cloned, not referenced, string will be a new SimpleXmlElement).
+	 * @return ?string
+	 */
+	public static function open (string $filename, $new = null): ?SimpleXmlElement
+	{
+		$class = get_called_class();
+		$contents = self::openXml($filename, $new);
+		if (is_string($contents)) {
+			return new $class($contents);
+		}
+
+		return $new;
+	}
+
+	/**
+	 * Save the current SimpleXmlElement to a file.
+	 *
+	 * @param string $filename The filename.
+	 * @param bool $pretty Run pretty() on the xml before saving.
+	 * @return void
+	 */
+	public function save (string $filename, bool $pretty = false): void
+	{
+		$f = fopen($filename, 'w');
+		flock($f, LOCK_EX);
+		if ($pretty === true) {
+			fwrite($f, $this->pretty() . "\n");
+		}
+		else {
+			fwrite($f, $this->asXml() . "\n");
+		}
+		flock($f, LOCK_UN);
+		fclose($f);
 	}
 }
