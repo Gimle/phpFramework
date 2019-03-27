@@ -213,6 +213,9 @@ class RouterBase extends PathResolver
 	 */
 	public function bindByRegex (string $basePathKey, string $path, ?callable $callback, int $requestMethod = self::R_GET | self::R_HEAD): void
 	{
+		if (ENV_MODE & ENV_CLI) {
+			return;
+		}
 		assert(($requestMethod >= self::R_GET) && ($requestMethod <= ((self::R_PURGE * 2) - 1)));
 		if (($basePathKey === '*') || ($basePathKey === BASE_PATH_KEY)) {
 
@@ -235,6 +238,9 @@ class RouterBase extends PathResolver
 	 */
 	public function bind (string $basePathKey, string $path, ?callable $callback = null, $conditions = [], $requestMethod = self::R_GET | self::R_HEAD): void
 	{
+		if (ENV_MODE & ENV_CLI) {
+			return;
+		}
 		assert(($requestMethod >= self::R_GET) && ($requestMethod <= ((self::R_PURGE * 2) - 1)));
 		if (!is_array($conditions)) {
 			$requestMethod = $conditions;
