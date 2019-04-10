@@ -10,6 +10,7 @@ trait Edit
 	 * Can not remove root node.
 	 *
 	 * @param mixed $ref null = delete self. string = xpath to delete, SimpleXmlElement = reference to delete.
+	 * @param ?int $mode How to handle the whitespace.
 	 * @return array<SimpleXmlElement> Array with the removed elements.
 	 */
 	public function remove ($ref = null, ?int $mode = null): array
