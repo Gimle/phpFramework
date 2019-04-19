@@ -35,6 +35,13 @@ class System
 	private static $uploadLimit = null;
 
 	/**
+	 * Cache for autoloaded files.
+	 *
+	 * @var array
+	 */
+	private static $autoloaded = [];
+
+	/**
 	 * Register an autoload path.
 	 *
 	 * @param string $path The path.
@@ -89,9 +96,13 @@ class System
 				$file .= str_replace('\\', '/', $class) . '.php';
 			}
 			if (is_readable($file)) {
-				include $file;
-				if ((isset($autoload['options']['init'])) && ($autoload['options']['init'] !== false) && (method_exists($class, $autoload['options']['init']))) {
-					call_user_func([$class, $autoload['options']['init']]);
+				// If a class has been renamed in a use statement, it might be sent to the autoloader again. So, we need to keep track of the loaded files.
+				if (!in_array($file, self::$autoloaded)) {
+					self::$autoloaded[] = $file;
+					include $file;
+					if ((isset($autoload['options']['init'])) && ($autoload['options']['init'] !== false) && (method_exists($class, $autoload['options']['init']))) {
+						call_user_func([$class, $autoload['options']['init']]);
+					}
 				}
 				if (class_exists($name, false)) {
 					break;
