@@ -340,6 +340,10 @@ function bytes_to_array (int $filesize = 0, int $decimals = 2): array
  */
 function sp (...$data): void
 {
+	if (ENV_MODE & ENV_CLI) {
+		d($data, ['title' => 'sp()']);
+		return;
+	}
 	Spectacle::getInstance()->match(['match' => '/(sp\((.*))/', 'steps' => 2, 'index' => 1])->tab('Spectacle')->push(...$data);
 }
 
