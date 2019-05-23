@@ -196,3 +196,68 @@ function get_mimetype (string $file): array
 
 	return ['mime' => $matches[1], 'charset' => $matches[2]];
 }
+
+/**
+ * Get the path to reach a public file.
+ *
+ * @param string $file The filename.
+ * @return ?array Local and public path to the file or null if not found.
+ */
+function getPublicFile (string $file): ?array
+{
+	if (is_readable(SITE_DIR . 'public/' . $file)) {
+		return [
+			'local' => SITE_DIR . 'public/' . $file,
+			'public' => BASE_PATH . $file
+		];
+	}
+	if (IS_SUBSITE === true) {
+		$subsiteModules = MainConfig::get('admin.modules');
+		if ($subsiteModules !== null) {
+			sort($subsiteModules);
+			foreach ($subsiteModules as $module) {
+				if (is_readable(MAIN_SITE_DIR . 'module/' . $module . '/public/' . $file)) {
+					return [
+						'local' => MAIN_SITE_DIR . 'module/' . $module . '/public/' . $file,
+						'public' => MAIN_BASE_PATH . 'module/' . $module . '/' . $file
+					];
+				}
+			}
+		}
+	}
+	foreach (System::getModules(MODULE_GIMLE) as $module) {
+		if (is_readable(SITE_DIR . 'module/' . $module . '/public/' . $file)) {
+			return [
+				'local' => SITE_DIR . 'module/' . $module . '/public/' . $file,
+				'public' => BASE_PATH . 'module/' . $module . '/' . $file
+			];
+		}
+	}
+	if (is_readable(SITE_DIR . 'module/' . MODULE_GIMLE . '/public/' . $file)) {
+		return [
+			'local' => SITE_DIR . 'module/' . MODULE_GIMLE . '/public/' . $file,
+			'public' => BASE_PATH . 'module/' . MODULE_GIMLE . '/' . $file
+		];
+	}
+	return null;
+}
+
+/**
+ * Get a versioned unique path to a public file.
+ *
+ * @param string $file The filename.
+ * @return ?string The public versioned unique path to the file or null if not found.
+ */
+function getPublicResource (string $file): ?string
+{
+	$location = getPublicFile($file);
+	if ($location !== null) {
+		if (is_readable($location['local'])) {
+			return $location['public'] . '?' . filemtime($location['local']);
+		}
+		else {
+			return $location['public'];
+		}
+	}
+	return null;
+}
