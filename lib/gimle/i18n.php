@@ -70,7 +70,18 @@ class i18n
 	public function setLanguage (?string $language = null): void
 	{
 		if ($language === null) {
-			$this->language = get_preferred_language(array_keys($this->config['lang']));
+			$available = [];
+			$synonyms = [];
+			foreach ($this->config['lang'] as $code => $data) {
+				$available[] = $code;
+				if (isset($data['synonyms'])) {
+					foreach ($data['synonyms'] as $synonym) {
+						$available[] = $synonym;
+						$synonyms[$synonym] = $code;
+					}
+				}
+			}
+			$this->language = get_preferred_language($available);
 			if ($this->language === null) {
 				if ((isset($this->config['default'])) && (isset($this->config['lang'][$this->config['default']]))) {
 					$this->language = $this->config['default'];
@@ -78,6 +89,9 @@ class i18n
 				else {
 					$this->language = current(array_keys($this->config['lang']));
 				}
+			}
+			else if ((!empty($synonyms)) && (isset($synonyms[$this->language]))) {
+				$this->language = $synonyms[$this->language];
 			}
 		}
 		else {

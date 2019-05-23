@@ -4,9 +4,9 @@ namespace gimle\router;
 
 use const \gimle\SITE_DIR;
 use const \gimle\BASE_PATH_KEY;
-use const \gimle\GIMLE5;
 use const \gimle\ENV_MODE;
 use const \gimle\ENV_LIVE;
+use const \gimle\ENV_CLI;
 use const \gimle\FILTER_VALIDATE_DIRNAME;
 use const \gimle\MAIN_SITE_DIR;
 
@@ -115,6 +115,9 @@ class RouterBase extends PathResolver
 
 	public function __construct ()
 	{
+		if (ENV_MODE & ENV_CLI) {
+			return;
+		}
 		switch ($_SERVER['REQUEST_METHOD']) {
 			case 'GET':
 				$this->requestMethod = self::R_GET;
@@ -210,6 +213,9 @@ class RouterBase extends PathResolver
 	 */
 	public function bindByRegex (string $basePathKey, string $path, ?callable $callback, int $requestMethod = self::R_GET | self::R_HEAD): void
 	{
+		if (ENV_MODE & ENV_CLI) {
+			return;
+		}
 		assert(($requestMethod >= self::R_GET) && ($requestMethod <= ((self::R_PURGE * 2) - 1)));
 		if (($basePathKey === '*') || ($basePathKey === BASE_PATH_KEY)) {
 
@@ -232,6 +238,9 @@ class RouterBase extends PathResolver
 	 */
 	public function bind (string $basePathKey, string $path, ?callable $callback = null, $conditions = [], $requestMethod = self::R_GET | self::R_HEAD): void
 	{
+		if (ENV_MODE & ENV_CLI) {
+			return;
+		}
 		assert(($requestMethod >= self::R_GET) && ($requestMethod <= ((self::R_PURGE * 2) - 1)));
 		if (!is_array($conditions)) {
 			$requestMethod = $conditions;

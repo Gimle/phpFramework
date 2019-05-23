@@ -143,3 +143,17 @@ function utf82ent (string $string, array $exclude = ['.', ',', '-'], array $appe
 
 	return $string;
 }
+
+/**
+ * Convert n indentation spaces to tab.
+ *
+ * @param string $string The input string.
+ * @param int $spaces The amount of spaces pr indentation level.
+ * @return string
+ */
+function tab_indent (string $string, int $spaces = 4): string
+{
+	$spaces = str_repeat(' ', $spaces);
+	$regex = '/^' . $spaces . '|\G' . $spaces . '/m';
+	return preg_replace($regex, "\t", $string);
+}
