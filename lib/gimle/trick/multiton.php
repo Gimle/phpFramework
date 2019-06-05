@@ -21,9 +21,7 @@ trait Multiton
 	public static function getInstance (string $identifier, ...$args): self
 	{
 		if (!isset(self::$instances[$identifier])) {
-			$me = get_called_class();
-
-			self::$instances[$identifier] = new $me($identifier, ...$args);
+			self::$instances[$identifier] = new static($identifier, ...$args);
 		}
 
 		return self::$instances[$identifier];
