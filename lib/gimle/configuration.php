@@ -5,11 +5,6 @@ namespace gimle;
 abstract class Configuration
 {
 	/**
-	 * The holder for the config.
-	 */
-	protected static $config = [];
-
-	/**
 	 * Set a config value if not set.
 	 *
 	 * @param string $key The config key, a dot separated to set sub values.
@@ -38,16 +33,6 @@ abstract class Configuration
 	}
 
 	/**
-	 * Retrieves all the config set.
-	 *
-	 * @return array The set config.
-	 */
-	public static function getAll (): array
-	{
-		return static::$config;
-	}
-
-	/**
 	 * Check if a value exists in the config.
 	 *
 	 * @param string $key A dot separated index for the the key to check.
@@ -71,11 +56,14 @@ abstract class Configuration
 	/**
 	 * Get the value for a specific dot separated key.
 	 *
-	 * @param string $key A dot separated index for the the key to check.
+	 * @param ?string $key A dot separated index for the the key to check or null to get all.
 	 * @return mixed The value for the key.
 	 */
-	public static function get (string $key)
+	public static function get (?string $key = null)
 	{
+		if ($key === null) {
+			return static::$config;
+		}
 		$params = explode('.', $key);
 		$return = static::$config;
 		foreach ($params as $param) {

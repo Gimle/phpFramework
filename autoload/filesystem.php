@@ -212,7 +212,7 @@ function getPublicFile (string $file): ?array
 		];
 	}
 	if (IS_SUBSITE === true) {
-		$subsiteModules = MainConfig::get('admin.modules');
+		$subsiteModules = MainConfig::get('subsite.' . SITE_ID . '.modules');
 		if ($subsiteModules !== null) {
 			sort($subsiteModules);
 			foreach ($subsiteModules as $module) {

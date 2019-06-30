@@ -192,10 +192,9 @@ trait Helpers
 	 */
 	public static function open (string $filename, $new = null): ?SimpleXmlElement
 	{
-		$class = get_called_class();
 		$contents = self::openXml($filename, $new);
 		if (is_string($contents)) {
-			return new $class($contents);
+			return new static($contents);
 		}
 
 		return $new;

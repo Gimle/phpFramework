@@ -350,9 +350,11 @@ function sp (...$data): void
 /**
  * Get full translation table.
  *
+ * @param array $append Append custom values.
+ * @param array $remove Remove unwanted values.
  * @return array
  */
-function get_entities ($append = [], $remove = [])
+function get_entities (array $append = [], array $remove = []): array
 {
 	$table = [];
 
@@ -395,7 +397,7 @@ function get_entities ($append = [], $remove = [])
  * @param int $num
  * @return string
  */
-function code2utf8 ($num)
+function code2utf8 (int $num)
 {
 	if ($num < 128) {
 		return chr($num);

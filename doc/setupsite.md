@@ -1,6 +1,7 @@
 Setup site
 ==========
 
+New site:
 ```sh
 mkdir -p ~/gimle/sites/demo
 cd ~/gimle/sites/demo
@@ -8,6 +9,15 @@ cd ~/gimle/sites/demo
 git init && mkdir public module canvas template lib vendor temp cache storage && chgrp users temp cache storage && chmod 775 temp cache storage && cd module && git submodule add https://github.com/Gimle/phpFramework.git gimle && cd ..
 
 cp module/gimle/install/config.* . && cp module/gimle/install/index.php public/. && cp module/gimle/install/welcome.php template/. && cp module/gimle/install/gitignore .gitignore
+
+sudo chmod +s temp cache storage
+```
+
+Cloned site:
+```sh
+cd ~/gimle/sites/demo
+
+mkdir temp cache storage && chgrp users temp cache storage && chmod 775 temp cache storage
 
 sudo chmod +s temp cache storage
 ```
