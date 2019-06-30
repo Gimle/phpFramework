@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace gimle\user\storage;
 
 use \gimle\xml\SimpleXmlElement;
+use \gimle\User;
 
 use const \gimle\MAIN_STORAGE_DIR;
 
@@ -17,7 +18,7 @@ class Xml extends \gimle\user\UserBase
 		$sxml = SimpleXmlElement::open(MAIN_STORAGE_DIR . 'users.xml', '<users/>');
 
 		if ($this->id === null) {
-			$this->id = $sxml->getNextId();
+			$this->id = $sxml->getNextId('id', 'user');
 			$user = $sxml->addChild('user');
 			$user['id'] = $this->id;
 			$user['created'] = $sxml->asDateTime();
@@ -93,6 +94,37 @@ class Xml extends \gimle\user\UserBase
 		return false;
 	}
 
+	public static function getGroups (): array
+	{
+		$return = [];
+		$sxml = SimpleXmlElement::open(MAIN_STORAGE_DIR . 'users.xml', '<users/>');
+		foreach ($sxml->xpath('/users/group') as $group) {
+			$return[(int) $group['id']] = [
+				'id' => (int) $group['id'],
+				'name' => (string) $group['name'],
+				'description' => trim((string) $group),
+			];
+		}
+		return $return;
+	}
+
+	public static function getUser (int $id): User
+	{
+		$sxml = SimpleXmlElement::open(MAIN_STORAGE_DIR . 'users.xml', '<users/>');
+		$user = current($sxml->xpath('/users/user[@id=' . $id . ']'));
+		return self::xmlToUser($user, new User());
+	}
+
+	public static function getUsers (): array
+	{
+		$return = [];
+		$sxml = SimpleXmlElement::open(MAIN_STORAGE_DIR . 'users.xml', '<users/>');
+		foreach ($sxml->xpath('/users/user') as $user) {
+			$return[] = self::xmlToUser($user, new User());
+		}
+		return $return;
+	}
+
 	private function authGet ($type, $params)
 	{
 		$type = strtolower($type);
@@ -122,6 +154,8 @@ class Xml extends \gimle\user\UserBase
 		$user->lastName = (string) $sxml->name->last;
 		$user->email = (string) $sxml->email;
 
+		$user->created = (string) $sxml['created'];
+
 		$user->groups = [];
 		$groups = explode(',', (string) $sxml['groups']);
 		foreach ($groups as $group) {
@@ -143,5 +177,7 @@ class Xml extends \gimle\user\UserBase
 		}
 
 		$user->setNames();
+
+		return $user;
 	}
 }

@@ -50,6 +50,7 @@ abstract class UserBase
 		'os' => null,
 		'browser' => null,
 	];
+	protected $created = null;
 	protected $isFirstLogin = null;
 	protected $loginPerformed = null;
 
@@ -105,7 +106,7 @@ abstract class UserBase
 
 	public function __get (string $property)
 	{
-		if (in_array($property, ['id', 'uses'])) {
+		if (in_array($property, ['id', 'uses', 'groups', 'created', 'firstName', 'middleName', 'firstNames', 'lastName', 'fullName', 'email'])) {
 			return $this->$property;
 		}
 	}
@@ -135,6 +136,32 @@ abstract class UserBase
 	public function sendVerification (): bool
 	{
 		return true;
+	}
+
+	public function isMemberOf ($groups): bool
+	{
+		if (is_string($groups)) {
+			$groups = [$groups];
+		}
+		if (is_string($groups[0])) {
+			$allGroups = User::getGroups();
+			$ids = [];
+			foreach ($groups as $group) {
+				foreach ($allGroups as $allGroup) {
+					if ($allGroup['name'] === $group) {
+						$ids[] = $allGroup['id'];
+					}
+				}
+			}
+			$groups = $ids;
+		}
+		foreach ($this->groups as $group => $name) {
+			if (in_array($group, $groups)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public static function current ()

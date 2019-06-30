@@ -76,6 +76,7 @@ trait Ldap
 					if (method_exists($this, 'ldapRow')) {
 						$this->ldapRow($row);
 					}
+					$this->save();
 					return true;
 				}
 			}
