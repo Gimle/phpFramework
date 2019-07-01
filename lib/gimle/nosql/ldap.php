@@ -4,11 +4,15 @@ namespace gimle\nosql;
 
 use \gimle\Config;
 use \gimle\MainConfig;
+use \gimle\Exception;
+
 use const gimle\IS_SUBSITE;
 
 class Ldap
 {
 	use \gimle\trick\Multiton;
+
+	const CRYPT_SHA_512 = 1;
 
 	private $config = null;
 
@@ -32,6 +36,12 @@ class Ldap
 		return new LdapResult($entries);
 	}
 
+	public function modify (string $dn, string $field, $values): void
+	{
+		$values = [$field => $values];
+		ldap_modify($this->connection, $dn, $values);
+	}
+
 	public function login (string $bind, string $password)
 	{
 		$userConnection = ldap_connect($this->config['host']);
@@ -44,5 +54,24 @@ class Ldap
 		catch (\Throwable $t) {
 		}
 		return false;
+	}
+
+	public static function hashPassword (string $password, int $method = self::CRYPT_SHA_512): string
+	{
+		if ($method === self::CRYPT_SHA_512) {
+			$hash = '';
+			$characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+			$count = mb_strlen($characters);
+			for ($i = 0; $i < 16; $i++) {
+				$random = rand(0, $count);
+				$hash .= mb_substr($characters, $random, 1);
+			}
+
+			$password = '{CRYPT}' . crypt($password, '$6$rounds=500000$' . $hash . '$');
+
+			return $password;
+		}
+
+		throw new Exception('Unknown hashing method.');
 	}
 }

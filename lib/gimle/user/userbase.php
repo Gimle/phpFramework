@@ -106,7 +106,7 @@ abstract class UserBase
 
 	public function __get (string $property)
 	{
-		if (in_array($property, ['id', 'uses', 'groups', 'created', 'firstName', 'middleName', 'firstNames', 'lastName', 'fullName', 'email'])) {
+		if (in_array($property, ['id', 'uses', 'groups', 'created', 'firstName', 'middleName', 'firstNames', 'lastName', 'fullName', 'email', 'auth', 'activeLdap'])) {
 			return $this->$property;
 		}
 	}

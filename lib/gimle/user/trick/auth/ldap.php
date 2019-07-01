@@ -14,6 +14,7 @@ use const \gimle\FILTER_SANITIZE_NAME;
 trait Ldap
 {
 	protected $ldapServers = null;
+	protected $activeLdap = [];
 
 	public function initLdap ()
 	{
@@ -76,6 +77,10 @@ trait Ldap
 					if (method_exists($this, 'ldapRow')) {
 						$this->ldapRow($row);
 					}
+					$this->activeLdap = [
+						'server' => $server,
+						'dn' => $row['dn'],
+					];
 					$this->save();
 					return true;
 				}
