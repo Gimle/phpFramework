@@ -9,7 +9,7 @@ class System
 	 *
 	 * @var array
 	 */
-	public static $autoload = [
+	private static $autoload = [
 		['path' => SITE_DIR . 'module/' . MODULE_GIMLE . '/lib/', 'options' => ['toLowercase' => true]]
 	];
 
