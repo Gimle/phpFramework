@@ -4,6 +4,7 @@ namespace gimle\user\storage;
 
 use \gimle\xml\SimpleXmlElement;
 use \gimle\User;
+use \gimle\Exception;
 
 use const \gimle\MAIN_STORAGE_DIR;
 
@@ -75,20 +76,20 @@ class Xml extends \gimle\user\UserBase
 		return $this->id;
 	}
 
-	public function authLoad ($type, $params)
+	public function authLoad (string $type, array $params): bool
 	{
 		$user = $this->authGet($type, $params);
-		if ($user !== false) {
+		if ($user !== null) {
 			self::xmlToUser($user, $this);
 			return true;
 		}
 		return false;
 	}
 
-	public function authUsed ($type, $params)
+	public function authUsed (string $type, array $params): bool
 	{
 		$user = $this->authGet($type, $params);
-		if ($user !== false) {
+		if ($user !== null) {
 			return true;
 		}
 		return false;
@@ -115,6 +116,17 @@ class Xml extends \gimle\user\UserBase
 		return self::xmlToUser($user, new User());
 	}
 
+	public static function deleteUser (int $id): bool
+	{
+		$sxml = SimpleXmlElement::open(MAIN_STORAGE_DIR . 'users.xml', '<users/>');
+		$user = current($sxml->remove('/users/user[@id=' . $id . ']'));
+		if ((int) $user['id'] === $id) {
+			$sxml->save(MAIN_STORAGE_DIR . 'users.xml', true);
+			return true;
+		}
+		return false;
+	}
+
 	public static function getUsers (): array
 	{
 		$return = [];
@@ -125,7 +137,14 @@ class Xml extends \gimle\user\UserBase
 		return $return;
 	}
 
-	private function authGet ($type, $params)
+	public static function getUserCount (): int
+	{
+		$sxml = SimpleXmlElement::open(MAIN_STORAGE_DIR . 'users.xml', '<users/>');
+		$count = count($sxml->xpath('/users/user'));
+		return $count;
+	}
+
+	private function authGet (string $type, array $params): ?SimpleXmlElement
 	{
 		$type = strtolower($type);
 		if (in_array($type, $this->authLoadTypes)) {
@@ -141,10 +160,10 @@ class Xml extends \gimle\user\UserBase
 				return $user;
 			}
 		}
-		return false;
+		return null;
 	}
 
-	private static function xmlToUser ($sxml, $user)
+	private static function xmlToUser (SimpleXmlElement $sxml, User $user): User
 	{
 		$user->id = (int) $sxml['id'];
 		$user->firstName = (string) $sxml->name->first;
@@ -159,7 +178,9 @@ class Xml extends \gimle\user\UserBase
 		$user->groups = [];
 		$groups = explode(',', (string) $sxml['groups']);
 		foreach ($groups as $group) {
-			$user->groups[trim($group)] = '';
+			if (trim($group) !== '') {
+				$user->groups[trim($group)] = '';
+			}
 		}
 
 		$user->field = [];

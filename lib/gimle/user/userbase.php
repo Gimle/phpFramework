@@ -83,6 +83,9 @@ abstract class UserBase
 				$value = null;
 			}
 			if ($value !== null) {
+				if (($property === 'lastName') && (strpos($value, ' ') !== false)) {
+					throw new Exception('Can not set user property: ' . $property);
+				}
 				$this->$property = filter_var($value, FILTER_SANITIZE_NAME);
 				$this->setNames();
 				return;
@@ -101,12 +104,29 @@ abstract class UserBase
 			$this->email = mb_strtolower($value);
 			return;
 		}
+		else if ($property === 'groups') {
+			if (!is_array($value)) {
+				throw new Exception('Can not set user property: ' . $property);
+			}
+			$this->groups = $value;
+			return;
+		}
+		else if ($property === 'auth') {
+			if (!is_array($value)) {
+				throw new Exception('Can not set user property: ' . $property);
+			}
+			if (empty($value)) {
+				throw new Exception('Can not set user property: ' . $property);
+			}
+			$this->auth = $value;
+			return;
+		}
 		throw new Exception('Can not set user property: ' . $property);
 	}
 
 	public function __get (string $property)
 	{
-		if (in_array($property, ['id', 'uses', 'groups', 'created', 'firstName', 'middleName', 'firstNames', 'lastName', 'fullName', 'email', 'auth', 'activeLdap'])) {
+		if (in_array($property, ['id', 'uses', 'groups', 'created', 'firstName', 'middleName', 'firstNames', 'lastName', 'fullName', 'email', 'auth', 'activeLdap', 'authLoadTypes'])) {
 			return $this->$property;
 		}
 	}
@@ -164,9 +184,12 @@ abstract class UserBase
 		return false;
 	}
 
-	public static function current ()
+	public static function current ($reload = false)
 	{
 		if (isset($_SESSION['gimle']['user'])) {
+			if ($reload === true) {
+				$_SESSION['gimle']['user'] = User::getUser($_SESSION['gimle']['user']->id);
+			}
 			return $_SESSION['gimle']['user'];
 		}
 		return new User();
@@ -196,6 +219,36 @@ abstract class UserBase
 		}
 
 		return $user;
+	}
+
+	public function removeAuth (string $type, array $params): bool
+	{
+		$delete = null;
+		foreach ($this->auth[$type] as $index => $auth) {
+			foreach ($params as $key => $value) {
+				if ($auth[$key] !== $value) {
+					continue 2;
+				}
+			}
+			$delete = $index;
+		}
+		$count = 0;
+		foreach ($this->auth as $auth) {
+			foreach ($auth as $value) {
+				$count++;
+				if ($count === 2) {
+					break;
+				}
+			}
+		}
+		if ($count < 2) {
+			$delete = null;
+		}
+		if ($delete !== null) {
+			unset($this->auth[$type][$delete]);
+			return true;
+		}
+		return false;
 	}
 
 	protected function canSave (): bool
