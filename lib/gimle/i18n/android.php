@@ -103,4 +103,20 @@ class Android
 		}
 		return null;
 	}
+
+	public function getJson ()
+	{
+		$return = [];
+		foreach ($this->sxml as $sxml) {
+			foreach ($sxml->xpath('/resources/string') as $string) {
+				$return['string'][(string) $string['name']] = (string) $string;
+			}
+			foreach ($sxml->xpath('/resources/plurals') as $plural) {
+				foreach ($plural->xpath('./item') as $item) {
+					$return['plurals'][(string) $plural['name']][(string) $item['quantity']] = (string) $item;
+				}
+			}
+		}
+		return $return;
+	}
 }

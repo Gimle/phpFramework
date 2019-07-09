@@ -144,4 +144,15 @@ class i18n
 		}
 		return current($message);
 	}
+
+	public function getJson ()
+	{
+		$result = [];
+		if (!empty($this->objects)) {
+			foreach ($this->objects as $object) {
+				$result = array_merge($result, $object->getJson());
+			}
+		}
+		return $result;
+	}
 }
