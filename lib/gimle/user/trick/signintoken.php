@@ -26,7 +26,7 @@ trait SigninToken
 	public static function generateSigninToken (): string
 	{
 		$token = bin2hex(openssl_random_pseudo_bytes(12));
-		$_SESSION['siginin']['token'] = $token;
+		$_SESSION['gimle']['siginin']['token'] = $token;
 		return $token;
 	}
 
@@ -37,8 +37,8 @@ trait SigninToken
 	 */
 	public static function retrieveSigninToken (): ?string
 	{
-		if (isset($_SESSION['siginin']['token'])) {
-			return $_SESSION['siginin']['token'];
+		if (isset($_SESSION['gimle']['siginin']['token'])) {
+			return $_SESSION['gimle']['siginin']['token'];
 		}
 		return null;
 	}
@@ -64,8 +64,8 @@ trait SigninToken
 	 */
 	public static function deleteSigninToken (): void
 	{
-		if (isset($_SESSION['siginin']['token'])) {
-			unset($_SESSION['siginin']['token']);
+		if (isset($_SESSION['gimle']['siginin']['token'])) {
+			unset($_SESSION['gimle']['siginin']['token']);
 		}
 	}
 }
