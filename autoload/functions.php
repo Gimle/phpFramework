@@ -306,6 +306,27 @@ function array_merge_distinct (...$arrays): array
 }
 
 /**
+ * Check if two arrays are equal.
+ *
+ * One level deep check.
+ * key valur order independent.
+ *
+ * @param array $a
+ * @param array $b
+ * @return bool
+ */
+function array_equal (array $a, array $b): bool
+{
+	if (count($a) !== count($b)) {
+		return false;
+	}
+	if (array_diff($a, $b) === array_diff($b, $a)) {
+		return true;
+	}
+	return false;
+}
+
+/**
  * Convert bytes to readable number.
  *
  * @param int $filesize Number of bytes.
