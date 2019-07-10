@@ -528,15 +528,10 @@ class RouterBase extends PathResolver
 						When serving files for a website from a public folder,
 						we need this little probability override to not cause problems with common mime types.
 						*/
-						if ($mime['mime'] === 'text/plain') {
-							if (substr($url, -4, 4) === '.css') {
-								$mime['mime'] = 'text/css';
-							}
-							elseif (substr($url, -3, 3) === '.js') {
-								$mime['mime'] = 'application/javascript';
-							}
+						if (substr($url, -3, 3) === '.js') {
+							$mime['mime'] = 'application/javascript';
 						}
-						elseif (($mime['mime'] === 'text/x-asm') && (substr($url, -4, 4) === '.css')) {
+						elseif (substr($url, -4, 4) === '.css') {
 							$mime['mime'] = 'text/css';
 						}
 						elseif ($mime['mime'] === 'image/svg') {

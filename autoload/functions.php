@@ -306,6 +306,27 @@ function array_merge_distinct (...$arrays): array
 }
 
 /**
+ * Check if two arrays are equal.
+ *
+ * One level deep check.
+ * key valur order independent.
+ *
+ * @param array $a
+ * @param array $b
+ * @return bool
+ */
+function array_equal (array $a, array $b): bool
+{
+	if (count($a) !== count($b)) {
+		return false;
+	}
+	if (array_diff($a, $b) === array_diff($b, $a)) {
+		return true;
+	}
+	return false;
+}
+
+/**
  * Convert bytes to readable number.
  *
  * @param int $filesize Number of bytes.
@@ -350,9 +371,11 @@ function sp (...$data): void
 /**
  * Get full translation table.
  *
+ * @param array $append Append custom values.
+ * @param array $remove Remove unwanted values.
  * @return array
  */
-function get_entities ($append = [], $remove = [])
+function get_entities (array $append = [], array $remove = []): array
 {
 	$table = [];
 
@@ -395,7 +418,7 @@ function get_entities ($append = [], $remove = [])
  * @param int $num
  * @return string
  */
-function code2utf8 ($num)
+function code2utf8 (int $num)
 {
 	if ($num < 128) {
 		return chr($num);

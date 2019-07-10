@@ -37,6 +37,9 @@ window.gimle = (() => {
 		}
 		gimle.BASE_PATH += document.location.href[index];
 	}
+	if (gimle.BASE_PATH[gimle.BASE_PATH.length - 1] !== '/') {
+		gimle.BASE_PATH += '/';
+	}
 
 	gimle.const = function () {
 		let result = {};

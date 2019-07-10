@@ -20,9 +20,7 @@ trait Singelton
 	public static function getInstance (...$args): self
 	{
 		if (self::$instance === false) {
-			$me = get_called_class();
-
-			self::$instance = new $me(...$args);
+			self::$instance = new static(...$args);
 		}
 
 		return self::$instance;

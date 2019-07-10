@@ -31,6 +31,21 @@ function dirname (string $path, int $level = 1): string
 
 
 /**
+ * Returns the full size of a directory.
+ *
+ * @param string $path
+ * @return int Total size in bytes.
+ */
+function dirsize (string $path): int
+{
+	$io = popen('/usr/bin/du -sb ' . escapeshellarg($path), 'r');
+	$size = (int) fgets($io, 80);
+	pclose($io);
+	return $size - 4096;
+}
+
+
+/**
  * Check if a path only travels downwards, as in it has no references to self or parents.
  *
  * This function is intended to check if user input to file locations are not manipulated to travel outside intended root.
@@ -212,7 +227,7 @@ function getPublicFile (string $file): ?array
 		];
 	}
 	if (IS_SUBSITE === true) {
-		$subsiteModules = MainConfig::get('admin.modules');
+		$subsiteModules = MainConfig::get('subsite.' . SITE_ID . '.modules');
 		if ($subsiteModules !== null) {
 			sort($subsiteModules);
 			foreach ($subsiteModules as $module) {

@@ -10,7 +10,7 @@ trait PrivateHelpers
 	 * @param DomElement $dom The DomDocument.
 	 * @return ?SimpleXmlElement
 	 */
-	private function domToSxml (\DomNode $dom): ?self
+	protected function domToSxml (\DomNode $dom): ?self
 	{
 		if (get_class($dom) === 'DOMProcessingInstruction') {
 			// DomProcessingInstruction can not be converted to SimpleXmlElement
@@ -30,7 +30,7 @@ trait PrivateHelpers
 	 * @param mixed $ref The reference to check.
 	 * @return bool
 	 */
-	private function isSxml ($ref): bool
+	protected function isSxml ($ref): bool
 	{
 		if ((get_class($ref)) || (is_subclass_of($ref, 'SimpleXmlElement'))) {
 			return true;
@@ -44,7 +44,7 @@ trait PrivateHelpers
 	 * @param mixed $ref The reference to check.
 	 * @return bool
 	 */
-	private function isDom ($ref): bool
+	protected function isDom ($ref): bool
 	{
 		try {
 			if ((get_class($ref)) && (is_subclass_of($ref, '\DomNode'))) {
@@ -62,7 +62,7 @@ trait PrivateHelpers
 	 * @param mixed $ref The reference to check.
 	 * @return bool
 	 */
-	private function isSelf ($ref): bool
+	protected function isSelf ($ref): bool
 	{
 		$dom = dom_import_simplexml($this);
 		$ref = dom_import_simplexml($ref);
@@ -78,7 +78,7 @@ trait PrivateHelpers
 	 * @param mixed $ref The reference to check.
 	 * @return void
 	 */
-	private function requireSelf ($ref): void
+	protected function requireSelf ($ref): void
 	{
 		if (!isSelf($ref)) {
 			throw new \DomException('The reference node does not come from the same document as the context node.', DOM_WRONG_DOCUMENT_ERR);
@@ -91,7 +91,7 @@ trait PrivateHelpers
 	 * @param mixed $refs
 	 * @return array
 	 */
-	private function resolveReference ($refs = null): array
+	protected function resolveReference ($refs = null): array
 	{
 		if ($refs === null) {
 			return [$this];
@@ -117,7 +117,7 @@ trait PrivateHelpers
 	 * @param mixed $element
 	 * @return self
 	 */
-	private function toSxml ($element): self
+	protected function toSxml ($element): self
 	{
 		if (is_string($element)) {
 			return new self($element);
@@ -136,7 +136,7 @@ trait PrivateHelpers
 	 * @param mixed $element
 	 * @return DomNode
 	 */
-	private function toDom ($element, $allowDomInput = true): \DomNode
+	protected function toDom ($element, $allowDomInput = true): \DomNode
 	{
 		if (($allowDomInput === true) && ($this->isDom($element))) {
 			return $element;

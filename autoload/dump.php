@@ -201,6 +201,22 @@ function var_dump ($var, array $mode = []): ?string
 		elseif (is_bool($var)) {
 			echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ' . colorize('Boolean', 'gray', $mode['background'], $mode['mode']) . ' ' . colorize(($var === true ? 'true' : 'false'), 'bool', $mode['background'], $mode['mode']);
 		}
+		elseif ((is_object($var)) && ($var instanceof \SimpleXmlElement)) {
+			$class = new \ReflectionObject($var);
+			$parents = '';
+			if ($parent = $class->getParentClass()) {
+				$parents .= ' extends ' . $class->getParentClass()->name;
+			}
+			unset($parent);
+			$interfaces = $class->getInterfaces();
+			if (!empty($interfaces)) {
+				$parents .= ' implements ' . implode(', ', array_keys($interfaces));
+			}
+			unset($interfaces);
+
+			echo ' ' . colorize('=>', 'black', $mode['background'], $mode['mode']) . ' ' . colorize($class->getName() . ' Object' . $parents, 'recursion', $mode['background'], $mode['mode']);
+			echo colorize(' (' . $var->getName() . ')', 'gray', $mode['background'], $mode['mode']);
+		}
 		elseif (is_object($var)) {
 			$class = new \ReflectionObject($var);
 			$parents = '';
