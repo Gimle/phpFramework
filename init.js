@@ -166,6 +166,9 @@ class Gimle extends EventEmitter {
 					else if (line[1] === 'false') {
 						value = false;
 					}
+					else if (line[1] === 'null') {
+						value = null;
+					}
 					else if (that[line[1]] !== undefined) {
 						value = that[line[1]];
 					}
