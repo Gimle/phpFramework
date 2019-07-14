@@ -448,7 +448,7 @@ class RouterBase extends PathResolver
 			echo $content;
 		}
 		catch (\Throwable $e) {
-			$this->_preRender();
+			$this->_preRender($e);
 			$this->catch($e);
 		}
 	}
@@ -458,11 +458,11 @@ class RouterBase extends PathResolver
 		$this->preRender = $callback;
 	}
 
-	protected function _preRender ()
+	protected function _preRender ($e = null)
 	{
 		if ($this->preRender !== null) {
 			$preRender = $this->preRender;
-			$preRender();
+			$preRender($e);
 		}
 	}
 
