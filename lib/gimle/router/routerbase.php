@@ -11,6 +11,7 @@ use const \gimle\FILTER_VALIDATE_DIRNAME;
 use const \gimle\MAIN_SITE_DIR;
 
 use \gimle\canvas\Canvas;
+use \gimle\Spectacle;
 
 use function \gimle\filter_var;
 use function \gimle\get_mimetype;
@@ -170,11 +171,18 @@ class RouterBase extends PathResolver
 			}
 		}
 
-		if ((ENV_MODE | ENV_LIVE) !== ENV_LIVE) {
-			$this->bind('*', '__gimle/:id', function () {
-				$this->setCanvas('json');
-				$this->setTemplate('spectacle');
-			});
+		if (current($this->url) === '__gimle') {
+			if (isset($this->url[1])) {
+				header('Content-type: application/json');
+				$res = Spectacle::read($this->url[1]);
+				if ($res === false) {
+					echo json_encode(false);
+				}
+				else {
+					echo trim($res);
+				}
+				die();
+			}
 		}
 
 		if (file_exists(MAIN_SITE_DIR . 'config/manifest.php')) {
