@@ -113,6 +113,13 @@ class RouterBase extends PathResolver
 	 */
 	private $tried = [];
 
+	/**
+	 * Holder for prerentder callback.
+	 *
+	 * @var callable
+	 */
+	private $preRender = null;
+
 	public function __construct ()
 	{
 		if (ENV_MODE & ENV_CLI) {
@@ -418,6 +425,7 @@ class RouterBase extends PathResolver
 						if ($templateResult !== true) {
 							$resultHandler($this->template, $templateResult);
 						}
+						$this->_preRender();
 						echo $content;
 					}
 				}
@@ -436,10 +444,25 @@ class RouterBase extends PathResolver
 			if ($canvasResult !== true) {
 				$resultHandler(null, $canvasResult);
 			}
+			$this->_preRender();
 			echo $content;
 		}
 		catch (\Throwable $e) {
+			$this->_preRender($e);
 			$this->catch($e);
+		}
+	}
+
+	public function preRender (callable $callback): void
+	{
+		$this->preRender = $callback;
+	}
+
+	protected function _preRender ($e = null)
+	{
+		if ($this->preRender !== null) {
+			$preRender = $this->preRender;
+			$preRender($e);
 		}
 	}
 

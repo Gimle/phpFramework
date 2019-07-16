@@ -21,6 +21,9 @@ set_error_handler(function (int $errno, string $message, string $file, int $line
 });
 
 $config = parse_config_file(SITE_DIR . 'config.ini');
+if (get_cfg_var('gimle') !== false) {
+	$config = array_merge_distinct(parse_config_file(get_cfg_var('gimle')), $config, true);
+}
 
 
 $env_add = ((PHP_SAPI === 'cli') ? ENV_CLI : ENV_WEB);
