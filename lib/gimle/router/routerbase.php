@@ -121,6 +121,13 @@ class RouterBase extends PathResolver
 	 */
 	private $preRender = null;
 
+	/**
+	 * Holder for potentional error.
+	 *
+	 * @var ?\Throwable
+	 */
+	public $e = null;
+
 	public function __construct ()
 	{
 		if (ENV_MODE & ENV_CLI) {
@@ -489,6 +496,8 @@ class RouterBase extends PathResolver
 
 	protected function catch ($e)
 	{
+		$this->e = $e;
+
 		$contentType = null;
 		foreach (headers_list() as $header) {
 			if (substr($header, 0, 14) === 'Content-type: ') {
