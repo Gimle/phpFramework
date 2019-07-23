@@ -463,7 +463,6 @@ class RouterBase extends PathResolver
 			echo $content;
 		}
 		catch (\Throwable $e) {
-			$this->_preRender($e);
 			$this->catch($e);
 		}
 	}
@@ -522,6 +521,7 @@ class RouterBase extends PathResolver
 					if (isset($this->fallback[$trial['returnValue']])) {
 						$result = $this->fallback[$trial['returnValue']]($contentType);
 						if ($result === true) {
+							$this->_preRender($e);
 							return true;
 						}
 					}
@@ -556,6 +556,7 @@ class RouterBase extends PathResolver
 						}
 						header('Content-Type: ' . $mime['mime']);
 						readfile(SITE_DIR . 'module/' . $module . '/public/' . ltrim($url, '/'));
+						$this->_preRender();
 						return true;
 					}
 				}
@@ -564,6 +565,7 @@ class RouterBase extends PathResolver
 			$error = 404;
 		}
 
+		$this->_preRender($e);
 		if ($contentType === 'text/html') {
 			Canvas::_override(self::getCanvasPath('html'));
 		}
