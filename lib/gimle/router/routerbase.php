@@ -11,6 +11,7 @@ use const \gimle\FILTER_VALIDATE_DIRNAME;
 use const \gimle\MAIN_SITE_DIR;
 
 use \gimle\canvas\Canvas;
+use \gimle\Spectacle;
 
 use function \gimle\filter_var;
 use function \gimle\get_mimetype;
@@ -120,6 +121,13 @@ class RouterBase extends PathResolver
 	 */
 	private $preRender = null;
 
+	/**
+	 * Holder for potentional error.
+	 *
+	 * @var ?\Throwable
+	 */
+	public $e = null;
+
 	public function __construct ()
 	{
 		if (ENV_MODE & ENV_CLI) {
@@ -170,11 +178,18 @@ class RouterBase extends PathResolver
 			}
 		}
 
-		if ((ENV_MODE | ENV_LIVE) !== ENV_LIVE) {
-			$this->bind('*', '__gimle/:id', function () {
-				$this->setCanvas('json');
-				$this->setTemplate('spectacle');
-			});
+		if (current($this->url) === '__gimle') {
+			if (isset($this->url[1])) {
+				header('Content-type: application/json');
+				$res = Spectacle::read($this->url[1]);
+				if ($res === false) {
+					echo json_encode(false);
+				}
+				else {
+					echo trim($res);
+				}
+				die();
+			}
 		}
 
 		if (file_exists(MAIN_SITE_DIR . 'config/manifest.php')) {
@@ -448,7 +463,6 @@ class RouterBase extends PathResolver
 			echo $content;
 		}
 		catch (\Throwable $e) {
-			$this->_preRender($e);
 			$this->catch($e);
 		}
 	}
@@ -481,6 +495,8 @@ class RouterBase extends PathResolver
 
 	protected function catch ($e)
 	{
+		$this->e = $e;
+
 		$contentType = null;
 		foreach (headers_list() as $header) {
 			if (substr($header, 0, 14) === 'Content-type: ') {
@@ -505,6 +521,7 @@ class RouterBase extends PathResolver
 					if (isset($this->fallback[$trial['returnValue']])) {
 						$result = $this->fallback[$trial['returnValue']]($contentType);
 						if ($result === true) {
+							$this->_preRender($e);
 							return true;
 						}
 					}
@@ -539,6 +556,7 @@ class RouterBase extends PathResolver
 						}
 						header('Content-Type: ' . $mime['mime']);
 						readfile(SITE_DIR . 'module/' . $module . '/public/' . ltrim($url, '/'));
+						$this->_preRender();
 						return true;
 					}
 				}
@@ -547,6 +565,7 @@ class RouterBase extends PathResolver
 			$error = 404;
 		}
 
+		$this->_preRender($e);
 		if ($contentType === 'text/html') {
 			Canvas::_override(self::getCanvasPath('html'));
 		}
