@@ -10,13 +10,16 @@ use const \gimle\MAIN_STORAGE_DIR;
 
 class Xml extends \gimle\user\UserBase
 {
+
+	private static $xmlFileLocation = null;
+
 	public function save (): ?int
 	{
 		if (!$this->canSave()) {
 			return null;
 		}
 
-		$sxml = SimpleXmlElement::open(MAIN_STORAGE_DIR . 'users.xml', '<users/>');
+		$sxml = SimpleXmlElement::open(self::getXmlLocation(), '<users/>');
 
 		if ($this->id === null) {
 			$this->id = $sxml->getNextId('id', 'user');
@@ -71,7 +74,11 @@ class Xml extends \gimle\user\UserBase
 			}
 		}
 
-		$sxml->save(MAIN_STORAGE_DIR . 'users.xml', true);
+		if (method_exists($this, 'postSave')) {
+			$this->postSave($user);
+		}
+
+		$sxml->save(self::getXmlLocation(), true);
 
 		return $this->id;
 	}
@@ -95,10 +102,16 @@ class Xml extends \gimle\user\UserBase
 		return false;
 	}
 
+	public static function asDateTime ($input = null): ?string
+	{
+		$sxml = new SimpleXmlElement('<dt/>');
+		return $sxml->asDateTime($input);
+	}
+
 	public static function getGroups (): array
 	{
 		$return = [];
-		$sxml = SimpleXmlElement::open(MAIN_STORAGE_DIR . 'users.xml', '<users/>');
+		$sxml = SimpleXmlElement::open(self::getXmlLocation(), '<users/>');
 		foreach ($sxml->xpath('/users/group') as $group) {
 			$return[(int) $group['id']] = [
 				'id' => (int) $group['id'],
@@ -111,17 +124,17 @@ class Xml extends \gimle\user\UserBase
 
 	public static function getUser (int $id): User
 	{
-		$sxml = SimpleXmlElement::open(MAIN_STORAGE_DIR . 'users.xml', '<users/>');
+		$sxml = SimpleXmlElement::open(self::getXmlLocation(), '<users/>');
 		$user = current($sxml->xpath('/users/user[@id=' . $id . ']'));
 		return self::xmlToUser($user, new User());
 	}
 
 	public static function deleteUser (int $id): bool
 	{
-		$sxml = SimpleXmlElement::open(MAIN_STORAGE_DIR . 'users.xml', '<users/>');
+		$sxml = SimpleXmlElement::open(self::getXmlLocation(), '<users/>');
 		$user = current($sxml->remove('/users/user[@id=' . $id . ']'));
 		if ((int) $user['id'] === $id) {
-			$sxml->save(MAIN_STORAGE_DIR . 'users.xml', true);
+			$sxml->save(self::getXmlLocation(), true);
 			return true;
 		}
 		return false;
@@ -130,7 +143,7 @@ class Xml extends \gimle\user\UserBase
 	public static function getUsers (): array
 	{
 		$return = [];
-		$sxml = SimpleXmlElement::open(MAIN_STORAGE_DIR . 'users.xml', '<users/>');
+		$sxml = SimpleXmlElement::open(self::getXmlLocation(), '<users/>');
 		foreach ($sxml->xpath('/users/user') as $user) {
 			$return[] = self::xmlToUser($user, new User());
 		}
@@ -139,16 +152,29 @@ class Xml extends \gimle\user\UserBase
 
 	public static function getUserCount (): int
 	{
-		$sxml = SimpleXmlElement::open(MAIN_STORAGE_DIR . 'users.xml', '<users/>');
+		$sxml = SimpleXmlElement::open(self::getXmlLocation(), '<users/>');
 		$count = count($sxml->xpath('/users/user'));
 		return $count;
+	}
+
+	public static function setXmlLocation (string $location): void
+	{
+		self::$xmlFileLocation = $location;
+	}
+
+	private static function getXmlLocation (): string
+	{
+		if (self::$xmlFileLocation === null) {
+			self::$xmlFileLocation = MAIN_STORAGE_DIR . 'users.xml';
+		}
+		return self::$xmlFileLocation;
 	}
 
 	private function authGet (string $type, array $params): ?SimpleXmlElement
 	{
 		$type = strtolower($type);
 		if (in_array($type, $this->authLoadTypes)) {
-			$sxml = SimpleXmlElement::open(MAIN_STORAGE_DIR . 'users.xml', '<users/>');
+			$sxml = SimpleXmlElement::open(self::getXmlLocation(), '<users/>');
 			$xp = '/users/user/auth/' . $type;
 			foreach ($params as $name => $value) {
 				$xp .= '[@' . $name . '=' . $sxml->real_escape_string($value) . ']';
@@ -198,6 +224,10 @@ class Xml extends \gimle\user\UserBase
 		}
 
 		$user->setNames();
+
+		if (method_exists(static::class, 'postXmlToUser')) {
+			static::postXmlToUser($sxml, $user);
+		}
 
 		return $user;
 	}

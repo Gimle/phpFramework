@@ -9,15 +9,8 @@ use \gimle\Exception;
 use function \gimle\filter_var;
 
 use const \gimle\MAIN_SITE_DIR;
+use const \gimle\MAIN_BASE_PATH;
 use const \gimle\FILTER_SANITIZE_NAME;
-
-/**
- * This class requires Parser-PHP to be installed as a submodule.
- *
- * mkdir vendor; cd vendor; git submodule add https://github.com/WhichBrowser/Parser-PHP.git; cd ..
- */
-
-System::autoloadRegister(MAIN_SITE_DIR . 'vendor/Parser-PHP/src/', ['stripRootNamespace' => true], true);
 
 abstract class UserBase
 {
@@ -209,6 +202,9 @@ abstract class UserBase
 			if (method_exists($user, $method)) {
 				if ($user->$method($email, $password) === true) {
 					$logged = true;
+					if (method_exists($user, 'postLogin')) {
+						$user->postLogin($email, $password);
+					}
 					break;
 				}
 			}
