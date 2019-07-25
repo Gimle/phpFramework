@@ -99,8 +99,8 @@ class PathResolver
 			return SITE_DIR . $dir . '/' . $template;
 		}
 		if (IS_SUBSITE) {
-			if (is_readable(MAIN_SITE_DIR . $dir . '/' . $template)) {
-				return MAIN_SITE_DIR . $dir . '/' . $template;
+			if (is_readable(MAIN_SITE_DIR . SITE_ID . '/' . $dir . '/' . $template)) {
+				return MAIN_SITE_DIR . SITE_ID . '/' . $dir . '/' . $template;
 			}
 			$mainModules = MainConfig::get('subsite.' . SITE_ID . '.modules');
 			if ($mainModules !== null) {
