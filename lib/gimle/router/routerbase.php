@@ -397,7 +397,7 @@ class RouterBase extends PathResolver
 			$recuriveCanvasHolder = $this->canvas;
 			$this->canvas = self::getCanvasPath($this->canvas);
 			if ($this->canvas === null) {
-				$this->except(self::E_TEMPLATE_NOT_FOUND);
+				$this->except(self::E_CANVAS_NOT_FOUND);
 			}
 
 			$resultHandler = function ($template, $result) use ($path, $recuriveCanvasHolder) {
