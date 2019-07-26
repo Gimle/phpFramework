@@ -16,9 +16,10 @@ trait Local
 		if (!isset($this->auth['local'])) {
 			return false;
 		}
-		foreach ($this->auth['local'] as $auth) {
+		foreach ($this->auth['local'] as $index => $auth) {
 			if ($auth['email'] === $email) {
 				if (password_verify($password, $auth['password'])) {
+					$this->auth['local'][$index]['last_used'] = $this->asDateTime();
 					return true;
 				}
 			}

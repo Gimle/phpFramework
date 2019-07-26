@@ -26,6 +26,11 @@ trait Ldap
 
 		foreach ($this->ldapServers as $server => $config) {
 			if ($this->loginLdapServer($server, $email, $password, $save) === true) {
+				foreach ($this->auth['ldap'] as $index => $test) {
+					if (($test['server'] === $server) && ($test['email'] === $email)) {
+						$this->auth['ldap'][$index]['last_used'] = $this->asDateTime();
+					}
+				}
 				return true;
 			}
 		}
@@ -96,6 +101,7 @@ trait Ldap
 				if ($save !== false) {
 					$this->save();
 				}
+
 				return true;
 			}
 		}
