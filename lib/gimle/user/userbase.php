@@ -38,11 +38,6 @@ abstract class UserBase
 	protected $lastName = null;
 	protected $fullName = null;
 	protected $email = null;
-	protected $userAgent = [
-		'id' => null,
-		'os' => null,
-		'browser' => null,
-	];
 	protected $created = null;
 	protected $isFirstLogin = null;
 	protected $loginPerformed = null;

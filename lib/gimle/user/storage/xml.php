@@ -58,6 +58,9 @@ class Xml extends \gimle\user\UserBase
 			foreach ($params as $param) {
 				$sub = $auth->addChild($method);
 				foreach ($param as $key => $value) {
+					if ($key === 'last_used') {
+						$value = $sxml->asDateTime($value);
+					}
 					$sub[$key] = $value;
 				}
 			}
@@ -199,7 +202,7 @@ class Xml extends \gimle\user\UserBase
 		$user->lastName = (string) $sxml->name->last;
 		$user->email = (string) $sxml->email;
 
-		$user->created = (string) $sxml['created'];
+		$user->created = date('Y-m-d H:i:s', strtotime((string) $sxml['created']));
 
 		$user->groups = [];
 		$groups = explode(',', (string) $sxml['groups']);
@@ -218,6 +221,9 @@ class Xml extends \gimle\user\UserBase
 		foreach ($sxml->xpath('./auth/*') as $auth) {
 			$sauth = [];
 			foreach ($auth->attributes() as $name => $value) {
+				if ($name === 'last_used') {
+					$value = date('Y-m-d H:i:s', strtotime((string) $value));
+				}
 				$sauth[$name] = (string) $value;
 			}
 			$user->auth[$auth->getName()][] = $sauth;
