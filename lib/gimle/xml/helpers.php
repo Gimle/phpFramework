@@ -173,11 +173,12 @@ trait Helpers
 				return $new->asXml();
 			}
 		}
-
 		$f = fopen($filename, 'rb');
-		flock($f, LOCK_SH);
-		$contents = fread($f, filesize($filename));
-		flock($f, LOCK_UN);
+		if (flock($f, LOCK_SH)) {
+			clearstatcache(true, $filename);
+			$contents = fread($f, filesize($filename));
+			flock($f, LOCK_UN);
+		}
 		fclose($f);
 
 		return $contents;
@@ -210,14 +211,17 @@ trait Helpers
 	public function save (string $filename, bool $pretty = false): void
 	{
 		$f = fopen($filename, 'w');
-		flock($f, LOCK_EX);
-		if ($pretty === true) {
-			fwrite($f, $this->pretty() . "\n");
+		if (flock($f, LOCK_EX)) {
+			ftruncate($f, 0);
+			if ($pretty === true) {
+				fwrite($f, $this->pretty() . "\n");
+			}
+			else {
+				fwrite($f, $this->asXml() . "\n");
+			}
+			fflush($f);
+			flock($f, LOCK_UN);
 		}
-		else {
-			fwrite($f, $this->asXml() . "\n");
-		}
-		flock($f, LOCK_UN);
 		fclose($f);
 	}
 }
