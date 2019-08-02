@@ -276,3 +276,26 @@ function getPublicResource (string $file): ?string
 	}
 	return null;
 }
+
+/**
+ * Load a file from the filesystem, or get a default string if file not found.
+ *
+ * @param string $file The filename.
+ * @param string $default The default content if file not found.
+ * @return string
+ */
+function loadFile (string $filename, string $default = ''): string
+{
+	if (!file_exists($filename)) {
+		return $default;
+	}
+	$f = fopen($filename, 'rb');
+	if (flock($f, LOCK_SH)) {
+		clearstatcache(true, $filename);
+		$contents = fread($f, filesize($filename));
+		flock($f, LOCK_UN);
+	}
+	fclose($f);
+
+	return $contents;
+}
