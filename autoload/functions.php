@@ -430,3 +430,16 @@ function code2utf8 (int $num)
 	}
 	return '';
 }
+
+/**
+ * Json pretty print.
+ *
+ * @param mixed $value
+ * @return string
+ */
+function json_pretty ($value): string
+{
+	$result = \json_encode($value, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT);
+	$result = tab_indent($result);
+	return $result;
+}
