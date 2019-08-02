@@ -31,7 +31,12 @@ class Mongo extends \gimle\user\UserBase
 			$it->rewind();
 			$document = $it->current();
 
-			$user['id'] = $document->id + 1;
+			if ($document !== null) {
+				$user['id'] = $document->id + 1;
+			}
+			else {
+				$user['id'] = 1;
+			}
 			$user['created'] = self::asDateTime();
 		}
 		else {
@@ -193,7 +198,7 @@ class Mongo extends \gimle\user\UserBase
 		]);
 	}
 
-	private function authGet (string $type, array $params): \stdClass
+	private function authGet (string $type, array $params): ?\stdClass
 	{
 		$mongo = MongoDb::getInstance('users');
 
