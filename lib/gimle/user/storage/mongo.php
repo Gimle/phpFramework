@@ -31,12 +31,12 @@ class Mongo extends \gimle\user\UserBase
 			$it->rewind();
 			$document = $it->current();
 
+			$newId = 1;
 			if ($document !== null) {
-				$user['id'] = $document->id + 1;
+				$newId = $document->id + 1;
 			}
-			else {
-				$user['id'] = 1;
-			}
+			$user['id'] = max($this->getAi(), $newId);
+			$this->updateAi($user['id'] + 1);
 			$user['created'] = self::asDateTime();
 		}
 		else {

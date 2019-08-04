@@ -7,9 +7,11 @@ use \gimle\User;
 use \gimle\Exception;
 
 use function \gimle\filter_var;
+use function \gimle\loadFile;
 
 use const \gimle\MAIN_SITE_DIR;
 use const \gimle\MAIN_BASE_PATH;
+use const \gimle\MAIN_STORAGE_DIR;
 use const \gimle\FILTER_SANITIZE_NAME;
 
 abstract class UserBase
@@ -277,5 +279,18 @@ abstract class UserBase
 			$this->firstNames .= ' ' . $this->middleName;
 		}
 		$this->fullName = $this->firstNames . ' ' . $this->lastName;
+	}
+
+	protected function updateAi (int $newid)
+	{
+		if (!file_exists(MAIN_STORAGE_DIR . 'users/')) {
+			mkdir(MAIN_STORAGE_DIR . 'users/');
+		}
+		file_put_contents(MAIN_STORAGE_DIR . 'users/userid.txt', (string) $newid, LOCK_EX);
+	}
+
+	protected function getAi (): int
+	{
+		return (int) loadFile(MAIN_STORAGE_DIR . 'users/userid.txt', '1');
 	}
 }

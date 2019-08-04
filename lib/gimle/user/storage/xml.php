@@ -22,7 +22,8 @@ class Xml extends \gimle\user\UserBase
 		$sxml = SimpleXmlElement::open(self::getXmlLocation(), '<users/>');
 
 		if ($this->id === null) {
-			$this->id = $sxml->getNextId('id', 'user');
+			$this->id = max($this->getAi(), $sxml->getNextId('id', 'user'));
+			$this->updateAi($this->id + 1);
 			$user = $sxml->addChild('user');
 			$user['id'] = $this->id;
 			$user['created'] = $sxml->asDateTime();
