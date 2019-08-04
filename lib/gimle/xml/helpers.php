@@ -20,10 +20,10 @@ trait Helpers
 		$list = [];
 		if (!empty($ids)) {
 			foreach ($ids as $id) {
-				$id = (string)$id;
+				$id = (string) $id;
 				if (substr($id, 0, strlen($prefix)) === $prefix) {
 					if (ctype_digit(substr($id, strlen($prefix)))) {
-						$list[] = (int)substr($id, strlen($prefix));
+						$list[] = (int) substr($id, strlen($prefix));
 					}
 				}
 			}
