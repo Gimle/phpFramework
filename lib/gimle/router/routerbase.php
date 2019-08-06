@@ -122,6 +122,13 @@ class RouterBase extends PathResolver
 	private $preRender = null;
 
 	/**
+	 * Holder for variables that should not be affected by includes.
+	 *
+	 * @var array
+	 */
+	private $vars = [];
+
+	/**
 	 * Holder for potentional error.
 	 *
 	 * @var ?\Throwable
@@ -379,6 +386,7 @@ class RouterBase extends PathResolver
 				$this->except(self::E_METHOD_NOT_FOUND);
 			}
 
+			$this->vars['path'] = $path;
 			if ($this->parseCanvas === true) {
 
 				if ($this->template !== null) {
@@ -399,6 +407,8 @@ class RouterBase extends PathResolver
 			if ($this->canvas === null) {
 				$this->except(self::E_CANVAS_NOT_FOUND);
 			}
+
+			$path = $this->vars['path'];
 
 			$resultHandler = function ($template, $result) use ($path, $recuriveCanvasHolder) {
 				if (count($this->routes) > 0) {
