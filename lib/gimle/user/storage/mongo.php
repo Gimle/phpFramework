@@ -60,6 +60,9 @@ class Mongo extends \gimle\user\UserBase
 			ksort($this->groups);
 			$user['groups'] = array_keys($this->groups);
 		}
+		else {
+			$user['groups'] = [];
+		}
 
 		$user['auth'] = [];
 		foreach ($this->auth as $method => $params) {
