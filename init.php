@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace gimle;
 
 mb_internal_encoding('utf-8');
+setlocale(LC_CTYPE, 'en_US.UTF-8');
 
 foreach (new \RecursiveDirectoryIterator(__DIR__ . '/autoload/', \FilesystemIterator::SKIP_DOTS) as $fileInfo) {
 	$filename = $fileInfo->getFilename();
