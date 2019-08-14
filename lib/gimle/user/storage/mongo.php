@@ -60,6 +60,9 @@ class Mongo extends \gimle\user\UserBase
 			ksort($this->groups);
 			$user['groups'] = array_keys($this->groups);
 		}
+		else {
+			$user['groups'] = [];
+		}
 
 		$user['auth'] = [];
 		foreach ($this->auth as $method => $params) {
@@ -235,8 +238,10 @@ class Mongo extends \gimle\user\UserBase
 		$user->created = date('Y-m-d H:i:s', $document->created->toDateTime()->getTimestamp());
 
 		$user->groups = [];
-		foreach ($document->groups as $group) {
-			$user->groups[$group] = '';
+		if (property_exists($document, 'groups')) {
+			foreach ($document->groups as $group) {
+				$user->groups[$group] = '';
+			}
 		}
 
 		$user->field = [];
