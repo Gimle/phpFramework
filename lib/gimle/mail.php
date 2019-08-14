@@ -25,14 +25,14 @@ class Mail extends PHPMailer
 	 *
 	 * @var ?string
 	 */
-	private $smtpLog = null;
+	public $smtpLog = null;
 
 	/**
 	 * Bound variables.
 	 *
-	 * @var ?array
+	 * @var array
 	 */
-	private $bindVars = null;
+	private $bindVars = [];
 
 	/**
 	 * Push to spectacle?
@@ -40,6 +40,21 @@ class Mail extends PHPMailer
 	 * @var boolean
 	 */
 	private $spectacle = false;
+
+	/**
+	 * Check if from address is set.
+	 */
+	private $fromIsSet = false;
+
+	/**
+	 * Check if mail is prepared.
+	 */
+	private $isPrepared = false;
+
+	/**
+	 * The config for this instance.
+	 */
+	private $config = null;
 
 	/**
 	 * Create a new PHPMailer object.
@@ -50,41 +65,32 @@ class Mail extends PHPMailer
 	public function __construct (?string $key)
 	{
 		parent::__construct(true);
-		$config = Config::get('mail.gimle');
+		$this->config = Config::get('mail.gimle');
 		if ($key !== null) {
-			$config = array_merge_distinct($config, Config::get('mail.' . $key));
+			$this->config = array_merge_distinct($this->config, Config::get('mail.' . $key));
 		}
 
 		$this->CharSet = 'UTF-8';
 
-		if (isset($config['host'])) {
-			$this->Host = $config['host'];
+		if (isset($this->config['host'])) {
+			$this->Host = $this->config['host'];
 		}
-		if (isset($config['user'])) {
+		if (isset($this->config['user'])) {
 			$this->SMTPDebug = 2;
 			$this->isSMTP();
 			$this->Port = 587;
 			$this->SMTPAuth = true;
-			$this->Username = $config['user'];
-			if (isset($config['pass'])) {
-				$this->Password = $config['pass'];
+			$this->Username = $this->config['user'];
+			if (isset($this->config['pass'])) {
+				$this->Password = $this->config['pass'];
 			}
 		}
-		if (isset($config['secure'])) {
-			$this->SMTPSecure = $config['secure'];
+		if (isset($this->config['secure'])) {
+			$this->SMTPSecure = $this->config['secure'];
 		}
 		$this->isHTML(true);
 
-		if (isset($config['address'])) {
-			if (isset($config['name'])) {
-				$this->setFrom($config['address'], $config['name']);
-			}
-			else {
-				$this->setFrom($config['address']);
-			}
-		}
-
-		if ((isset($config['spectacle'])) && ($config['spectacle'] === true)) {
+		if ((isset($this->config['spectacle'])) && ($this->config['spectacle'] === true)) {
 			$this->spectacle = true;
 		}
 	}
@@ -119,18 +125,31 @@ class Mail extends PHPMailer
 	}
 
 	/**
+	 * Set the from address
+	 *
+	 * @param string $address
+	 * @param string $name
+	 * @param bool $auto
+	 * @return mixed
+	 */
+	public function setFrom ($address, $name = '', $auto = true)
+	{
+		$this->fromIsSet = true;
+		return parent::setFrom($address, $name, $auto);
+	}
+
+	/**
 	 * Send the email
 	 *
 	 * @return void
 	 */
 	public function send ()
 	{
-		foreach ($this->bindVars as $key => $value) {
-			$this->Body = str_replace('%' . $key . '%', $value, $this->Body);
-			$this->AltBody = str_replace('%' . $key . '%', $value, $this->AltBody);
-		}
-		if ($this->Subject === '') {
-			$this->Subject = $this->getTitle();
+		$this->prepare();
+
+		if (isset($this->config['sender'])) {
+			$this->config['sender']($this);
+			return;
 		}
 
 		ob_start();
@@ -147,12 +166,34 @@ class Mail extends PHPMailer
 	}
 
 	/**
-	 * Get the smtp log.
+	 * Prepare the email.
 	 *
-	 * @return ?string
+	 * @return void
 	 */
-	public function getSmtpLog ()
+	public function prepare (): void
 	{
-		return $this->smtpLog;
+		if ($this->isPrepared === true) {
+			return;
+		}
+		$this->isPrepared = true;
+
+		foreach ($this->bindVars as $key => $value) {
+			$this->Body = str_replace('%' . $key . '%', $value, $this->Body);
+			$this->AltBody = str_replace('%' . $key . '%', $value, $this->AltBody);
+		}
+		if ($this->Subject === '') {
+			$this->Subject = $this->getTitle();
+		}
+
+		if ($this->fromIsSet === false) {
+			if (isset($this->config['address'])) {
+				if (isset($this->config['name'])) {
+					$this->setFrom($this->config['address'], $this->config['name']);
+				}
+				else {
+					$this->setFrom($this->config['address']);
+				}
+			}
+		}
 	}
 }
