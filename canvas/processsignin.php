@@ -27,12 +27,39 @@ try {
 			}
 			$_SESSION['gimle']['user'] = $user;
 		}
+		elseif (isset($_POST['oauth'])) {
+			try {
+				call_user_func([__NAMESPACE__ . '\\User', 'redirect'  . ucfirst($_POST['oauth'])]);
+				$_SESSION['gimle']['awaitAuthFeedback'] = $_POST['oauth'];
+				die();
+			}
+			catch (\Throwable $t) {
+				sp($t);
+			}
+
+			throw new Exception('Unknown signin operation.', User::UNKNOWN_OPERATION);
+		}
 		else {
 			throw new Exception('Unknown signin operation.', User::UNKNOWN_OPERATION);
 		}
 	}
 	else {
-		throw new Exception('Unknown signin operation.', User::UNKNOWN_OPERATION);
+		$loginClass = $_SESSION['gimle']['awaitAuthFeedback'];
+		unset($_SESSION['gimle']['awaitAuthFeedback']);
+
+		try {
+			$user = call_user_func([__NAMESPACE__ . '\\User', 'login'  . ucfirst($loginClass)]);
+			if ($user->id === null) {
+				throw new Exception('User not found.', User::USER_NOT_FOUND);
+			}
+			$_SESSION['gimle']['user'] = $user;
+		}
+		catch (\Throwable $t) {
+			sp($_GET);
+			sp($t);
+
+			throw new Exception('Unknown signin operation.', User::UNKNOWN_OPERATION);
+		}
 	}
 }
 catch (Exception $e) {
