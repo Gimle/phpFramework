@@ -575,6 +575,18 @@ class RouterBase extends PathResolver
 			$error = 404;
 		}
 
+		if (isset($this->fallback[$error])) {
+			while (ob_get_length() !== false) {
+				ob_end_clean();
+			}
+			$result = $this->fallback[$error]($contentType);
+			if ($result === true) {
+				$this->_preRender($e);
+				Canvas::_create();
+				return true;
+			}
+		}
+
 		$this->_preRender($e);
 		if ($contentType === 'text/html') {
 			Canvas::_override(self::getCanvasPath('html'));
