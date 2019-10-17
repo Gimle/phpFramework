@@ -20,6 +20,9 @@ class Mongo
 		if (($this->config === null) && (IS_SUBSITE)) {
 			$this->config = MainConfig::get('mongo.' . $key);
 		}
+		if (!is_array($this->config)) {
+			throw new Exception('Could not find db configuration.');
+		}
 
 		$this->connection = new \MongoDB\Driver\Manager($this->config['host']);
 	}

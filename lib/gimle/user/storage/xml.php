@@ -6,6 +6,8 @@ use \gimle\xml\SimpleXmlElement;
 use \gimle\User;
 use \gimle\Exception;
 
+use function \gimle\sp;
+
 use const \gimle\MAIN_STORAGE_DIR;
 
 class Xml extends \gimle\user\UserBase
@@ -68,11 +70,13 @@ class Xml extends \gimle\user\UserBase
 		}
 
 		if (!empty($this->field)) {
-			$field = $user->addChild('field');
+			$fields = $user->addChild('fields');
 			foreach ($this->field as $method => $values) {
-				foreach ($values as $value) {
-					$sub = $field->addChild('string');
-					$sub['name'] = $method;
+				$group = $fields->addChild('group');
+				$group['name'] = $method;
+				foreach ($values as $index => $value) {
+					$sub = $group->addChild('string');
+					$sub['name'] = $index;
 					$sub[0] = $value;
 				}
 			}
@@ -214,8 +218,10 @@ class Xml extends \gimle\user\UserBase
 		}
 
 		$user->field = [];
-		foreach ($sxml->xpath('./field/*') as $field) {
-			$user->field[$field->getName()][] = (string) $field;
+		foreach ($sxml->xpath('./fields/group') as $group) {
+			foreach ($group->xpath('./*') as $field) {
+				$user->field[(string) $group['name']][(string) $field['name']] = (string) $field;
+			}
 		}
 
 		$user->auth = [];

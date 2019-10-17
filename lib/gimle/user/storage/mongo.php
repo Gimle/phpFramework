@@ -77,6 +77,14 @@ class Mongo extends \gimle\user\UserBase
 			}
 		}
 
+		if (!empty($this->field)) {
+			foreach ($this->field as $method => $values) {
+				foreach ($values as $index => $value) {
+					$user['fields'][$method][$index] = $value;
+				}
+			}
+		}
+
 		if (method_exists($this, 'postSave')) {
 			$user = $this->postSave($user);
 		}
@@ -245,6 +253,11 @@ class Mongo extends \gimle\user\UserBase
 		}
 
 		$user->field = [];
+		foreach ($document->fields as $group => $data) {
+			foreach ($data as $key => $value) {
+				$user->field[$group][$key] = $value;
+			}
+		}
 
 		$user->auth = [];
 		foreach ($document->auth as $auth) {
