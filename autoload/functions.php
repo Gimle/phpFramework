@@ -11,7 +11,7 @@ use \gimle\Spectacle;
  */
 function session_available (): bool
 {
-	$sessionName = 'gimle' . ucfirst(preg_replace('/[^a-zA-Z]/', '', MAIN_SITE_ID));
+	$sessionName = 'gimle' . ucfirst(preg_replace('/[^a-zA-Z0-9]/', '', MAIN_SITE_ID));
 	if (isset($_COOKIE[$sessionName])) {
 		if (is_readable(session_save_path() . '/sess_' . $_COOKIE[$sessionName])) {
 			return true;
@@ -40,7 +40,7 @@ function session_start (): void
 		}
 		session_set_cookie_params(0, $urlPartsBase['path'], '', $secure, true);
 		if (ENV_MODE & ENV_WEB) {
-			session_name('gimle' . ucfirst(preg_replace('/[^a-zA-Z]/', '', MAIN_SITE_ID)));
+			session_name('gimle' . ucfirst(preg_replace('/[^a-zA-Z0-9]/', '', MAIN_SITE_ID)));
 		}
 		\session_start();
 	}
