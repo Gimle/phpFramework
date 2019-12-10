@@ -31,6 +31,24 @@ function dirname (string $path, int $level = 1): string
 
 
 /**
+ * Get a unique file name.
+ *
+ * @param string $dir In which directory to check for uniqueness.
+ * @param string $prefix Custom prefix, default = ''.
+ * @param string $postfix Custom postfix, default = ''.
+ * @return string The unique file name.
+ */
+function uniquename ($dir = TEMP_DIR, $prefix = '', $postfix = ''): string
+{
+	$name = random();
+	if (!file_exists($dir . $prefix . $name . $postfix)) {
+		return $prefix . $name . $postfix;
+	}
+	return tempname($dir, $prefix, $postfix);
+}
+
+
+/**
  * Returns the full size of a directory.
  *
  * @param string $path
