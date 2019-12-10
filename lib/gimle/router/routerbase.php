@@ -9,6 +9,7 @@ use const \gimle\ENV_LIVE;
 use const \gimle\ENV_CLI;
 use const \gimle\FILTER_VALIDATE_DIRNAME;
 use const \gimle\MAIN_SITE_DIR;
+use const \gimle\SITE_ID;
 
 use \gimle\canvas\Canvas;
 use \gimle\Spectacle;
@@ -548,8 +549,16 @@ class RouterBase extends PathResolver
 				if ($pos !== false) {
 					$module = substr($url, 0, $pos);
 					$url = ltrim(substr($url, $pos), '/');
-					if (($url !== false) && (is_readable(SITE_DIR . 'module/' . $module . '/public/' . $url))) {
-						$mime = get_mimetype(SITE_DIR . 'module/' . $module . '/public/' . $url);
+
+					$path = null;
+					if (($module === 'local') && ($url !== false) && (is_readable(MAIN_SITE_DIR . SITE_ID . '/' . '/public/' . $url))) {
+						$path = MAIN_SITE_DIR . SITE_ID . '/' . '/public/';
+					}
+					elseif (($url !== false) && (is_readable(SITE_DIR . 'module/' . $module . '/public/' . $url))) {
+						$path = SITE_DIR . 'module/' . $module . '/public/';
+					}
+					if ($path !== null) {
+						$mime = get_mimetype($path . $url);
 						/*
 						Sometimes the system reports wrong mime type.
 						When serving files for a website from a public folder,
@@ -565,7 +574,7 @@ class RouterBase extends PathResolver
 							$mime['mime'] = 'image/svg+xml';
 						}
 						header('Content-Type: ' . $mime['mime']);
-						readfile(SITE_DIR . 'module/' . $module . '/public/' . ltrim($url, '/'));
+						readfile($path . ltrim($url, '/'));
 						$this->_preRender();
 						return true;
 					}
