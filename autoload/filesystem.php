@@ -245,6 +245,12 @@ function getPublicFile (string $file): ?array
 		];
 	}
 	if (IS_SUBSITE === true) {
+		if (is_readable(MAIN_SITE_DIR . SITE_ID . '/public/' . $file)) {
+			return [
+				'local' => MAIN_SITE_DIR . SITE_ID . '/public/' . $file,
+				'public' => BASE_PATH . 'module/local/' . $file
+			];
+		}
 		$subsiteModules = MainConfig::get('subsite.' . SITE_ID . '.modules');
 		if ($subsiteModules !== null) {
 			sort($subsiteModules);
