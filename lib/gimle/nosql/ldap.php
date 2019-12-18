@@ -28,12 +28,29 @@ class Ldap
 		ldap_bind($this->connection, $this->config['bind'], $this->config['password']);
 	}
 
-	public function search (string $dn, string $filter, array $attributes = ['*'])
+	public function search ($dn, string $filter, array $attributes = ['*'])
 	{
-		$result = ldap_search($this->connection, $dn, $filter, $attributes);
-		$entries = ldap_get_entries($this->connection, $result);
+		if (is_array($dn)) {
+			$connections = [];
+			foreach ($dn as $devnull) {
+				$connections[] = $this->connection;
+			}
+			$result = ldap_search($connections, $dn, $filter, $attributes);
+		}
+		else {
+			$result = ldap_search($this->connection, $dn, $filter, $attributes);
+		}
+		if (!is_array($result)) {
+			$entries = ldap_get_entries($this->connection, $result);
+			return new LdapResult($entries);
+		}
 
-		return new LdapResult($entries);
+		$return = [];
+		foreach ($result as $res) {
+			$entries = ldap_get_entries($this->connection, $res);
+			$return[] = new LdapResult($entries);
+		}
+		return $return;
 	}
 
 	public function modify (string $dn, string $field, $values): void
