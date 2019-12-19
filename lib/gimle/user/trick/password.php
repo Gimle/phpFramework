@@ -4,6 +4,8 @@ namespace gimle\user\trick;
 
 use \gimle\MainConfig;
 
+use function \gimle\random;
+
 trait Password
 {
 	/**
@@ -13,16 +15,7 @@ trait Password
 	 */
 	public static function generatePassword (): string
 	{
-		$length = rand(18, 26);
-		$return = '';
-		$characters = '!#$%&()+-./:;<=>?@\\~|abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
-		$count = mb_strlen($characters);
-		for ($i = 0; $i < $length; $i++) {
-			$random = rand(0, $count);
-			$return .= mb_substr($characters, $random, 1);
-		}
-
-		return $return;
+		return random('!#$%&()+-./:;<=>?@\\~|abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890');
 	}
 
 	/**

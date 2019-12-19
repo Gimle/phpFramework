@@ -157,3 +157,29 @@ function tab_indent (string $string, int $spaces = 4): string
 	$regex = '/^' . $spaces . '|\G' . $spaces . '/m';
 	return preg_replace($regex, "\t", $string);
 }
+
+
+/**
+ * Generate a random string.
+ *
+ * @param ?string $characters The possible characters for the string.
+ * @param ?int $length The length of the string.
+ * @return string The generated string.
+ */
+function random ($characters = null, $length = null)
+{
+	if ($length === null) {
+		$length = rand(18, 26);
+	}
+	if ($characters === null) {
+		$characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+	}
+	$return = '';
+	$count = mb_strlen($characters);
+	for ($i = 0; $i < $length; $i++) {
+		$random = rand(0, $count);
+		$return .= mb_substr($characters, $random, 1);
+	}
+
+	return $return;
+}

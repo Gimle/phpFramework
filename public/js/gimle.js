@@ -117,26 +117,29 @@ window.gimle = (() => {
 		}
 
 		for (let selector of this.selector) {
-			let thisEvent = {
-				type: type.split('.')[0],
-				namespacedType: type,
-				selector: selector,
-				callback: callback,
-				options: options,
-				useCapture: useCapture
-			};
-			if (listen !== undefined) {
-				thisEvent.callback = function (e) {
-					if (gimle.selfOrParentMatch(e.target, listen) !== null) {
-						callback.call(e.target, e);
-					}
+			let types = type.split(' ');
+			for (let type of types) {
+				let thisEvent = {
+					type: type.split('.')[0],
+					namespacedType: type,
+					selector: selector,
+					callback: callback,
+					options: options,
+					useCapture: useCapture
 				};
+				if (listen !== undefined) {
+					thisEvent.callback = function (e) {
+						if (gimle.selfOrParentMatch(e.target, listen) !== null) {
+							callback.call(e.target, e);
+						}
+					};
+				}
+				selector.addEventListener(thisEvent.type, thisEvent.callback, thisEvent.options, thisEvent.useCapture);
+				if (selector.gimle.eventStore === undefined) {
+					selector.gimle.eventStore = [];
+				}
+				selector.gimle.eventStore.push(thisEvent);
 			}
-			selector.addEventListener(thisEvent.type, thisEvent.callback, thisEvent.options, thisEvent.useCapture);
-			if (selector.gimle.eventStore === undefined) {
-				selector.gimle.eventStore = [];
-			}
-			selector.gimle.eventStore.push(thisEvent);
 		}
 	};
 

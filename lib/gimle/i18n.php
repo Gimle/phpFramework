@@ -147,7 +147,9 @@ class i18n
 
 	public function getJson ()
 	{
-		$result = [];
+		$result = [
+			'string' => [],
+		];
 		if (!empty($this->objects)) {
 			foreach ($this->objects as $object) {
 				$result = array_merge($result, $object->getJson());

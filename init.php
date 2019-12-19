@@ -183,6 +183,9 @@ $getBase = function (): string {
 	if (isset($_SERVER['MATCH_SITENAME'])) {
 		$base .= $_SERVER['MATCH_SITENAME'];
 	}
+	else if (isset($_SERVER['REDIRECT_MATCH_SITENAME'])) {
+		$base .= $_SERVER['REDIRECT_MATCH_SITENAME'];
+	}
 	else {
 		$base .= ltrim($_SERVER['SCRIPT_NAME'], '/');
 		if (mb_strlen(basename($_SERVER['SCRIPT_NAME'])) > 0) {

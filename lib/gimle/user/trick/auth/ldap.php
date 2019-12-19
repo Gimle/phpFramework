@@ -45,7 +45,17 @@ trait Ldap
 		$ldap = \gimle\nosql\Ldap::getInstance($server);
 		$config = $this->ldapServers[$server];
 		$result = $ldap->search($config['users'], '(' . $config['email'] . '=' . ldap_escape($email) . ')');
-		$row = $result->fetch();
+		if (!is_array($result)) {
+			$row = $result->fetch();
+		}
+		else {
+			foreach ($result as $res) {
+				$row = $res->fetch();
+				if ($row !== null) {
+					break;
+				}
+			}
+		}
 		if ($row !== null) {
 			$result = $ldap->login($row['dn'], $password);
 			if ($result === true) {
