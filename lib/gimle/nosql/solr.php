@@ -43,11 +43,17 @@ class Solr
 		if ($url !== null) {
 			$this->url = $url;
 		}
+		elseif ((IS_SUBSITE) && (MainConfig::get('solr.url') !== null)) {
+			$this->url = MainConfig::get('solr.url');
+		}
 		elseif (Config::get('solr.url') !== null) {
 			$this->url = Config::get('solr.url');
 		}
 		if ($core !== null) {
 			$this->core = $core;
+		}
+		elseif ((IS_SUBSITE) && (MainConfig::get('solr.core') !== null)) {
+			$this->core = MainConfig::get('solr.core');
 		}
 		elseif (Config::get('solr.core') !== null) {
 			$this->core = Config::get('solr.core');
