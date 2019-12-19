@@ -32,6 +32,9 @@ window.gimle = (() => {
 
 	gimle.BASE_PATH = '';
 	for (let index in document.location.href) {
+		if (document.currentScript.src.substr(index).startsWith('module/gimle/js/gimle.js')) {
+			break;
+		}
 		if (document.location.href[index] !== document.currentScript.src[index]) {
 			break;
 		}
