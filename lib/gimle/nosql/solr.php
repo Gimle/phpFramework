@@ -134,6 +134,30 @@ class Solr
 	}
 
 	/**
+	 * Get solr metrics
+	 *
+	 * @param string $group The group to query metrics from.
+	 * @param array $params Parameters for the metrics.
+	 * return @array
+	 */
+	public function metrics (string $group, array $params = []): array
+	{
+		$params = ['group' => $group] + $params;
+
+		$fetch = new Fetch();
+		$fetch->connectionTimeout(2);
+		$fetch->resultTimeout(3);
+
+		$queryString = http_build_query($params, '', '&');
+
+		$searchUrl = $this->url . 'admin/metrics?' . $queryString;
+
+		$result = $fetch->query($searchUrl);
+
+		return json_decode($result['reply'], true);
+	}
+
+	/**
 	 * Delete a record.
 	 *
 	 * @param mixed $id int to delete by id, or string to delete by query.
