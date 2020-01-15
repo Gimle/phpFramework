@@ -118,22 +118,31 @@ function sub_path (?string $dir, bool $urldecode = true): ?string
  *
  * @param string $path Path to root directory to clear.
  * @param bool $deleteRoot Also delete the root directory (Default: false)
- * @return void
+ * @return array The paths of the deleted files
  */
-function clear_dir ($path, $deleteRoot = false)
+function clear_dir ($path, $deleteRoot = false): array
 {
+	$result = [
+		'dir' => [],
+		'file' => [],
+	];
 	$files = glob(rtrim(str_replace('\\', '\\\\', $path), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . '*');
 	foreach ($files as $file) {
 		if ((is_dir($file)) && (!is_link($file))) {
-			clear_dir($file, true);
+			$res = clear_dir($file, true);
+			$result['dir'] = $result['dir'] + $res['dir'];
+			$result['file'] = $result['file'] + $res['file'];
 		}
 		else {
 			unlink($file);
+			$result['file'][] = $file;
 		}
 	}
 	if ($deleteRoot === true) {
 		rmdir($path);
+		$result['dir'][] = $path;
 	}
+	return $result;
 }
 
 /**
