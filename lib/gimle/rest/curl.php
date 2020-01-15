@@ -153,7 +153,7 @@ class Curl
 			}
 
 			if ($this->multipart === true) {
-				curl_setopt($ch, CURLOPT_POSTFIELDS, $this->body);
+				$this->body = $this->post;
 			}
 			elseif (is_array($this->post)) {
 				$this->body = http_build_query($this->post);
