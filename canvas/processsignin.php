@@ -4,6 +4,18 @@ namespace gimle;
 
 try {
 	session_start();
+	if ((isset($_POST['auto'])) && (!isset($_COOKIE[session_name() . 'AutoSignin']))) {
+		$urlPartsBase = parse_url(MAIN_BASE_PATH);
+		setcookie(
+			session_name() . 'AutoSignin',
+			'true',
+			time() + (86400 * 400),
+			$urlPartsBase['path'],
+			'',
+			true,
+			true
+		);
+	}
 
 	User::clearSigninException();
 
@@ -64,6 +76,16 @@ try {
 }
 catch (Exception $e) {
 	$e->set('post', $_POST);
+	$urlPartsBase = parse_url(MAIN_BASE_PATH);
+	setcookie(
+		session_name() . 'AutoSignin',
+		'false',
+		time() - (86400 * 400),
+		$urlPartsBase['path'],
+		'',
+		true,
+		true
+	);
 	User::setSigninException($e);
 }
 
