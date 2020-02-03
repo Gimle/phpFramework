@@ -529,10 +529,15 @@ class RouterBase extends PathResolver
 			$tried = $e->get('tried');
 			if ($tried !== null) {
 				foreach ($tried as $trial) {
-					if (isset($this->fallback[$trial['returnValue']])) {
-						$result = $this->fallback[$trial['returnValue']]($contentType);
+					$returnValue = $trial['returnValue'];
+					if ((is_array($returnValue)) && (isset($returnValue['status']))) {
+						$returnValue = $returnValue['status'];
+					}
+					if (isset($this->fallback[$returnValue])) {
+						$result = $this->fallback[$returnValue]($contentType, $trial);
 						if ($result === true) {
 							$this->_preRender($e);
+							sp($e);
 							return true;
 						}
 					}
@@ -583,12 +588,13 @@ class RouterBase extends PathResolver
 
 			$error = 404;
 		}
+		sp($e);
 
 		if (isset($this->fallback[$error])) {
 			while (ob_get_length() !== false) {
 				ob_end_clean();
 			}
-			$result = $this->fallback[$error]($contentType);
+			$result = $this->fallback[$error]($contentType, $error);
 			if ($result === true) {
 				$this->_preRender($e);
 				Canvas::_create();
@@ -603,7 +609,6 @@ class RouterBase extends PathResolver
 		else {
 			Canvas::_override(self::getCanvasPath('json'));
 		}
-		sp($e);
 		inc(self::getTemplatePath('error/' . $error), $e);
 		Canvas::_create();
 	}
