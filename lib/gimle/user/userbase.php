@@ -80,18 +80,18 @@ abstract class UserBase
 				$this->setNames();
 				return;
 			}
-			if (in_array($property, ['firstName', 'lastName'])) {
-				throw new Exception('Property value required: ' . $property);
-			}
 			$this->$property = null;
 			$this->setNames();
 			return;
 		}
 		else if ($property === 'email') {
-			if ((!is_string($value)) || (!filter_var($value, FILTER_VALIDATE_EMAIL))) {
+			if ((is_string($value)) && ($value !== '') && (!filter_var($value, FILTER_VALIDATE_EMAIL))) {
 				throw new Exception('Can not set user property: ' . $property);
+				$this->email = mb_strtolower($value);
 			}
-			$this->email = mb_strtolower($value);
+			else {
+				$this->email = null;
+			}
 			return;
 		}
 		else if ($property === 'groups') {
@@ -119,6 +119,11 @@ abstract class UserBase
 		if (in_array($property, ['id', 'uses', 'groups', 'created', 'firstName', 'middleName', 'firstNames', 'lastName', 'fullName', 'email', 'auth', 'activeLdap', 'authLoadTypes'])) {
 			return $this->$property;
 		}
+	}
+
+	public function getTitle (): string
+	{
+		return $this->fullName;
 	}
 
 	public function field (string $id, $value = null): ?array
