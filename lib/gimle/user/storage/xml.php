@@ -12,7 +12,6 @@ use const \gimle\MAIN_STORAGE_DIR;
 
 class Xml extends \gimle\user\UserBase
 {
-
 	private static $xmlFileLocation = null;
 
 	public function save (): ?int
@@ -89,6 +88,135 @@ class Xml extends \gimle\user\UserBase
 		$sxml->save(self::getXmlLocation(), true);
 
 		return $this->id;
+	}
+
+	public static function getGroupMembers ($group)
+	{
+		$sxml = SimpleXmlElement::open(self::getXmlLocation(), '<users/>');
+		$result = [];
+		if (!is_int($group)) {
+			$group = (int) current($sxml->xpath('/users/group[@name=' . $sxml->real_escape_string($group) . ']'))['id'];
+		}
+		foreach ($sxml->xpath('/users/user') as $user) {
+			$groups = (string) $user['groups'];
+			if ($groups === '') {
+				continue;
+			}
+			$groups = explode(',', $groups);
+			$groups = array_map('trim', $groups);
+			if (in_array($group, $groups)) {
+				$result[] = (int) $user['id'];
+			}
+		}
+		return $result;
+	}
+
+	public static function updateGroup (string $name, string $description, $edit, ?int $newid = null): bool
+	{
+		if (!is_int($edit)) {
+			throw new \Exception('Not implemented.');
+		}
+		if ($newid !== null) {
+			return false;
+		}
+		$sxml = SimpleXmlElement::open(self::getXmlLocation(), '<users/>');
+		$group = current($sxml->xpath('/users/group[@id=' . $sxml->real_escape_string((string) $edit) . ']'));
+		if ($group === false) {
+			return false;
+		}
+		if (!preg_match('/^[a-z\-]+$/', $name)) {
+			return false;
+		}
+		$group['name'] = $name;
+		$group[0] = $description;
+
+		$sxml->save(self::getXmlLocation(), true);
+		return true;
+	}
+
+	public static function addGroup (string $name, string $description, int $id = null): bool
+	{
+		if (($id !== null) && ($id < 3)) {
+			return false;
+		}
+		if (!preg_match('/^[a-z\-]+$/', $name)) {
+			return false;
+		}
+		$sxml = SimpleXmlElement::open(self::getXmlLocation(), '<users/>');
+		$groups = $sxml->xpath('/users/group');
+
+		foreach ($groups as $group) {
+			if ((string) $group['name'] === $name) {
+				return false;
+			}
+		}
+
+		if ($id === null) {
+			$id = 1001;
+			foreach ($groups as $group) {
+				if ((int) $group['id'] >= $id) {
+					$id = ((int) $group['id']) + 1;
+				}
+			}
+		}
+		else {
+			foreach ($groups as $group) {
+				if ((int) $group['id'] === $id) {
+					return false;
+				}
+			}
+		}
+		$new = new SimpleXmlElement('<group id=' . $sxml->real_escape_string((string) $id) . ' name=' . $sxml->real_escape_string($name) . '></group>');
+		if (trim($description) !== '') {
+			$new[0] = "\n\t\t" . trim($description) . "\n\t";
+		}
+		end($groups)->insertAfter($new);
+		$groups = $sxml->xpath('/users/group');
+		$arr = [];
+		foreach ($groups as $group) {
+			$arr[] = $group;
+		}
+		usort($arr, function ($a, $b) {
+			return (int) $b['id'] <=> (int) $a['id'];
+		});
+		$sxml->remove('/users/group');
+		foreach ($arr as $node) {
+			current($sxml->xpath('/users'))->insertFirst($node);
+		}
+
+		$sxml->save(self::getXmlLocation(), true);
+
+		return true;
+	}
+
+	public static function deleteGroup ($group): bool
+	{
+		if (!is_int($group)) {
+			throw new \Exception('Not implemented.');
+		}
+
+		if ($group < 3) {
+			throw new \Exception('Can not delete this group.');
+		}
+
+		$sxml = SimpleXmlElement::open(self::getXmlLocation(), '<users/>');
+		$found = current($sxml->xpath('/users/group[@id=' . $sxml->real_escape_string((string) $group) . ']'));
+		if ($found === false) {
+			return false;
+		}
+		$found->remove();
+
+		$members = self::getGroupMembers($group);
+		foreach ($members as $member) {
+			$node = current($sxml->xpath('/users/user[@id="' . $member . '"]'));
+			$nodeGroups = explode(',', (string) $node['groups']);
+			$nodeGroups = array_map('trim', $nodeGroups);
+			$key = array_search((string) $group, $nodeGroups);
+			unset($nodeGroups[$key]);
+			$node['groups'] = implode(',', $nodeGroups);
+		}
+		$sxml->save(self::getXmlLocation(), true);
+		return true;
 	}
 
 	public function authLoad (string $type, array $params): bool
@@ -170,7 +298,7 @@ class Xml extends \gimle\user\UserBase
 		self::$xmlFileLocation = $location;
 	}
 
-	private static function getXmlLocation (): string
+	protected static function getXmlLocation (): string
 	{
 		if (self::$xmlFileLocation === null) {
 			self::$xmlFileLocation = MAIN_STORAGE_DIR . 'users.xml';
