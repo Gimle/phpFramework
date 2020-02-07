@@ -4,17 +4,8 @@ namespace gimle;
 
 try {
 	session_start();
-	if ((isset($_POST['auto'])) && (!isset($_COOKIE[session_name() . 'AutoSignin']))) {
-		$urlPartsBase = parse_url(MAIN_BASE_PATH);
-		setcookie(
-			session_name() . 'AutoSignin',
-			'true',
-			time() + (86400 * 400),
-			$urlPartsBase['path'],
-			'',
-			true,
-			true
-		);
+	if ((isset($_POST['auto'])) && (!isset($_COOKIE[session_name() . 'Asi']))) {
+		User::setCookie('Asi', 'true');
 	}
 
 	User::clearSigninException();
@@ -24,12 +15,13 @@ try {
 	}
 
 	if (!isset($_SESSION['gimle']['awaitAuthFeedback'])) {
-		if (!isset($_POST['token'])) {
-			throw new Exception('Payload missing.', User::MISSING_PAYLOAD);
-		}
-
-		if (!User::validateSigninToken($_POST['token'])) {
-			throw new Exception('Payload not valid.', User::INVALID_PAYLOAD);
+		if (!isset($_GET['oauth'])) {
+			if (!isset($_POST['token'])) {
+				throw new Exception('Payload missing.', User::MISSING_PAYLOAD);
+			}
+			if (!User::validateSigninToken($_POST['token'])) {
+				throw new Exception('Payload not valid.', User::INVALID_PAYLOAD);
+			}
 		}
 
 		if ((isset($_POST['email'])) && (isset($_POST['password']))) {
@@ -39,10 +31,10 @@ try {
 			}
 			$_SESSION['gimle']['user'] = $user;
 		}
-		elseif (isset($_POST['oauth'])) {
+		elseif (isset($_REQUEST['oauth'])) {
 			try {
-				call_user_func([__NAMESPACE__ . '\\User', 'redirect'  . ucfirst($_POST['oauth'])]);
-				$_SESSION['gimle']['awaitAuthFeedback'] = $_POST['oauth'];
+				call_user_func([__NAMESPACE__ . '\\User', 'redirect'  . ucfirst($_REQUEST['oauth'])]);
+				$_SESSION['gimle']['awaitAuthFeedback'] = $_REQUEST['oauth'];
 				die();
 			}
 			catch (\Throwable $t) {
@@ -76,16 +68,7 @@ try {
 }
 catch (Exception $e) {
 	$e->set('post', $_POST);
-	$urlPartsBase = parse_url(MAIN_BASE_PATH);
-	setcookie(
-		session_name() . 'AutoSignin',
-		'false',
-		time() - (86400 * 400),
-		$urlPartsBase['path'],
-		'',
-		true,
-		true
-	);
+	User::setCookie('Asi', 'false', time() - (86400 * 400));
 	User::setSigninException($e);
 }
 
@@ -101,4 +84,5 @@ if (Config::get('user.reply') === 'json') {
 	echo json_encode(true);
 	return true;
 }
+
 return inc(SITE_DIR . 'module/' . MODULE_GIMLE . '/canvas/redirect.php');

@@ -7,16 +7,7 @@ if (isset($_SESSION['gimle']['user'])) {
 	unset($_SESSION['gimle']['user']);
 }
 
-$urlPartsBase = parse_url(MAIN_BASE_PATH);
-setcookie(
-	session_name() . 'AutoSignin',
-	'false',
-	time() - (86400 * 400),
-	$urlPartsBase['path'],
-	'',
-	true,
-	true
-);
+User::setCookie('Asi', 'false', time() - (86400 * 400));
 
 header('Location: ' . BASE_PATH);
 

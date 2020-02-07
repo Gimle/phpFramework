@@ -214,6 +214,38 @@ abstract class UserBase
 		return $user;
 	}
 
+	public static function setCookie (string $name, string $value, ?int $expires = null): void
+	{
+		if ($expires === null) {
+			$expires = time() + (86400 * 400);
+		}
+		$urlPartsBase = parse_url(MAIN_BASE_PATH);
+		if (version_compare(PHP_VERSION, '7.3.0') === -1) {
+			setcookie(
+				session_name() . $name,
+				$value,
+				$expires,
+				$urlPartsBase['path'],
+				'',
+				true,
+				true
+			);
+		}
+		else {
+			setcookie(
+				session_name() . $name,
+				$value,
+				[
+					'expires' => $expires,
+					'path' => $urlPartsBase['path'],
+					'secure' => true,
+					'httponly' => true,
+					'samesite' => 'Lax',
+				]
+			);
+		}
+	}
+
 	public function removeAuth (string $type, array $params): bool
 	{
 		$delete = null;

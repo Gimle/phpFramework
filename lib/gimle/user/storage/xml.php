@@ -170,7 +170,7 @@ class Xml extends \gimle\user\UserBase
 		self::$xmlFileLocation = $location;
 	}
 
-	private static function getXmlLocation (): string
+	protected static function getXmlLocation (): string
 	{
 		if (self::$xmlFileLocation === null) {
 			self::$xmlFileLocation = MAIN_STORAGE_DIR . 'users.xml';
@@ -197,7 +197,7 @@ class Xml extends \gimle\user\UserBase
 		return null;
 	}
 
-	private static function xmlToUser (SimpleXmlElement $sxml, User $user): User
+	protected static function xmlToUser (SimpleXmlElement $sxml, User $user): User
 	{
 		$user->id = (int) $sxml['id'];
 		$user->firstName = (string) $sxml->name->first;
