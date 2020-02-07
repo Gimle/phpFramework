@@ -59,6 +59,16 @@ class Ldap
 		ldap_modify($this->connection, $dn, $values);
 	}
 
+	public function add (string $dn, array $entry)
+	{
+		ldap_add($this->connection, $dn, $entry);
+	}
+
+	public function delete (string $dn)
+	{
+		ldap_delete($this->connection, $dn);
+	}
+
 	public function login (string $bind, string $password)
 	{
 		$userConnection = ldap_connect($this->config['host']);
