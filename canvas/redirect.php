@@ -4,11 +4,6 @@ namespace gimle;
 
 $params = inc_get_args();
 
-$returnUrl = BASE_PATH;
-if (isset($params[0])) {
-	$returnUrl = str_replace("'", "\\'", $params[0]);
-}
-
 ?>
 <!doctype html>
 <html>
@@ -16,12 +11,24 @@ if (isset($params[0])) {
 		<meta charset="<?=mb_internal_encoding()?>">
 		<title>Redirect</title>
 		<script>
+<?php
+if (isset($params[0])) {
+?>
+			history.pushState({}, '', '<?=str_replace("'", "\\'", $params[0])?>');
+			window.location.reload();
+<?php
+}
+else {
+?>
 			if (window.history.length > 0) {
 				window.history.go(-1);
 			}
 			else {
-				window.location.href = '<?=$returnUrl?>';
+				window.location.href = '<?=BASE_PATH?>';
 			}
+<?php
+}
+?>
 		</script>
 	</head>
 	<body>
