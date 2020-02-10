@@ -8,6 +8,7 @@ use \gimle\Exception;
 
 use function \gimle\filter_var;
 use function \gimle\loadFile;
+use function \gimle\sp;
 
 use const \gimle\MAIN_SITE_DIR;
 use const \gimle\MAIN_BASE_PATH;
@@ -85,8 +86,7 @@ abstract class UserBase
 			return;
 		}
 		else if ($property === 'email') {
-			if ((is_string($value)) && ($value !== '') && (!filter_var($value, FILTER_VALIDATE_EMAIL))) {
-				throw new Exception('Can not set user property: ' . $property);
+			if ((is_string($value)) && ($value !== '') && (filter_var($value, FILTER_VALIDATE_EMAIL))) {
 				$this->email = mb_strtolower($value);
 			}
 			else {
