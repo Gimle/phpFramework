@@ -136,6 +136,12 @@ class Gimle extends EventEmitter {
 		});
 	}
 
+	runScript (cmd, callback) {
+		exec(cmd, (error, stdout, stderr) => {
+			callback(stdout);
+		});
+	}
+
 	parseConfigFile (filename, callback) {
 		let that = this;
 		require('fs').readFile(filename, 'utf-8', (error, contents) => {
