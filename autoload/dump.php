@@ -407,8 +407,8 @@ function var_dump ($var, array $mode = []): ?string
 									if ($mPropType->allowsNull() === true) {
 										$pre = '?';
 									}
-									$pre .= (string) $mPropType . ' ';
-									$pre = colorize($pre, (in_array((string) $mPropType, ['string', 'int', 'bool', 'float', 'array']) ? (string) $mPropType : 'gray'));
+									$pre .= $mPropType->getName() . ' ';
+									$pre = colorize($pre, (in_array($mPropType->getName(), ['string', 'int', 'bool', 'float', 'array']) ? $mPropType->getName() : 'gray'));
 								}
 
 								if ($mParam->isOptional()) {
@@ -449,7 +449,7 @@ function var_dump ($var, array $mode = []): ?string
 							if ($returnType->allowsNull() === true) {
 								$pre .= '?';
 							}
-							echo colorize($pre . (string) $returnType, (in_array((string) $returnType, ['string', 'int', 'bool', 'float', 'array']) ? (string) $returnType : 'gray'));
+							echo colorize($pre . $returnType->getName(), (in_array($returnType->getName(), ['string', 'int', 'bool', 'float', 'array']) ? $returnType->getName() : 'gray'));
 //							echo colorize($pre . (string) $returnType, 'string');
 						}
 
