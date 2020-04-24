@@ -85,14 +85,62 @@ if (!function_exists('pam_auth')) {
 	 *
 	 * @param string $username The username.
 	 * @param string $password The password.
-	 * @return bool Tre if the user exists and the password is correct, otherwise false.
+	 * @return bool True if the user exists and the password is correct, otherwise false.
 	 */
-	function pam_auth ($username, $password) {
+	function pam_auth ($username, $password)
+	{
 		$exec = \gimle\SITE_DIR . 'module/' . \gimle\MODULE_GIMLE . '/exec/pam_auth.pl ' . escapeshellarg($username) . ' ' . escapeshellarg($password);
 		exec($exec, $result);
 		if ((isset($result[0])) && ($result[0] === 'true')) {
 			return true;
 		}
 		return false;
+	}
+}
+
+if (!function_exists('str_contains')) {
+	/**
+	 * Check if string contains string
+	 *
+	 * @param string $string The string to search within.
+	 * @param string $needle The term to check for.
+	 * @return bool
+	 */
+	function str_contains (string $string, string $needle): bool
+	{
+		return (strpos($string, $needle) !== false);
+	}
+}
+
+if (!function_exists('str_starts_with')) {
+	/**
+	 * Check if a string starts with a string.
+	 *
+	 * @param string $string
+	 * @param string $needle
+	 * @return bool
+	 */
+	function str_starts_with (string $string, string $needle): bool
+	{
+		$length = strlen($needle);
+		return (substr($string, 0, $length) === $needle);
+	}
+}
+
+if (!function_exists('str_ends_with')) {
+	/**
+	 * Check if a string ends with a string.
+	 *
+	 * @param string $string
+	 * @param string $needle
+	 * @return bool
+	 */
+	function str_ends_with (string $string, string $needle): bool
+	{
+		$length = strlen($needle);
+		if ($length === 0) {
+			return true;
+		}
+		return (substr($string, -$length) === $needle);
 	}
 }

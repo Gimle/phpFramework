@@ -182,32 +182,3 @@ function random ($characters = null, $length = null)
 
 	return $return;
 }
-
-/**
- * Check if a string starts with a string.
- *
- * @param string $string
- * @param string $needle
- * @return bool
- */
-function starts_with (string $string, string $needle): bool
-{
-	$length = strlen($needle);
-	return (substr($string, 0, $length) === $needle);
-}
-
-/**
- * Check if a string ends with a string.
- *
- * @param string $string
- * @param string $needle
- * @return bool
- */
-function ends_with (string $string, string $needle): bool
-{
-	$length = strlen($needle);
-	if ($length === 0) {
-		return true;
-	}
-	return (substr($string, -$length) === $needle);
-}
