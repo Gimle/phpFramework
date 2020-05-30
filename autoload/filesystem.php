@@ -146,6 +146,37 @@ function clear_dir ($path, $deleteRoot = false): array
 }
 
 /**
+ * Recursivly copy files.
+ *
+ * @param string $source The source location.
+ * @param string $target The target destination.
+ * @return void
+ */
+function rcopy ($source, $target): void
+{
+	if (!is_dir($source)) {
+		copy($source, $target);
+		return;
+	}
+
+	$dir = opendir($source);
+	if (!file_exists($target)) {
+		mkdir($target);
+	}
+    while (($file = readdir($dir)) !== false) {
+        if (($file !== '.') && ($file !== '..')) {
+            if (is_dir($source . '/' . $file)) {
+                rcopy($source . '/' . $file, $target . '/' . $file);
+            }
+            else {
+                copy($source . '/' . $file, $target . '/' . $file);
+            }
+        }
+    }
+    closedir($dir);
+}
+
+/**
  * Get mime information about a file.
  *
  * @throws gimle\ErrorException If the file is not readable.
