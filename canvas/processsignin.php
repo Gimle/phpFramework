@@ -68,7 +68,9 @@ try {
 }
 catch (Exception $e) {
 	$e->set('post', $_POST);
-	User::setCookie('Asi', 'false', time() - (86400 * 400));
+	if ($e->getCode() !== User::ALREADY_SIGNED_IN) {
+		User::setCookie('Asi', 'false', time() - (86400 * 400));
+	}
 	User::setSigninException($e);
 }
 
