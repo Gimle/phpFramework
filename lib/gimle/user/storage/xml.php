@@ -325,8 +325,11 @@ class Xml extends \gimle\user\UserBase
 		return null;
 	}
 
-	protected static function xmlToUser (SimpleXmlElement $sxml, User $user): User
+	protected static function xmlToUser (SimpleXmlElement $sxml, ?User $user = null): User
 	{
+		if ($user ===  null) {
+			$user = new User();
+		}
 		$user->id = (int) $sxml['id'];
 		$user->firstName = (string) $sxml->name->first;
 		if ((string) $sxml->name->middle !== '') {
