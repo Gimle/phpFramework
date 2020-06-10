@@ -27,6 +27,13 @@ class Mongo
 		$this->connection = new \MongoDB\Driver\Manager($this->config['host']);
 	}
 
+	public static function one ($cursor)
+	{
+		$it = new \IteratorIterator($cursor);
+		$it->rewind();
+		return $it->current();
+	}
+
 	public function query (array $filter, array $options = [], ?string $table = null)
 	{
 		if ($table === null) {
