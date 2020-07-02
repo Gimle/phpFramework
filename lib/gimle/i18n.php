@@ -56,7 +56,7 @@ class i18n
 
 		if ((isset($this->config['lang'][$this->language]['objects'])) && (is_array($this->config['lang'][$this->language]['objects'])) && (!empty($this->config['lang'][$this->language]['objects']))) {
 			foreach ($this->config['lang'][$this->language]['objects'] as $object => $params) {
-				$this->objects[] = call_user_func_array([__NAMESPACE__ . '\\i18n\\' . mb_ucfirst($object), 'getInstance'], [$this->language, $params]);
+				$this->objects[$this->language][] = call_user_func_array([__NAMESPACE__ . '\\i18n\\' . mb_ucfirst($object), 'getInstance'], [$this->language, $params]);
 			}
 		}
 	}
@@ -134,8 +134,8 @@ class i18n
 			$this->setLanguage();
 		}
 
-		if (!empty($this->objects)) {
-			foreach ($this->objects as $object) {
+		if ((isset($this->objects[$this->language])) && (!empty($this->objects[$this->language]))) {
+			foreach ($this->objects[$this->language] as $object) {
 				$result = $object->_(...$message);
 				if ($result !== null) {
 					return $result;
@@ -150,8 +150,10 @@ class i18n
 		$result = [
 			'string' => [],
 		];
-		if (!empty($this->objects)) {
-			foreach ($this->objects as $object) {
+		if ((isset($this->objects[$this->language])) && (!empty($this->objects[$this->language]))) {
+			foreach ($this->objects[$this->language] as $object) {
+				sp($object);
+				sp($object->getJson());
 				$result = array_merge($result, $object->getJson());
 			}
 		}
