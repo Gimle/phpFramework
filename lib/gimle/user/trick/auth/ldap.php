@@ -29,6 +29,9 @@ trait Ldap
 				foreach ($this->auth['ldap'] as $index => $test) {
 					if (($test['server'] === $server) && ($test['email'] === $email)) {
 						$this->auth['ldap'][$index]['last_used'] = $this->asDateTime();
+						if ($save !== false) {
+							$this->save();
+						}
 					}
 				}
 				return true;
@@ -56,67 +59,69 @@ trait Ldap
 				}
 			}
 		}
-		if ($row !== null) {
-			$result = $ldap->login($row['dn'], $password);
-			if ($result === true) {
-				foreach ($config['field'] as $attribute => $field) {
-					if (in_array($attribute, ['firstName', 'middleName', 'lastName'])) {
-						if ($this->$attribute === null) {
-							$this->$attribute = filter_var($row[strtolower($field)][0], FILTER_SANITIZE_NAME);
-						}
-					}
-					elseif ($attribute === 'email') {
-						if ($this->email === null) {
-							$this->$attribute = mb_strtolower($row[strtolower($field)][0]);
-						}
-					}
-					else {
-						foreach ($row[strtolower($field)] as $value) {
-							$this->field[$attribute][] = $value;
-						}
-					}
-				}
-				$this->setNames();
+		if ($row === null) {
+			return false;
+		}
 
-				$authExists = false;
-				if (isset($this->auth['ldap'])) {
-					foreach ($this->auth['ldap'] as $test) {
-						if (($test['server'] === $server) && ($test['email'] === $email)) {
-							$authExists = true;
-						}
-					}
-				}
+		$result = $ldap->login($row['dn'], $password);
+		if ($result !== true) {
+			return false;
+		}
 
-				if ($authExists === false) {
-					$test = $this->authUsed('ldap', [
-						'server' => $server,
-						'email' => $email,
-					]);
-					if ($test === true) {
-						throw new Exception('Login already in use: ' . $server . ' ' . $email);
-					}
-					$this->auth['ldap'][] = [
-						'server' => $server,
-						'email' => $email,
-					];
+		foreach ($config['field'] as $attribute => $field) {
+			if (in_array($attribute, ['firstName', 'middleName', 'lastName'])) {
+				if ($this->$attribute === null) {
+					$this->$attribute = filter_var($row[strtolower($field)][0], FILTER_SANITIZE_NAME);
 				}
+			}
+			elseif ($attribute === 'email') {
+				if ($this->email === null) {
+					$this->$attribute = mb_strtolower($row[strtolower($field)][0]);
+				}
+			}
+			else {
+				foreach ($row[strtolower($field)] as $value) {
+					$this->field[$attribute][] = $value;
+				}
+			}
+		}
+		$this->setNames();
 
-				if (method_exists($this, 'ldapRow')) {
-					$this->ldapRow($row);
+		$authExists = false;
+		if (isset($this->auth['ldap'])) {
+			foreach ($this->auth['ldap'] as $test) {
+				if (($test['server'] === $server) && ($test['email'] === $email)) {
+					$authExists = true;
 				}
-				$this->activeLdap = [
-					'server' => $server,
-					'dn' => $row['dn'],
-				];
-				if ($save !== false) {
-					$this->save();
-				}
-
-				return true;
 			}
 		}
 
-		return false;
+		if ($authExists === false) {
+			$test = $this->authUsed('ldap', [
+				'server' => $server,
+				'email' => $email,
+			]);
+			if ($test === true) {
+				throw new Exception('Login already in use: ' . $server . ' ' . $email);
+			}
+			$this->auth['ldap'][] = [
+				'server' => $server,
+				'email' => $email,
+			];
+		}
+
+		if (method_exists($this, 'ldapRow')) {
+			$this->ldapRow($row);
+		}
+		$this->activeLdap = [
+			'server' => $server,
+			'dn' => $row['dn'],
+		];
+		if ($save !== false) {
+			$this->save();
+		}
+
+		return true;
 	}
 
 	protected function ldapLoadServers (): void
