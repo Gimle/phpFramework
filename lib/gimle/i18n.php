@@ -152,8 +152,6 @@ class i18n
 		];
 		if ((isset($this->objects[$this->language])) && (!empty($this->objects[$this->language]))) {
 			foreach ($this->objects[$this->language] as $object) {
-				sp($object);
-				sp($object->getJson());
 				$result = array_merge($result, $object->getJson());
 			}
 		}
