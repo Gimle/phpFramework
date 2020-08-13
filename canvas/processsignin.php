@@ -87,4 +87,7 @@ if (Config::get('user.reply') === 'json') {
 	return true;
 }
 
+if (isset($_SESSION['gimle']['signingoto'])) {
+	return inc(SITE_DIR . 'module/' . MODULE_GIMLE . '/canvas/redirect.php', $_SESSION['gimle']['signingoto']);
+}
 return inc(SITE_DIR . 'module/' . MODULE_GIMLE . '/canvas/redirect.php');
