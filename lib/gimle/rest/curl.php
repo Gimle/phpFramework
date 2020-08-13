@@ -27,6 +27,13 @@ class Curl
 	private $header = [];
 
 	/**
+	 * Cookies for the request. Set via the cookie() method.
+	 *
+	 * @var array
+	 */
+	private $cookie = [];
+
+	/**
 	 * Post data for the request. Set via the post() and file() methods.
 	 *
 	 * @var mixed null, string or array.
@@ -85,6 +92,18 @@ class Curl
 	public function header (string $key, string $value): void
 	{
 		$this->header[$key] = $value;
+	}
+
+	/**
+	 * Sets a cookie for the request.
+	 *
+	 * @param string $key The cookie name.
+	 * @param string $value The cookie value.
+	 * @return void
+	 */
+	public function cookie (string $key, string $value): void
+	{
+		$this->cookie[$key] = $value;
 	}
 
 	/**
@@ -198,6 +217,14 @@ class Curl
 
 		if ($method !== null) {
 			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+		}
+
+		if (!empty($this->cookie)) {
+			$cookies = [];
+			foreach ($this->cookie as $name => $value) {
+				$cookies[] = $name . '=' . $value;
+			}
+			curl_setopt($ch, CURLOPT_COOKIE, implode(';', $cookies));
 		}
 
 		curl_setopt($ch, CURLINFO_HEADER_OUT, true);

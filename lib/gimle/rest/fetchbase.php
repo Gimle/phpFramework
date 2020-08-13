@@ -51,7 +51,7 @@ abstract class FetchBase
 	 * Reset the object, so it can be reused.
 	 *
 	 * @param ?bool $full Should options and headers be kept?
-	 * @return sef
+	 * @return self
 	 */
 	public function reset (bool $full = false)
 	{
@@ -72,7 +72,7 @@ abstract class FetchBase
 	 * Sets the time the request will wait for the connections to be established in seconds.
 	 *
 	 * @param float $float
-	 * @return sef
+	 * @return self
 	 */
 	public function connectionTimeout (float $float): self
 	{
@@ -84,7 +84,7 @@ abstract class FetchBase
 	 * Sets the time the request will wait for an answer in seconds.
 	 *
 	 * @param float $float
-	 * @return sef
+	 * @return self
 	 */
 	public function resultTimeout (float $float): self
 	{
@@ -96,7 +96,7 @@ abstract class FetchBase
 	 * Should redirects be followed?
 	 *
 	 * @param bool $bool
-	 * @return sef
+	 * @return self
 	 */
 	public function followRedirect (bool $bool = true): self
 	{
@@ -110,7 +110,7 @@ abstract class FetchBase
 	 * @throws gimle\rest\Exception If tying to add post field to a raw post request, or the other way around.
 	 * @param mixed $key The post name, or the whole raw post data.
 	 * @param ?string $value The post value.
-	 * @return sef
+	 * @return self
 	 */
 	public function post ($key, $data = null): self
 	{
@@ -132,7 +132,7 @@ abstract class FetchBase
 	 * @param string $key The post name.
 	 * @param string $path The local path of the file to attach.
 	 * @param ?string $value Give a custom name to the file.
-	 * @return sef
+	 * @return self
 	 */
 	public function file (string $key, $data, ?string $name = null): self
 	{
@@ -145,11 +145,24 @@ abstract class FetchBase
 	 *
 	 * @param string $key The header name.
 	 * @param string $value The header value.
-	 * @return sef
+	 * @return self
 	 */
 	public function header (string $key, string $value): self
 	{
 		$this->wrapper->header($key, $value);
+		return $this;
+	}
+
+	/**
+	 * Sets a cookie for the request.
+	 *
+	 * @param string $key The cookie name.
+	 * @param string $value The cookie value.
+	 * @return self
+	 */
+	public function cookie (string $key, string $value): self
+	{
+		$this->wrapper->cookie($key, $value);
 		return $this;
 	}
 }
