@@ -74,9 +74,36 @@ class Xml extends \gimle\user\UserBase
 				$group = $fields->addChild('group');
 				$group['name'] = $method;
 				foreach ($values as $index => $value) {
-					$sub = $group->addChild('string');
-					$sub['name'] = $index;
-					$sub[0] = $value;
+					if (is_array($value)) {
+						$sub = $group->addChild('array');
+						$sub['name'] = $index;
+						foreach ($value as $subindex => $subvalue) {
+							$subsub = $sub->addChild(self::getVarCType($subvalue));
+							$subsub['name'] = $subindex;
+							if ($subvalue === true) {
+								$subsub[0] = 'true';
+							}
+							elseif ($subvalue === false) {
+								$subsub[0] = 'false';
+							}
+							else {
+								$subsub[0] = $subvalue;
+							}
+						}
+					}
+					else {
+						$sub = $group->addChild(self::getVarCType($value));
+						$sub['name'] = $index;
+						if ($value === true) {
+							$sub[0] = 'true';
+						}
+						elseif ($value === false) {
+							$sub[0] = 'false';
+						}
+						else {
+							$sub[0] = $value;
+						}
+					}
 				}
 			}
 		}
@@ -298,6 +325,20 @@ class Xml extends \gimle\user\UserBase
 		self::$xmlFileLocation = $location;
 	}
 
+	protected static function getVarCType ($value): string
+	{
+		if (is_bool($value)) {
+			return 'bool';
+		}
+		if (is_int($value)) {
+			return 'int';
+		}
+		if (is_float($value)) {
+			return 'float';
+		}
+		return 'string';
+	}
+
 	protected static function getXmlLocation (): string
 	{
 		if (self::$xmlFileLocation === null) {
@@ -351,7 +392,48 @@ class Xml extends \gimle\user\UserBase
 		$user->field = [];
 		foreach ($sxml->xpath('./fields/group') as $group) {
 			foreach ($group->xpath('./*') as $field) {
-				$user->field[(string) $group['name']][(string) $field['name']] = (string) $field;
+				$fieldName = $field->getName();
+				if ($fieldName === 'array') {
+					foreach ($field->xpath('./*') as $subfield) {
+						$subfieldName = $subfield->getName();
+						if ($subfieldName === 'int') {
+							$user->field[(string) $group['name']][(string) $field['name']][(string) $subfield['name']] = (int) $subfield;
+						}
+						elseif ($subfieldName === 'bool') {
+							if ((string) $subfield === 'true') {
+								$user->field[(string) $group['name']][(string) $field['name']][(string) $subfield['name']] = true;
+							}
+							else {
+								$user->field[(string) $group['name']][(string) $field['name']][(string) $subfield['name']] = false;
+							}
+						}
+						elseif ($subfieldName === 'float') {
+							$user->field[(string) $group['name']][(string) $field['name']][(string) $subfield['name']] = (float) $subfield;
+						}
+						else {
+							$user->field[(string) $group['name']][(string) $field['name']][(string) $subfield['name']] = (string) $subfield;
+						}
+					}
+				}
+				else {
+					if ($fieldName === 'int') {
+						$user->field[(string) $group['name']][(string) $field['name']] = (int) $field;
+					}
+					elseif ($fieldName === 'bool') {
+						if ((string) $subfield === 'true') {
+							$user->field[(string) $group['name']][(string) $field['name']] = true;
+						}
+						else {
+							$user->field[(string) $group['name']][(string) $field['name']] = false;
+						}
+					}
+					elseif ($fieldName === 'float') {
+						$user->field[(string) $group['name']][(string) $field['name']] = (float) $field;
+					}
+					else {
+						$user->field[(string) $group['name']][(string) $field['name']] = (string) $field;
+					}
+				}
 			}
 		}
 
