@@ -30,8 +30,8 @@ abstract class UserBase
 	public const INVALID_PASSWORD = 7;
 	public const USER_NOT_VALIDATED = 8;
 	public const STATE_ERROR = 9;
-	public const OAUTH_ERROR = 10;
-	public const OAUTH_REJECT = 11;
+	public const REMOTE_ERROR = 10;
+	public const REMOTE_REJECT = 11;
 	public const OTHER_ERROR = 12;
 
 	protected $id = null;

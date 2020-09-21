@@ -15,7 +15,7 @@ try {
 	}
 
 	if (!isset($_SESSION['gimle']['awaitAuthFeedback'])) {
-		if (!isset($_GET['oauth'])) {
+		if (!isset($_GET['remote'])) {
 			if (!isset($_POST['token'])) {
 				throw new Exception('Payload missing.', User::MISSING_PAYLOAD);
 			}
@@ -31,10 +31,10 @@ try {
 			}
 			$_SESSION['gimle']['user'] = $user;
 		}
-		elseif (isset($_REQUEST['oauth'])) {
+		elseif (isset($_REQUEST['remote'])) {
 			try {
-				call_user_func([__NAMESPACE__ . '\\User', 'redirect'  . ucfirst($_REQUEST['oauth'])]);
-				$_SESSION['gimle']['awaitAuthFeedback'] = $_REQUEST['oauth'];
+				call_user_func([__NAMESPACE__ . '\\User', 'redirect'  . ucfirst($_REQUEST['remote'])]);
+				$_SESSION['gimle']['awaitAuthFeedback'] = $_REQUEST['remote'];
 				die();
 			}
 			catch (\Throwable $t) {
@@ -52,7 +52,7 @@ try {
 		unset($_SESSION['gimle']['awaitAuthFeedback']);
 
 		try {
-			$user = call_user_func([__NAMESPACE__ . '\\User', 'login'  . ucfirst($loginClass)]);
+			$user = call_user_func([__NAMESPACE__ . '\\User', 'remote'  . ucfirst($loginClass)]);
 			if ($user->id === null) {
 				throw new Exception('User not found.', User::USER_NOT_FOUND);
 			}
