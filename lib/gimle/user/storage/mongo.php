@@ -253,12 +253,14 @@ class Mongo extends \gimle\user\UserBase
 		}
 
 		$user->field = [];
-		foreach ($document->fields as $group => $data) {
-			foreach ($data as $key => $value) {
-				if (is_object($value)) {
-					$value = json_decode(json_encode($value), true);
+		if (property_exists($document, 'fields')) {
+			foreach ($document->fields as $group => $data) {
+				foreach ($data as $key => $value) {
+					if (is_object($value)) {
+						$value = json_decode(json_encode($value), true);
+					}
+					$user->field[$group][$key] = $value;
 				}
-				$user->field[$group][$key] = $value;
 			}
 		}
 
