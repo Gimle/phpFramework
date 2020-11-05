@@ -8,6 +8,10 @@ try {
 		User::setCookie('Asi', 'true');
 	}
 
+	if (isset($_REQUEST['principal'])) {
+		$_SESSION['gimle']['signingoto'] = $_REQUEST['principal'];
+	}
+
 	User::clearSigninException();
 
 	if (isset($_SESSION['gimle']['user'])) {
@@ -75,6 +79,15 @@ catch (Exception $e) {
 }
 
 User::deleteSigninToken();
+
+$target = BASE_PATH;
+if (isset($_SESSION['gimle']['signingoto'])) {
+	if (Config::exists('user.principal.' . $_SESSION['gimle']['signingoto'])) {
+		$target .= Config::get('user.principal.' . $_SESSION['gimle']['signingoto']);
+	}
+	unset($_SESSION['gimle']['signingoto']);
+}
+
 if (Config::get('user.reply') === 'json') {
 	header('Content-type: application/json');
 	if (isset($_SESSION['gimle']['signinException'])) {
@@ -87,7 +100,25 @@ if (Config::get('user.reply') === 'json') {
 	return true;
 }
 
-if (isset($_SESSION['gimle']['signingoto'])) {
-	return inc(SITE_DIR . 'module/' . MODULE_GIMLE . '/canvas/redirect.php', $_SESSION['gimle']['signingoto']);
-}
-return inc(SITE_DIR . 'module/' . MODULE_GIMLE . '/canvas/redirect.php');
+header('Location: ' . $target);
+
+/*
+Was this needed by some oauth providers?
+If so, make it optional.
+It will show white screen blink which is not needed if not strictly required by the site.
+?>
+<!doctype html>
+<html>
+	<head>
+		<meta charset="<?=mb_internal_encoding()?>">
+		<title>Redirect</title>
+		<script>
+			window.location.href = '<?=str_replace("'", "\\'", $target)?>';
+		</script>
+	</head>
+	<body></body>
+</html>
+<?php
+*/
+
+return true;
