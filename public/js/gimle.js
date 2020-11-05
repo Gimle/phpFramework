@@ -98,18 +98,14 @@ window.gimle = (() => {
 		}
 	}
 
-	gimle.fn.on = function (type, listen, callback, options, useCapture) {
+	gimle.fn.on = function (type, listen, callback, options) {
 		if (typeof listen === 'function') {
-			useCapture = options;
 			options = callback;
 			callback = listen;
 			listen = undefined;
 		}
 		if (options === undefined) {
-			options = false;
-		}
-		if (useCapture === undefined) {
-			useCapture = false;
+			options = {};
 		}
 
 		if (options.hash !== undefined) {
@@ -124,8 +120,7 @@ window.gimle = (() => {
 					namespacedType: type,
 					selector: selector,
 					callback: callback,
-					options: options,
-					useCapture: useCapture
+					options: options
 				};
 				if (listen !== undefined) {
 					thisEvent.callback = function (e) {
@@ -134,7 +129,7 @@ window.gimle = (() => {
 						}
 					};
 				}
-				selector.addEventListener(thisEvent.type, thisEvent.callback, thisEvent.options, thisEvent.useCapture);
+				selector.addEventListener(thisEvent.type, thisEvent.callback, thisEvent.options);
 				if (selector.gimle.eventStore === undefined) {
 					selector.gimle.eventStore = [];
 				}
