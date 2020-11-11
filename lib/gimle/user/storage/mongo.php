@@ -113,6 +113,136 @@ class Mongo extends \gimle\user\UserBase
 		return $this->id;
 	}
 
+	public static function getGroupMembers ($group, $limit = 100)
+	{
+		$return = [];
+		$mongo = MongoDb::getInstance('users');
+		$cursor = $mongo->query(['groups' => $group], ['limit' => $limit, 'sort' => ['groups' => -1, 'name.first' => 1, 'name.last' => 1]]);
+		foreach ($cursor as $document) {
+			$return[] = self::mongoToUser($document, new User());
+		}
+		return $return;
+	}
+
+	public static function updateGroup (string $name, string $description, $edit, ?int $newid = null): bool
+	{
+		if (!is_int($edit)) {
+			throw new \Exception('Not implemented.');
+		}
+		if ($newid !== null) {
+			// Updating group id not implemented yet. Remember to update all user members of this group.
+			return false;
+		}
+		if (!preg_match('/^[a-z\-]+$/', $name)) {
+			return false;
+		}
+
+		$mongo = MongoDb::getInstance('users');
+
+		$cursor = $mongo->query(['name' => $name], [], 'groups');
+		$it = new \IteratorIterator($cursor);
+		$it->rewind();
+		$group = $it->current();
+		if ($group === null) {
+			return false;
+		}
+
+		$id = $group->_id;
+		$group = json_decode(json_encode($group), true);
+		unset($group['_id']);
+
+		$group['name'] = $name;
+		$group['description'] = $description;
+
+		$bulkWrite = new \MongoDB\Driver\BulkWrite;
+		$bulkWrite->update([
+			'_id' => $id,
+		], [
+			'$set' => $group,
+		]);
+		$result = $mongo->write($bulkWrite, 'groups');
+
+		return true;
+	}
+
+	public static function addGroup (string $name, string $description, int $id = null): bool
+	{
+		if (($id !== null) && ($id < 3)) {
+			return false;
+		}
+		if (!preg_match('/^[a-z\-]+$/', $name)) {
+			return false;
+		}
+		$mongo = MongoDb::getInstance('users');
+		$groups = self::getGroups();
+
+		foreach ($groups as $group) {
+			if ($group['name'] === $name) {
+				return false;
+			}
+		}
+
+		if ($id === null) {
+			$id = 1001;
+			foreach ($groups as $group) {
+				if ($group['id'] >= $id) {
+					$id = $group['id'] + 1;
+				}
+			}
+		}
+		else {
+			foreach ($groups as $group) {
+				if ($group['id'] === $id) {
+					return false;
+				}
+			}
+		}
+
+		$group = [
+			'id' => $id,
+			'name' => $name,
+			'description' => $description,
+		];
+
+		$bulkWrite = new \MongoDB\Driver\BulkWrite;
+		$bulkWrite->insert($group);
+		$result = $mongo->write($bulkWrite, 'groups');
+
+		return true;
+	}
+
+	public function leaveGroup ($group): void
+	{
+		if (!is_int($group)) {
+			throw new \Exception('Not implemented.');
+		}
+		unset($this->groups[$group]);
+		$this->save();
+	}
+
+	public static function deleteGroup ($group): bool
+	{
+		if (!is_int($group)) {
+			throw new \Exception('Not implemented.');
+		}
+
+		if ($group < 3) {
+			throw new \Exception('Can not delete this group.');
+		}
+
+		$mongo = MongoDb::getInstance('users');
+
+		$members = self::getGroupMembers($group);
+		foreach ($members as $member) {
+			$member->leaveGroup($group);
+		}
+		$bulkWrite = new \MongoDB\Driver\BulkWrite;
+		$bulkWrite->delete(['id' => $group]);
+		$result = $mongo->write($bulkWrite, 'groups');
+
+		return true;
+	}
+
 	public function authLoad (string $type, array $params): bool
 	{
 		$user = $this->authGet($type, $params);
@@ -144,9 +274,22 @@ class Mongo extends \gimle\user\UserBase
 
 		$mongo = MongoDb::getInstance('users');
 
-		$cursor = $mongo->query([], [], 'groups');
+		$cursor = $mongo->query([], ['sort' => ['id' => 1]], 'groups');
 		$it = new \IteratorIterator($cursor);
 		$it->rewind();
+		if ($it->current() === null) {
+			$bulkWrite = new \MongoDB\Driver\BulkWrite;
+			$bulkWrite->insert([
+				'id' => 2,
+				'name' => 'root',
+				'description' => 'Server root.',
+			]);
+			$result = $mongo->write($bulkWrite, 'groups');
+
+			$cursor = $mongo->query([], [], 'groups');
+			$it = new \IteratorIterator($cursor);
+			$it->rewind();
+		}
 		foreach ($it as $group) {
 			$return[$group->id] = [
 				'id' => $group->id,
@@ -189,13 +332,22 @@ class Mongo extends \gimle\user\UserBase
 		return false;
 	}
 
-	public static function getUsers (): array
+	public static function getUsers (int $limit = 100): array
 	{
 		$return = [];
 		$mongo = MongoDb::getInstance('users');
 
-		$cursor = $mongo->query([]);
+		$cursor = $mongo->command([
+			'aggregate' => 'users',
+			'pipeline' => [
+				['$addFields' => ['order' => ['$ifNull' => [['$min' => '$groups'], '']]]],
+				['$sort' => ['order' => 1, 'name.first' => 1, 'name.last' => 1]],
+				['$limit' => $limit],
+			],
+			'cursor' => new \StdClass(),
+		]);
 		foreach ($cursor as $document) {
+			unset($document->order);
 			$return[] = self::mongoToUser($document, new User());
 		}
 		return $return;
