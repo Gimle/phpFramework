@@ -144,14 +144,15 @@ class Xml extends \gimle\user\UserBase
 			throw new \Exception('Not implemented.');
 		}
 		if ($newid !== null) {
+			// Updating group id not implemented yet. Remember to update all user members of this group.
+			return false;
+		}
+		if (!preg_match('/^[a-z\-]+$/', $name)) {
 			return false;
 		}
 		$sxml = SimpleXmlElement::open(self::getXmlLocation(), '<users/>');
 		$group = current($sxml->xpath('/users/group[@id=' . $sxml->real_escape_string((string) $edit) . ']'));
 		if ($group === false) {
-			return false;
-		}
-		if (!preg_match('/^[a-z\-]+$/', $name)) {
 			return false;
 		}
 		$group['name'] = $name;
@@ -275,7 +276,13 @@ class Xml extends \gimle\user\UserBase
 	{
 		$return = [];
 		$sxml = SimpleXmlElement::open(self::getXmlLocation(), '<users/>');
-		foreach ($sxml->xpath('/users/group') as $group) {
+		$groups = $sxml->xpath('/users/group');
+		if (empty($groups)) {
+			$sxml->insertFirst('<group id="2" name="root">Server root.</group>');
+			$sxml->save(self::getXmlLocation(), true);
+			$groups = $sxml->xpath('/users/group');
+		}
+		foreach ($groups as $group) {
 			$return[(int) $group['id']] = [
 				'id' => (int) $group['id'],
 				'name' => (string) $group['name'],

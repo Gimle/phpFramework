@@ -34,13 +34,18 @@ class Mongo
 		return $it->current();
 	}
 
-	public function query (array $filter, array $options = [], ?string $table = null)
+	public function command (array $command)
 	{
-		if ($table === null) {
-			$table = $this->config['table'];
-		}
+		$query = new \MongoDB\Driver\Command($command);
+		$cursor = $this->connection->executeCommand($this->config['database'], $query);
+		return $cursor;
+	}
+
+	public function query (array $filter, array $options = [], ?string $namespace = null)
+	{
+		$namespace = $this->rs($namespace);
 		$query = new \MongoDB\Driver\Query($filter, $options);
-		$cursor = $this->connection->executeQuery($this->config['database'] . '.' . $table, $query);
+		$cursor = $this->connection->executeQuery($namespace, $query);
 		return $cursor;
 	}
 
@@ -55,22 +60,20 @@ class Mongo
 		return current($cursor->toArray())->n;
 	}
 
-	public function write (\MongoDB\Driver\BulkWrite $bulkWrite, ?string $table = null): \MongoDB\Driver\WriteResult
+	public function write (\MongoDB\Driver\BulkWrite $bulkWrite, ?string $namespace = null): \MongoDB\Driver\WriteResult
 	{
-		if ($table === null) {
-			$table = $this->config['table'];
-		}
-		return $this->connection->executeBulkWrite($this->config['database'] . '.' . $table, $bulkWrite);
+		$namespace = $this->rs($namespace);
+		return $this->connection->executeBulkWrite($namespace, $bulkWrite);
 	}
 
-	public function getById ($id, ?string $table = null)
+	public function getById ($id, ?string $namespace = null)
 	{
 		$filter = [
 			'_id' => self::oid($id),
 		];
 		$options = [];
 
-		$it = new \IteratorIterator($this->query($filter, $options, $table));
+		$it = new \IteratorIterator($this->query($filter, $options, $namespace));
 		$it->rewind();
 		$document = $it->current();
 
@@ -97,5 +100,16 @@ class Mongo
 			return new \MongoDB\BSON\UTCDateTime(strtotime($input) * 1000);
 		}
 		return null;
+	}
+
+	private function rs (?string $namespace = null): string
+	{
+		if ($namespace === null) {
+			return $this->config['database'] . '.' . $this->config['table'];
+		}
+		if (strpos($namespace, '.') === false) {
+			return $this->config['database'] . '.' . $namespace;
+		}
+		return $namespace;
 	}
 }
