@@ -81,7 +81,7 @@ catch (Exception $e) {
 User::deleteSigninToken();
 
 $target = BASE_PATH;
-if (isset($_SESSION['gimle']['signingoto'])) {
+if ((isset($_SESSION['gimle']['user'])) && (isset($_SESSION['gimle']['signingoto']))) {
 	if (Config::exists('user.principal.' . $_SESSION['gimle']['signingoto'])) {
 		$target .= Config::get('user.principal.' . $_SESSION['gimle']['signingoto']);
 	}
