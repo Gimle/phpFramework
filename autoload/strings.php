@@ -123,7 +123,7 @@ function ent2utf8 (string $string, array $exclude = ['&', ';'], array $append = 
 		return code2utf8(hexdec($param[1]));
 	}, $string);
 	$string = preg_replace_callback('/&#([0-9]+);/', function ($param) {
-		return code2utf8($param[1]);
+		return code2utf8((int) $param[1]);
 	}, $string);
 
 	return $string;
