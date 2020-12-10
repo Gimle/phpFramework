@@ -9,55 +9,18 @@ class Gimle extends EventEmitter {
 
 		this._config = {};
 
-		let o = 2;
-		this.phpGetReturn(base + 'config.php', r => {
-			this._config = this.arrayMergeDistinct(this._config, r);
-			o--;
-			if (o === 0) {
-				o--;
-				this.emit('ready');
-			}
-		});
-
-		this.parseConfigFile(base + 'config.ini', r => {
-			this._config = this.arrayMergeDistinct(this._config, r);
-			if ((r.subsite !== undefined) && (r.subsite.of !== undefined)) {
+		this.runScript(base + 'module/gimle/cli/getconfig.php', (r) => {
+			this._config = JSON.parse(r);
+			if ((this._config.subsite !== undefined) && (this._config.subsite.of !== undefined)) {
 				this._subconfig = {};
-				let c = Object.keys(r.subsite.of).length * 2;
-				o--;
-				for (let index in r.subsite.of) {
-					this._subconfig[index] = {};
-
-					this.phpGetReturn(r.subsite.of[index] + 'config.php', s => {
-						this._subconfig[index] = this.arrayMergeDistinct(this._subconfig[index], s);
-						c--;
-						if (c === 0) {
-							if (o === 0) {
-								o--;
-								this.emit('ready');
-							}
-						}
-					});
-
-					this.parseConfigFile(r.subsite.of[index] + 'config.ini', s => {
-						this._subconfig[index] = this.arrayMergeDistinct(this._subconfig[index], s);
-						c--;
-						if (c === 0) {
-							if (o === 0) {
-								o--;
-								this.emit('ready');
-							}
-						}
+				let siteids = Object.keys(this._config.subsite.of);
+				for (let siteid of siteids) {
+					this.runScript(base + 'module/gimle/cli/getconfig.php ' + siteid, (r) => {
+						this._subconfig[siteid] = JSON.parse(r);
 					});
 				}
 			}
-			else {
-				o--;
-				if (o === 0) {
-					o--;
-					this.emit('ready');
-				}
-			}
+			this.emit('ready');
 		});
 
 		this.ENV_WEB = 1;
