@@ -81,9 +81,14 @@ catch (Exception $e) {
 User::deleteSigninToken();
 
 $target = BASE_PATH;
-if ((isset($_SESSION['gimle']['user'])) && (isset($_SESSION['gimle']['signingoto']))) {
-	if (Config::exists('user.principal.' . $_SESSION['gimle']['signingoto'])) {
-		$target .= Config::get('user.principal.' . $_SESSION['gimle']['signingoto']);
+if (isset($_SESSION['gimle']['signingoto'])) {
+	if (Config::exists('user.principal.' . $_SESSION['gimle']['signingoto'] . '.path')) {
+		$principal = Config::get('user.principal.' . $_SESSION['gimle']['signingoto']);
+		if ((isset($principal['mode'])) && ($principal['mode'] === 'success') && (!isset($_SESSION['gimle']['user']))) {
+		}
+		else {
+			$target .= $principal['path'];
+		}
 	}
 	unset($_SESSION['gimle']['signingoto']);
 }
