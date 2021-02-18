@@ -6,6 +6,8 @@ class ErrorException extends \ErrorException
 {
 	/**
 	 * A holder for the private properties.
+	 *
+	 * @var array
 	 */
 	private $params;
 

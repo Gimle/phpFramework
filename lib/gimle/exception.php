@@ -6,6 +6,8 @@ class Exception extends \Exception
 {
 	/**
 	 * A holder for the private properties.
+	 *
+	 * @var array
 	 */
 	private $params;
 
