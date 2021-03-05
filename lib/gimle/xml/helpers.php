@@ -100,6 +100,9 @@ trait Helpers
 			return null;
 		}
 		$dom = dom_import_simplexml($refs[0]);
+		if ($dom->parentNode->nodeValue === null) {
+			return '';
+		}
 		preg_match('/^[\s]+/s', $dom->parentNode->nodeValue, $leadingWhitespace);
 		$leadingWhitespace = ($leadingWhitespace[0] ?? null);
 		if ($leadingWhitespace !== null) {
