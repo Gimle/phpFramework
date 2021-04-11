@@ -9,10 +9,10 @@ try {
 	}
 
 	if (isset($_REQUEST['principal'])) {
-		$_SESSION['gimle']['signingoto'] = $_REQUEST['principal'];
+		$_SESSION['gimle']['activeprincipal'] = $_REQUEST['principal'];
 	}
 
-	User::clearSigninException();
+	User::clearActionException();
 
 	if (isset($_SESSION['gimle']['user'])) {
 		throw new Exception('User already signed in.', User::ALREADY_SIGNED_IN);
@@ -72,25 +72,32 @@ try {
 }
 catch (Exception $e) {
 	$e->set('post', $_POST);
+	$e->set('type', 'signin');
 	if ($e->getCode() !== User::ALREADY_SIGNED_IN) {
 		User::setCookie('Asi', 'false', time() - (86400 * 400));
 	}
-	User::setSigninException($e);
+	User::setActionException($e);
 }
 
 User::deleteSigninToken();
 
 $target = BASE_PATH;
-if (isset($_SESSION['gimle']['signingoto'])) {
-	if (Config::exists('user.principal.' . $_SESSION['gimle']['signingoto'] . '.path')) {
-		$principal = Config::get('user.principal.' . $_SESSION['gimle']['signingoto']);
-		if ((isset($principal['mode'])) && ($principal['mode'] === 'success') && (!isset($_SESSION['gimle']['user']))) {
+if (isset($_SESSION['gimle']['activeprincipal'])) {
+	if (Config::exists('user.principal.' . $_SESSION['gimle']['activeprincipal'])) {
+		$principal = Config::get('user.principal.' . $_SESSION['gimle']['activeprincipal']);
+		if (!isset($_SESSION['gimle']['user'])) {
+			if (isset($principal['fail'])) {
+				$target .= $principal['fail'];
+			}
+			elseif (isset($principal['path'])) {
+				$target .= $principal['path'];
+			}
 		}
-		else {
+		elseif (isset($principal['path'])) {
 			$target .= $principal['path'];
 		}
 	}
-	unset($_SESSION['gimle']['signingoto']);
+	unset($_SESSION['gimle']['activeprincipal']);
 }
 
 if (Config::get('user.reply') === 'json') {
