@@ -1,4 +1,3 @@
-*Welcome to %sitename%!*
+*Notification from %sitename%!*
 
-Your new account is ready.
 To confirm this email address, please visit: %url%
