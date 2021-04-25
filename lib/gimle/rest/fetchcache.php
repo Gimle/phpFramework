@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace gimle\rest;
 
+use \DomDocument;
 use \gimle\xml\SimpleXmlElement;
 use \gimle\Exception;
 use const \gimle\FILTER_SANITIZE_FILENAME;
@@ -50,6 +51,13 @@ class FetchCache extends FetchBase
 	 * @var int
 	 */
 	public const BINARY = 4;
+
+	/**
+	 * Expect result in html format.
+	 *
+	 * @var int
+	 */
+	public const HTML = 5;
 
 
 	/**
@@ -288,6 +296,17 @@ class FetchCache extends FetchBase
 						$validationCallback = null;
 						$cacheIt = false;
 						$return['formatError'] = $jerr;
+					}
+				}
+				elseif ($this->expect === self::HTML) {
+					try {
+						$decoded = new DomDocument();
+						$decoded->loadHTML($reply);
+					}
+					catch (Exception $e) {
+						$validationCallback = null;
+						$cacheIt = false;
+						$return['formatError'] = $e->getMessage();
 					}
 				}
 				if ($validationCallback !== null) {
