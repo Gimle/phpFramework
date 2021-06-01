@@ -6,6 +6,7 @@ use \gimle\MainConfig;
 use \gimle\Exception;
 
 use function \gimle\filter_var;
+use function \gimle\sp;
 
 use const gimle\IS_SUBSITE;
 use const \gimle\FILTER_SANITIZE_NAME;
@@ -38,6 +39,64 @@ trait Ldap
 			}
 		}
 
+		return false;
+	}
+
+	public function addLdapAuth (string $email)
+	{
+		$this->ldapLoadServers();
+		foreach ($this->ldapServers as $server => $config) {
+			$ldap = \gimle\nosql\Ldap::getInstance($server);
+			$config = $this->ldapServers[$server];
+			$result = $ldap->search($config['users'], '(' . $config['email'] . '=' . ldap_escape($email) . ')');
+			if (!is_array($result)) {
+				$row = $result->fetch();
+			}
+			else {
+				foreach ($result as $res) {
+					$row = $res->fetch();
+					if ($row !== null) {
+						break;
+					}
+				}
+			}
+			if ($row === null) {
+				continue;
+			}
+
+			$authExists = false;
+			if (isset($this->auth['ldap'])) {
+				foreach ($this->auth['ldap'] as $test) {
+					if (($test['server'] === $server) && ($test['email'] === $email)) {
+						$authExists = true;
+					}
+				}
+			}
+
+			if ($authExists === false) {
+				$test = $this->authUsed('ldap', [
+					'server' => $server,
+					'email' => $email,
+				]);
+				if ($test === true) {
+					throw new Exception('Login already in use: ' . $server . ' ' . $email);
+				}
+				$this->auth['ldap'][] = [
+					'server' => $server,
+					'email' => $email,
+				];
+			}
+
+			if (method_exists($this, 'ldapRow')) {
+				$this->ldapRow($row);
+			}
+			$this->activeLdap = [
+				'server' => $server,
+				'dn' => $row['dn'],
+			];
+			$this->save();
+			return true;
+		}
 		return false;
 	}
 
