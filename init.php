@@ -102,7 +102,7 @@ else {
 }
 
 $undefinedDir = sys_get_temp_dir() . '/gimle/%s/' . SITE_ID . '/';
-foreach (array('temp', 'cache', 'storage') as $dir) {
+foreach (['temp', 'cache', 'storage'] as $dir) {
 	if (isset($config['dir'][$dir])) {
 		define(__NAMESPACE__ . '\\' . strtoupper($dir) . '_DIR', $config['dir'][$dir]);
 		unset($config['dir'][$dir]);
@@ -235,7 +235,7 @@ if (ENV_MODE & ENV_WEB) {
 							define(__NAMESPACE__ . '\\MAIN_SITE_DIR', $path);
 							define(__NAMESPACE__ . '\\MAIN_SITE_ID', substr(trim($path, DIRECTORY_SEPARATOR), strrpos(trim($path, DIRECTORY_SEPARATOR), DIRECTORY_SEPARATOR) + 1));
 
-							foreach (array('temp', 'cache', 'storage') as $dir) {
+							foreach (['temp', 'cache', 'storage'] as $dir) {
 								if (isset($subConfig['dir'][$dir])) {
 									define(__NAMESPACE__ . '\\MAIN_' . strtoupper($dir) . '_DIR', $subConfig['dir'][$dir]);
 									unset($subConfig['dir'][$dir]);

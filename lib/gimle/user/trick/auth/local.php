@@ -35,6 +35,12 @@ trait Local
 		foreach ($this->auth['local'] as &$local) {
 			if ($local['email'] === $email) {
 				$local['password'] = self::hashPassword($password);
+				if (isset($local['recover'])) {
+					unset($local['recover']);
+				}
+				if (isset($local['recover_dt'])) {
+					unset($local['recover_dt']);
+				}
 				return true;
 			}
 		}
@@ -42,11 +48,11 @@ trait Local
 		return false;
 	}
 
-	public function addLocalAuth (string $email, string $password): bool
+	public function addLocalAuth (string $email, string $password, bool $verified = false): bool
 	{
 		$email = mb_strtolower($email);
 		if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-			throw new Exception('Can not set user property: email');
+			throw new Exception('Can not set user property: email', self::INVALID_EMAIL);
 		}
 		$isUsed = $this->authUsed('local', ['email' => $email]);
 		if ($isUsed === true) {
@@ -55,10 +61,15 @@ trait Local
 		if ($this->email === null) {
 			$this->email = $email;
 		}
-		$this->auth['local'][] = [
+
+		$auth = [
 			'email' => $email,
 			'password' => $this->hashPassword($password),
 		];
+		if ($verified === false) {
+			$auth['verify'] = sha1(openssl_random_pseudo_bytes(16));
+		}
+		$this->auth['local'][] = $auth;
 		return true;
 	}
 }

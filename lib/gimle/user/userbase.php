@@ -18,7 +18,7 @@ use const \gimle\FILTER_SANITIZE_NAME;
 abstract class UserBase
 {
 	use trick\SigninToken;
-	use trick\SigninException;
+	use trick\ActionException;
 
 	/* Error constants */
 	public const UNKNOWN = 1;
@@ -28,11 +28,14 @@ abstract class UserBase
 	public const UNKNOWN_OPERATION = 5;
 	public const USER_NOT_FOUND = 6;
 	public const INVALID_PASSWORD = 7;
-	public const USER_NOT_VALIDATED = 8;
-	public const STATE_ERROR = 9;
-	public const REMOTE_ERROR = 10;
-	public const REMOTE_REJECT = 11;
-	public const OTHER_ERROR = 12;
+	public const INVALID_EMAIL = 8;
+	public const USER_NOT_VALIDATED = 9;
+	public const USER_ALREADY_EXISTS = 10;
+	public const STATE_ERROR = 11;
+	public const REMOTE_ERROR = 12;
+	public const REMOTE_REJECT = 13;
+	public const OTHER_ERROR = 14;
+	public const CUSTOM = 15;
 
 	protected $id = null;
 	protected $firstName = null;
@@ -279,6 +282,29 @@ abstract class UserBase
 			return true;
 		}
 		return false;
+	}
+
+	public function getRecoverToken (string $email): string
+	{
+		$token = null;
+		foreach ($this->auth['local'] as &$auth) {
+			if ($auth['email'] === $email) {
+				if ((isset($auth['recover'])) && (isset($auth['recover_dt']))) {
+					$dt = strtotime($auth['recover_dt']);
+					if ((time() - $dt) < 1200) {
+						// Create new token if 20 minutes has passed.
+						$token = $auth['recover'];
+						break;
+					}
+				}
+				$token = sha1(openssl_random_pseudo_bytes(16));
+				$auth['recover'] = $token;
+				$auth['recover_dt'] = $this->asDateTime();
+				$this->save();
+				break;
+			}
+		}
+		return $token;
 	}
 
 	protected function canSave (): bool

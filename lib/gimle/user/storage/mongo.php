@@ -361,6 +361,88 @@ class Mongo extends \gimle\user\UserBase
 		]);
 	}
 
+	public static function verifyEmail (string $token): ?User
+	{
+		$mongo = MongoDb::getInstance('users');
+
+		$filter = [
+			'auth.type' => 'local',
+			'auth.verify' => $token,
+		];
+
+		$cursor = $mongo->query($filter);
+		$it = new \IteratorIterator($cursor);
+		$it->rewind();
+		$document = $it->current();
+		if ($document === null) {
+			return null;
+		}
+
+		$user = self::mongoToUser($document, new User());
+
+		foreach ($user->auth['local'] as &$auth) {
+			if ($auth['verify'] === $_SERVER['QUERY_STRING']) {
+				unset($auth['verify']);
+				$auth['verified'] = $user->asDateTime();
+				break;
+			}
+		}
+		$user->save();
+
+		return $user;
+	}
+
+	public static function recover (string $email): ?User
+	{
+		$mongo = MongoDb::getInstance('users');
+
+		$filter = [
+			'auth.type' => 'local',
+			'auth.email' => $email,
+		];
+
+		$cursor = $mongo->query($filter);
+		$it = new \IteratorIterator($cursor);
+		$it->rewind();
+		$document = $it->current();
+		if ($document === null) {
+			return null;
+		}
+		return self::mongoToUser($document, new User());
+	}
+
+	public static function checkRecovery (string $token): ?User
+	{
+		$mongo = MongoDb::getInstance('users');
+
+		$filter = [
+			'auth.type' => 'local',
+			'auth.recover' => $token,
+			// 'auth.recover_dt' => [
+			// 	'$gt' => User::asDateTime('-10 years'),
+			// ],
+		];
+
+		$cursor = $mongo->query($filter);
+		$it = new \IteratorIterator($cursor);
+		$it->rewind();
+		$document = $it->current();
+		if ($document === null) {
+			return null;
+		}
+
+		$user = self::mongoToUser($document, new User());
+		foreach ($user->auth['local'] as $auth) {
+			if ($auth['recover'] === $token) {
+				$dt = strtotime($auth['recover_dt']);
+				if ($dt > strtotime('-1 hour')) {
+					return $user;
+				}
+			}
+		}
+		return null;
+	}
+
 	private function authGet (string $type, array $params): ?\stdClass
 	{
 		$mongo = MongoDb::getInstance('users');
@@ -385,7 +467,7 @@ class Mongo extends \gimle\user\UserBase
 		return null;
 	}
 
-	private static function mongoToUser (\stdClass $document, User $user): User
+	protected static function mongoToUser (\stdClass $document, User $user): User
 	{
 		$user->id = $document->id;
 		$user->firstName = $document->name->first;

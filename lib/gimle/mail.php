@@ -66,19 +66,24 @@ class Mail extends PHPMailer
 	{
 		parent::__construct(true);
 		$this->config = Config::get('mail.gimle');
-		if ($key !== null) {
+		if (($key !== null) && (Config::exists('mail.' . $key))) {
 			$this->config = array_merge_distinct($this->config, Config::get('mail.' . $key));
 		}
 
 		$this->CharSet = 'UTF-8';
+		$this->SMTPDebug = 2;
+		$this->isSMTP();
 
 		if (isset($this->config['host'])) {
 			$this->Host = $this->config['host'];
 		}
-		if (isset($this->config['user'])) {
-			$this->SMTPDebug = 2;
-			$this->isSMTP();
+		if (isset($this->config['port'])) {
+			$this->Port = $this->config['port'];
+		}
+		else {
 			$this->Port = 587;
+		}
+		if (isset($this->config['user'])) {
 			$this->SMTPAuth = true;
 			$this->Username = $this->config['user'];
 			if (isset($this->config['pass'])) {
