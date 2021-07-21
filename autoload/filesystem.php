@@ -44,7 +44,7 @@ function uniquename ($dir = TEMP_DIR, $prefix = '', $postfix = ''): string
 	if (!file_exists($dir . $prefix . $name . $postfix)) {
 		return $prefix . $name . $postfix;
 	}
-	return tempname($dir, $prefix, $postfix);
+	return uniquename($dir, $prefix, $postfix);
 }
 
 
