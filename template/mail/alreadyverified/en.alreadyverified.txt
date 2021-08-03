@@ -1,0 +1,7 @@
+*Notification from %sitename%!*
+
+Someone just attempted verify this email.
+If you attempted this, know that you're email is already verified.
+You may vist %signin% to sign in.
+If you forgot the password, please visit %reset% to request a password reset.
+If you do not recognize this activity, you can just delete this email.

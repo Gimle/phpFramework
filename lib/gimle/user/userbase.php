@@ -36,6 +36,7 @@ abstract class UserBase
 	public const REMOTE_REJECT = 13;
 	public const OTHER_ERROR = 14;
 	public const CUSTOM = 15;
+	public const VERIFICATION_REQUIRED = 16;
 
 	protected $id = null;
 	protected $firstName = null;

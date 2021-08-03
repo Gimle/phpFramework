@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace gimle\user\trick\auth;
 
 use \gimle\Exception;
+use \gimle\Config;
 
 trait Local
 {
@@ -19,12 +20,28 @@ trait Local
 		foreach ($this->auth['local'] as $index => $auth) {
 			if ($auth['email'] === $email) {
 				if (password_verify($password, $auth['password'])) {
+					if ((Config::get('user.auth.local.verification') === 'require') && (!isset($auth['verified']))) {
+						throw new Exception('E-Mail verification required', self::VERIFICATION_REQUIRED);
+					}
 					$this->auth['local'][$index]['last_used'] = $this->asDateTime();
 					return true;
 				}
 			}
 		}
 		return false;
+	}
+
+	public function getLocalAuth ($email)
+	{
+		if (!isset($this->auth['local'])) {
+			return null;
+		}
+		foreach ($this->auth['local'] as $local) {
+			if ($local['email'] === $email) {
+				return $local;
+			}
+		}
+		return null;
 	}
 
 	public function updatePassword (string $email, string $password): bool

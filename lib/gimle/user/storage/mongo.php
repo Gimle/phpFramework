@@ -411,7 +411,19 @@ class Mongo extends \gimle\user\UserBase
 		return self::mongoToUser($document, new User());
 	}
 
-	public static function checkRecovery (string $token): ?User
+	public function setRecovered (string $token, string $password)
+	{
+		foreach ($this->auth['local'] as &$auth) {
+			if (isset($auth['recover']) && ($auth['recover'] === $token)) {
+				$this->updatePassword($auth['email'], $password);
+				unset($auth['recover']);
+				unset($auth['recover_dt']);
+				$this->save();
+			}
+		}
+	}
+
+	public static function checkRecovery (string $token, string $email = null, $validity = '-1 hour'): ?User
 	{
 		$mongo = MongoDb::getInstance('users');
 
@@ -422,6 +434,13 @@ class Mongo extends \gimle\user\UserBase
 			// 	'$gt' => User::asDateTime('-10 years'),
 			// ],
 		];
+		if ($email !== null) {
+			$filter['auth.email'] = $email;
+		}
+
+		if (is_string($validity)) {
+			$validity = strtotime($validity);
+		}
 
 		$cursor = $mongo->query($filter);
 		$it = new \IteratorIterator($cursor);
@@ -435,7 +454,7 @@ class Mongo extends \gimle\user\UserBase
 		foreach ($user->auth['local'] as $auth) {
 			if ($auth['recover'] === $token) {
 				$dt = strtotime($auth['recover_dt']);
-				if ($dt > strtotime('-1 hour')) {
+				if ($dt > $validity) {
 					return $user;
 				}
 			}
