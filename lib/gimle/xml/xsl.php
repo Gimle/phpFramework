@@ -64,8 +64,19 @@ class Xsl
 
 			$result = exec($engine . '-xslt -o ' . $resultfile . ' ' . $sourcefile . ' ' . $xslfile);
 
-			$return = file_get_contents($resultfile);
+			$return = null;
+			if (($result['return'] === 0) && (is_readable($resultfile))) {
+				$return = file_get_contents($resultfile);
+			}
 			clear_dir($saxonDir, true);
+
+			if ($return === null) {
+				$e = new Exception('Transformation Exception');
+				$e->set('stout', $result['stout']);
+				$e->set('sterr', $result['sterr']);
+				$e->set('return', $result['return']);
+				throw $e;
+			}
 
 			return $return;
 		}
