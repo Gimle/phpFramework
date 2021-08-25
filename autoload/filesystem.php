@@ -363,3 +363,19 @@ function loadFile (string $filename, string $default = ''): string
 
 	return $contents;
 }
+
+/**
+ * Convert a large number into a folder structure.
+ *
+ * @param int $num The input number.
+ * @param int $length The maximum length of the number.
+ * @param int $split How many digits to put in each subfolder.
+ * @return string The resulting folder structure.
+ */
+function numeric_dir (int $num, int $length, int $split = 3): string
+{
+	$result = str_pad((string) $num, $length, '0', STR_PAD_LEFT);
+	$result = str_split($result, $split);
+	$result = implode('/', $result) . '/';
+	return $result;
+}
