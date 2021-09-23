@@ -243,9 +243,9 @@ class Solr
 	public static function formatDate ($date)
 	{
 		if (is_int($date)) {
-			return date('Y-m-d\TH:i:s\Z', $date);
+			return gmdate('Y-m-d\TH:i:s\Z', $date);
 		}
-		return date('Y-m-d\TH:i:s\Z', strtotime($date));
+		return gmdate('Y-m-d\TH:i:s\Z', strtotime($date));
 	}
 
 	/**
