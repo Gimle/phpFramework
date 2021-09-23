@@ -34,10 +34,10 @@ class Mongo
 		return $it->current();
 	}
 
-	public function command (array $command)
+	public function command (array $command, ?string $db = null)
 	{
 		$query = new \MongoDB\Driver\Command($command);
-		$cursor = $this->connection->executeCommand($this->config['database'], $query);
+		$cursor = $this->connection->executeCommand(($db !== null ? $db : $this->config['database']), $query);
 		return $cursor;
 	}
 

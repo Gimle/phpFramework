@@ -8,6 +8,8 @@ header('HTTP/1.0 500 Internal Server Error');
 
 Canvas::title(_('Internal Server Error'), 'template', -1);
 
+$e = inc_get_args();
+
 $headers = headers_list();
 foreach ($headers as $header) {
 	$check = 'Content-type: application/json;';
