@@ -1,17 +1,16 @@
 #!/usr/bin/env php
 <?php
+declare(strict_types=1);
 namespace gimle;
-
-$gimleDir = substr($_SERVER['PWD'], 0, strrpos($_SERVER['PWD'], DIRECTORY_SEPARATOR) + 1);
 
 /**
  * The local absolute location of the site.
  *
  * @var string
  */
-define('gimle\\SITE_DIR', dirname($gimleDir, 2) . DIRECTORY_SEPARATOR);
+define('gimle\\SITE_DIR', dirname(__DIR__, 3) . DIRECTORY_SEPARATOR);
 
-require $gimleDir . 'init.php';
+require dirname(__DIR__) . '/init.php';
 
 if ((isset($argv[1])) && (ctype_digit($argv[1])) && ((int) $argv[1] >= 4) && ((int) $argv[1] <= 30)) {
 	$cost = (int) $argv[1];
