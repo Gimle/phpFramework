@@ -8,9 +8,9 @@ namespace gimle;
  *
  * @var string
  */
-define('gimle\\SITE_DIR', dirname($_SERVER['SCRIPT_FILENAME'], 4) . DIRECTORY_SEPARATOR);
+define('gimle\\SITE_DIR', dirname(__DIR__, 3) . DIRECTORY_SEPARATOR);
 
-require SITE_DIR . 'module/gimle/init.php';
+require dirname(__DIR__) . '/init.php';
 
 if (isset($argv[1])) {
 	define('gimle\\MAIN_SITE_DIR', Config::get('subsite.of')[$argv[1]]);
