@@ -182,3 +182,23 @@ function random ($characters = null, $length = null)
 
 	return $return;
 }
+
+/**
+ * Checks if a string ends with a given substring.
+ *
+ * @param string The string to search in.
+ * @param string|array The substring or array to search for in the haystack.
+ * @return bool Returns true if haystack ends with needle, false otherwise.
+ */
+function str_ends_with (string $haystack, $needle): bool
+{
+	if (is_string($needle)) {
+		return \str_ends_with($haystack, $needle);
+	}
+	foreach ($needle as $test) {
+		if (\str_ends_with($haystack, $test)) {
+			return true;
+		}
+	}
+	return false;
+}
