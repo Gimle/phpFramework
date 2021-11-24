@@ -6,8 +6,10 @@ use \gimle\Config;
 use \gimle\MainConfig;
 use \gimle\rest\Fetch;
 use \gimle\xml\SimpleXmlElement;
+use \gimle\Exception;
 use const \gimle\IS_SUBSITE;
 use function \gimle\ent2utf8;
+use function \gimle\sp;
 
 /**
  * Solr Utilities class.
@@ -360,7 +362,19 @@ class Solr
 		$result = $fetch->query($searchUrl);
 		if ($parseResult === true) {
 			if ($params['wt'] === 'xml') {
-				$result['reply'] = new SimpleXmlElement($result['reply']);
+				try {
+					$result['reply'] = new SimpleXmlElement($result['reply']);
+				}
+				catch (\Exception $t) {
+					$e = new Exception($t->getMessage(), $t->getCode(), $t);
+					if ($result['error'] === 7) {
+						$e->set('debug', 'Is solr running and accessible by this server?');
+					}
+					array_walk($result, function ($value, $key, $e) {
+						$e->set($key, $value);
+					}, $e);
+					throw $e;
+				}
 			}
 			elseif ($params['wt'] === 'json') {
 				$result['reply'] = json_decode($result['reply'], true);
