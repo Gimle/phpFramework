@@ -194,6 +194,12 @@ abstract class UserBase
 		return new User();
 	}
 
+	public static function getAuthLoadTypes (): array
+	{
+		$user = new User();
+		return $user->authLoadTypes;
+	}
+
 	public static function login (string $email, string $password)
 	{
 		if (isset($_SESSION['gimle']['user'])) {

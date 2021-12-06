@@ -332,23 +332,95 @@ class Mongo extends \gimle\user\UserBase
 		return false;
 	}
 
-	public static function getUsers (int $limit = 100): array
+	public static function getUsers (int $limit = 100, array $options = []): array
 	{
 		$return = [];
 		$mongo = MongoDb::getInstance('users');
 
-		$cursor = $mongo->command([
+		$command = [
 			'aggregate' => 'users',
-			'pipeline' => [
-				['$addFields' => ['order' => ['$ifNull' => [['$min' => '$groups'], '']]]],
-				['$sort' => ['order' => 1, 'name.first' => 1, 'name.last' => 1]],
+			'pipeline' => [],
+			'cursor' => new \StdClass(),
+		];
+
+		$match = [];
+		if (isset($options['q'])) {
+			$q = explode(' ', $options['q']);
+			array_walk($q, function (&$item) {
+				// $item = str_replace(['&'], ['\\&'], preg_quote($item));
+				$item = preg_quote($item);
+			});
+			$q = '(?=.*' . implode(')(?=.*', $q) . ')';
+			$q = new \MongoDB\BSON\Regex(str_replace(' ', '|', $q), 'i');
+			$match[] = ['$or' => [
+				['name.first' => ['$regex' => $q]],
+				['name.last' => ['$regex' => $q]],
+				['email' => ['$regex' => $q]],
+				['auth.email' => ['$regex' => $q]],
+			]];
+		}
+
+		if (isset($options['auth'])) {
+			$match[] = ['auth.type' => $options['auth']];
+		}
+
+		if (isset($options['group'])) {
+			$match[] = ['groups' => $options['group']];
+		}
+
+		if (!empty($match)) {
+			$command['pipeline'][] = ['$match' => [
+				'$and' => $match,
+			]];
+		}
+
+		$command['pipeline'][] = ['$addFields' => [
+			'hasfirst' => ['$eq' => ['$name.first', '']],
+			'haslast' => ['$eq' => ['$name.last', '']],
+			'hasgroups' => ['$ifNull' => [['$min' => '$groups'], '']],
+			// 'numauth' => ['$size' => '$auth'],
+		]];
+		$command['pipeline'][] = ['$sort' => [
+			'hasgroups' => 1,
+			'hasfirst' => 1,
+			'haslast' => 1,
+			// 'numauth' => -1,
+			'name.first' => 1,
+			// 'name.last' => 1,
+			'email' => 1,
+		]];
+		$skip = 0;
+		if (isset($options['offset'])) {
+			$skip = $options['offset'];
+		}
+		$command['pipeline'][] = ['$facet' => [
+			'result' => [
+				['$skip' => $skip],
 				['$limit' => $limit],
 			],
-			'cursor' => new \StdClass(),
-		]);
-		foreach ($cursor as $document) {
-			unset($document->order);
-			$return[] = self::mongoToUser($document, new User());
+			'total' => [
+				['$count' => 'count'],
+			],
+		]];
+
+		$cursor = $mongo->command($command);
+
+		$return = [
+			'total' => 0,
+			'users' => [],
+		];
+		foreach ($cursor as $facet) {
+			$total = current($facet->total);
+			if ($total === false) {
+				$total = 0;
+			}
+			else {
+				$total = $total->count;
+			}
+			$return['total'] = $total;
+			foreach ($facet->result as $document) {
+				$return['users'][] = self::mongoToUser($document, new User());
+			}
 		}
 		return $return;
 	}
