@@ -10,7 +10,13 @@ class Gimle extends EventEmitter {
 		this._config = {};
 
 		this.runScript(base + 'module/gimle/cli/getconfig.php', (r) => {
-			this._config = JSON.parse(r);
+			try {
+				this._config = JSON.parse(r);
+			}
+			catch (e) {
+				console.log('Config', r);
+				process.exit();
+			}
 			if ((this._config.subsite !== undefined) && (this._config.subsite.of !== undefined)) {
 				this._subconfig = {};
 				let siteids = Object.keys(this._config.subsite.of);
