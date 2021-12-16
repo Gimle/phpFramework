@@ -363,9 +363,16 @@ class Mongo extends \gimle\user\UserBase
 		if (isset($options['auth'])) {
 			$match[] = ['auth.type' => $options['auth']];
 		}
-
 		if (isset($options['group'])) {
 			$match[] = ['groups' => $options['group']];
+		}
+		if (isset($options['hasField'])) {
+			if (!is_array($options['hasField'])) {
+				$options['hasField'] = [$options['hasField']];
+			}
+			foreach ($options['hasField'] as $field) {
+				$match[] = ['fields.' . $field => ['$ne' => null]];
+			}
 		}
 
 		if (!empty($match)) {
