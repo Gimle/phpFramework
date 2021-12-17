@@ -202,3 +202,33 @@ function str_ends_with (string $haystack, $needle): bool
 	}
 	return false;
 }
+
+/**
+ * Converts a string into a slug format.
+ *
+ * @param ?string $slug The string to convert.
+ * @param string $replacer The character to be used for replaced characters.
+ * @param ?string $translit Translitor to use, ff you want to translit the string.
+ * @return ?string The resulting string.
+ */
+function slug (?string $slug, string $replacer = '_', ?string $translit = null): ?string
+{
+	if ($slug === null) {
+		return null;
+	}
+
+	$slug = str_replace(' ', $replacer, \gimle\normalize_space($slug));
+
+	$slug = preg_replace('/[^\pL0-9]/u', $replacer, $slug);
+	if ($translit !== null) {
+		$slug = iconv('utf-8', $translit . '//TRANSLIT', $slug);
+	}
+	$slug = mb_strtolower($slug);
+	$slug = trim($slug, $replacer);
+
+	if ($slug === '') {
+		return null;
+	}
+
+	return $slug;
+}
