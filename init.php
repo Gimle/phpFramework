@@ -565,11 +565,12 @@ set_exception_handler(function (\Throwable $e): void {
 		};
 
 		try {
-			$canvas = router\Router::getInstance()->getCanvas();
+			$canvas = router\Router::getInstance()->getCanvas(true);
 		}
 		catch (router\Exception $e) {
 			$canvas = null;
 		}
+		$canvas = null;
 		$canvasCheck = current($e->getTrace());
 		if ((is_array($canvasCheck)) && (isset($canvasCheck['file'])) && ($canvasCheck['file'] === $canvas)) {
 			$canvas = SITE_DIR . 'module/' . MODULE_GIMLE . '/canvas/pc.php';

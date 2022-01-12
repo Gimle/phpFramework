@@ -30,7 +30,11 @@ if (is_readable(MAIN_SITE_DIR . 'config.php')) {
 if (!isset($config['dir']['storage'])) {
 	$config['dir']['storage'] = MAIN_SITE_DIR . 'storage/';
 }
+if (!isset($config['dir']['static'])) {
+	$config['dir']['static'] = MAIN_SITE_DIR . 'static/';
+}
 define('gimle\\MAIN_STORAGE_DIR', $config['dir']['storage']);
+define('gimle\\MAIN_STATIC_DIR', $config['dir']['static']);
 if (is_readable(MAIN_SITE_DIR . 'post.php')) {
 	$config = array_merge_distinct($config, include MAIN_SITE_DIR . 'post.php');
 }

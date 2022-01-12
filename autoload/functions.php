@@ -285,7 +285,10 @@ function array_merge_distinct (...$arrays): array
 		foreach ($arrays as $array2) {
 			if (!empty($array2)) {
 				foreach ($array2 as $key => $val) {
-					if (is_array($array2[$key])) {
+					if ((is_int($key)) && (!is_array($array2[$key]))) {
+						$array[] = $array2[$key];
+					}
+					else if (is_array($array2[$key])) {
 						$array[$key] = ((isset($array[$key])) && (is_array($array[$key])) ? array_merge_distinct($array[$key], $array2[$key], $reposition) : $array2[$key]);
 					}
 					else {

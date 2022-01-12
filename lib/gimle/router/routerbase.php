@@ -313,9 +313,9 @@ class RouterBase extends PathResolver
 	 *
 	 * @return string
 	 */
-	public function getCanvas (): string
+	public function getCanvas ($skipCheck = false): ?string
 	{
-		if ($this->canvas === null) {
+		if (($skipCheck === false) && ($this->canvas === null)) {
 			$this->except(self::E_CANVAS_NOT_SET);
 		}
 		return $this->canvas;
