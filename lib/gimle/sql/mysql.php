@@ -84,20 +84,14 @@ class Mysql extends \mysqli
 	 * @param int $resultmode MYSQLI_STORE_RESULT
 	 * @return mixed bool|object
 	 */
-	public function query ($query, $resultmode = null)
+	public function query (string $query, int $resultmode = MYSQLI_STORE_RESULT): \mysqli_result|bool
 	{
 		$t = microtime(true);
 		$error = false;
-		if ($resultmode === null) {
-			if (!$result = parent::query($query)) {
-				$error = ['errno' => $this->errno, 'error' => $this->error];
-			}
+		if (!$result = parent::query($query, $resultmode)) {
+			$error = ['errno' => $this->errno, 'error' => $this->error];
 		}
-		else {
-			if (!$result = parent::query($query, $resultmode)) {
-				$error = ['errno' => $this->errno, 'error' => $this->error];
-			}
-		}
+
 		$t = microtime(true) - $t;
 		$this->queryCache[] = ['query' => $query, 'time' => $t, 'rows' => $this->affected_rows, 'error' => $error];
 		if (!$result) {
