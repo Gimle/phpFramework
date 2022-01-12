@@ -18,6 +18,7 @@ namespace gimle;
 	<li>SimpleXmlElement: <?=(class_exists('SimpleXmlElement') === true ? '<span style="color: #0c0;">Found</span>' : '<span style="color: #c00;">Not found</span>')?></li>
 	<li>ZipArchive: <?=(class_exists('ZipArchive') === true ? '<span style="color: #0c0;">Found</span>' : '<span style="color: #c00;">Not found</span>')?></li>
 	<li>Mariadb / MySql: <?=(function_exists('mysqli_connect') === true ? '<span style="color: #0c0;">Found</span>' : '<span style="color: #c00;">Not found</span>')?></li>
+	<li>Mongo: <?=(class_exists('MongoDB\Driver\Manager') === true ? '<span style="color: #0c0;">Found</span>' : '<span style="color: #c00;">Not found</span>')?></li>
 	<li>Sqlite3: <?=(class_exists('Sqlite3') === true ? '<span style="color: #0c0;">Found</span>' : '<span style="color: #c00;">Not found</span>')?></li>
 	<li>GD: <?=(function_exists('gd_info') === true ? '<span style="color: #0c0;">Found</span>' : '<span style="color: #c00;">Not found</span>')?></li>
 	<li>Curl: <?=(function_exists('curl_init') === true ? '<span style="color: #0c0;">Found</span>' : '<span style="color: #c00;">Not found</span>')?></li>
