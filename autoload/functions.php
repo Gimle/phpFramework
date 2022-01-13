@@ -111,7 +111,7 @@ function get_preferred_language (array $avail): ?string
 		else {
 			$accept[1] = (float) $accept[1];
 		}
-		$result[$accept[1] * 100][] = $accept[0];
+		$result[$accept[1] * 10000][] = $accept[0];
 	}
 	krsort($result);
 	foreach ($result as $values) {
