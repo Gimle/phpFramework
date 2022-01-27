@@ -259,7 +259,7 @@ function slug (?string $slug, string $replacer = '_', ?string $translit = null):
 
 	$slug = str_replace(' ', $replacer, \gimle\normalize_space($slug));
 
-	$slug = preg_replace('/[^\pL0-9]/u', $replacer, $slug);
+	$slug = preg_replace('/[^\pL0-9\-]/u', $replacer, $slug);
 	if ($translit !== null) {
 		$slug = iconv('utf-8', $translit . '//TRANSLIT', $slug);
 	}
