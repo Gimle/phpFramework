@@ -4,6 +4,7 @@ namespace gimle;
 
 use \gimle\Spectacle;
 
+
 /**
  * Check if a session is available.
  *
@@ -40,10 +41,56 @@ function session_start (): void
 		}
 		session_set_cookie_params(0, $urlPartsBase['path'], '', $secure, true);
 		if (ENV_MODE & ENV_WEB) {
-			session_name('gimle' . ucfirst(preg_replace('/[^a-zA-Z0-9]/', '', MAIN_SITE_ID)));
+			$sessionName = 'gimle' . ucfirst(preg_replace('/[^a-zA-Z0-9]/', '', MAIN_SITE_ID));
+			session_name($sessionName);
+
+			if (!isset($_COOKIE[$sessionName . 'Lng'])) {
+				$uid = sha1(random_bytes(40));
+			}
+			else {
+				$uid = $_COOKIE[$sessionName . 'Lng'];
+				if ((strlen($uid) !== 40) || (!ctype_xdigit($uid))) {
+					$uid = sha1(random_bytes(40));
+				}
+			}
+
+			$expires = time() + (86400 * 1000);
+			setcookie(
+				$sessionName . 'Lng',
+				$uid,
+				[
+					'expires' => $expires,
+					'path' => $urlPartsBase['path'],
+					'secure' => true,
+					'httponly' => true,
+					'samesite' => 'Lax',
+				]
+			);
+			$_COOKIE[$sessionName . 'Lng'] = $uid;
 		}
 		\session_start();
 	}
+}
+
+/**
+ * Get the client ip. Set the client.ip config variable to override. For running behind a proxy, this function selects the first ip op the chain.
+ *
+ * @return string The client ip.
+ *
+ */
+function client_ip (): string
+{
+	if (Config::exists('client.ip')) {
+		$ip = $_SERVER[Config::get('client.ip')];
+	}
+	elseif (MainConfig::exists('client.ip')) {
+		$ip = $_SERVER[MainConfig::get('client.ip')];
+	}
+	else {
+		$ip = $_SERVER['REMOTE_ADDR'];
+	}
+	$ip = current(explode(',', $ip));
+	return $ip;
 }
 
 /**
