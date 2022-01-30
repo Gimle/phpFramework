@@ -9,6 +9,7 @@ use \gimle\Exception;
 use function \gimle\filter_var;
 use function \gimle\loadFile;
 use function \gimle\sp;
+use function \gimle\client_ip;
 
 use const \gimle\MAIN_SITE_DIR;
 use const \gimle\MAIN_BASE_PATH;
@@ -53,6 +54,8 @@ abstract class UserBase
 
 	protected $auth = [];
 	protected $field = [];
+	protected $logins = [];
+	protected $uid = [];
 
 	protected $uses = [];
 	protected $authLoadTypes = [];
@@ -185,6 +188,27 @@ abstract class UserBase
 
 	public static function current ($reload = false)
 	{
+		$user = self::_current($reload);
+
+		if ($user->id !== null) {
+			$cookieBaseName = session_name();
+			$uid = $_COOKIE[$cookieBaseName . 'Lng'];
+			if (!isset($user->uid[$uid])) {
+				$ip = client_ip();
+				$dt = $user->asDateTime();
+				$user->uid[$uid] = [
+					'uid' => $uid,
+					'last_used' => $dt,
+					'ips' => [$ip => ['ip' => $ip, 'last_used' => $dt]],
+				];
+				$user->save();
+			}
+		}
+		return $user;
+	}
+
+	private static function _current (bool $reload = false): User
+	{
 		if (isset($_SESSION['gimle']['user'])) {
 			if ($reload === true) {
 				$_SESSION['gimle']['user'] = User::getUser($_SESSION['gimle']['user']->id);
@@ -200,7 +224,7 @@ abstract class UserBase
 		return $user->authLoadTypes;
 	}
 
-	public static function login (string $email, string $password)
+	public static function login (string $email, string $password): User
 	{
 		if (isset($_SESSION['gimle']['user'])) {
 			throw new Exception('User already signed in.', User::ALREADY_SIGNED_IN);
@@ -214,9 +238,44 @@ abstract class UserBase
 			if (method_exists($user, $method)) {
 				if ($user->$method($email, $password) === true) {
 					$logged = true;
+
+					$ip = client_ip();
+					$dt = $user->asDateTime();
+
+					$cookieBaseName = 'gimle' . ucfirst(preg_replace('/[^a-zA-Z0-9]/', '', MAIN_SITE_ID));
+					$uid = $_COOKIE[$cookieBaseName . 'Lng'];
+
+					if (!isset($user->uid[$uid])) {
+						$user->uid[$uid] = [
+							'uid' => $uid,
+							'last_used' => $dt,
+							'ips' => [$ip => ['ip' => $ip, 'last_used' => $dt]],
+						];
+					}
+					else {
+						$user->uid[$uid]['last_used'] = $dt;
+						$user->uid[$uid]['ips'][$ip] = ['ip' => $ip, 'last_used' => $dt];
+					}
+
+					$login = [
+						'dt' => $dt,
+						'ip' => $ip,
+						'uid' => $uid,
+						'asi' => false,
+						'lng' => (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : ''),
+						'uagent' => (isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : ''),
+					];
+					array_unshift($user->logins, $login);
+
+					// Limit to 10 latest logins
+					$user->logins = array_slice($user->logins, 0, 10);
+
 					if (method_exists($user, 'postLogin')) {
 						$user->postLogin($email, $password);
 					}
+
+					$user->save();
+
 					break;
 				}
 			}
@@ -235,30 +294,17 @@ abstract class UserBase
 			$expires = time() + (86400 * 400);
 		}
 		$urlPartsBase = parse_url(MAIN_BASE_PATH);
-		if (version_compare(PHP_VERSION, '7.3.0') === -1) {
-			setcookie(
-				session_name() . $name,
-				$value,
-				$expires,
-				$urlPartsBase['path'],
-				'',
-				true,
-				true
-			);
-		}
-		else {
-			setcookie(
-				session_name() . $name,
-				$value,
-				[
-					'expires' => $expires,
-					'path' => $urlPartsBase['path'],
-					'secure' => true,
-					'httponly' => true,
-					'samesite' => 'Lax',
-				]
-			);
-		}
+		setcookie(
+			session_name() . $name,
+			$value,
+			[
+				'expires' => $expires,
+				'path' => $urlPartsBase['path'],
+				'secure' => true,
+				'httponly' => true,
+				'samesite' => 'Lax',
+			]
+		);
 	}
 
 	public function removeAuth (string $type, array $params): bool
