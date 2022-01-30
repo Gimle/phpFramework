@@ -404,11 +404,16 @@ function var_dump ($var, array $mode = []): ?string
 								$pre = '';
 								$mPropType = $mParam->getType();
 								if ($mPropType !== null) {
-									if ($mPropType->allowsNull() === true) {
-										$pre = '?';
+									if ($mPropType instanceof \ReflectionNamedType) {
+										if ($mPropType->allowsNull() === true) {
+											$pre = '?';
+										}
+										$pre .= $mPropType->getName() . ' ';
+										$pre = colorize($pre, (in_array($mPropType->getName(), ['string', 'int', 'bool', 'float', 'array']) ? $mPropType->getName() : 'gray'));
 									}
-									$pre .= $mPropType->getName() . ' ';
-									$pre = colorize($pre, (in_array($mPropType->getName(), ['string', 'int', 'bool', 'float', 'array']) ? $mPropType->getName() : 'gray'));
+									else {
+										$pre = (string) $mPropType . ' ';
+									}
 								}
 
 								if ($mParam->isOptional()) {
@@ -446,11 +451,15 @@ function var_dump ($var, array $mode = []): ?string
 						$returnType = $method->getReturnType();
 						if ($returnType !== null) {
 							$pre = ': ';
-							if ($returnType->allowsNull() === true) {
-								$pre .= '?';
+							if ($returnType instanceof \ReflectionNamedType) {
+								if ($returnType->allowsNull() === true) {
+									$pre .= '?';
+								}
+								echo colorize($pre . $returnType->getName(), (in_array($returnType->getName(), ['string', 'int', 'bool', 'float', 'array']) ? $returnType->getName() : 'gray'));
 							}
-							echo colorize($pre . $returnType->getName(), (in_array($returnType->getName(), ['string', 'int', 'bool', 'float', 'array']) ? $returnType->getName() : 'gray'));
-//							echo colorize($pre . (string) $returnType, 'string');
+							else {
+								echo ': ' . (string) $returnType;
+							}
 						}
 
 						echo "\n";
