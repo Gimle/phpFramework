@@ -190,4 +190,17 @@ trait Ldap
 		}
 		$this->ldapServers = MainConfig::get('auth.ldap');
 	}
+
+	protected function ldapRowMatch (string $ou, string $valid): bool
+	{
+		$ou = explode(',', $ou);
+		$valid = explode(',', $valid);
+		if (!empty(array_diff($ou, $valid))) {
+			return false;
+		}
+		if (!empty(array_diff($valid, $ou))) {
+			return false;
+		}
+		return true;
+	}
 }
