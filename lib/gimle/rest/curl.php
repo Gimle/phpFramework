@@ -217,6 +217,9 @@ class Curl
 
 		if ($method !== null) {
 			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+			if ($method === 'HEAD') {
+				curl_setopt($ch, CURLOPT_IGNORE_CONTENT_LENGTH, 1);
+			}
 		}
 
 		if (!empty($this->cookie)) {
