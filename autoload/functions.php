@@ -70,6 +70,11 @@ function session_start (): void
 		}
 		\session_start();
 	}
+
+	$sid = session_id();
+	if (preg_match('/^[-,a-zA-Z0-9]{26,128}$/', $sid) === 0) {
+		session_regenerate_id();
+	}
 }
 
 /**

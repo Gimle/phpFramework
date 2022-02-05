@@ -354,7 +354,7 @@ class Xml extends \gimle\user\UserBase
 		return $count;
 	}
 
-	public function getByUid ($uid): ?User
+	public static function getByUid ($uid): ?User
 	{
 		$sxml = SimpleXmlElement::open(self::getXmlLocation(), '<users/>');
 		$xp = '/users/user/uids/uid[@id=' . $sxml->real_escape_string($uid) . ']/../..';

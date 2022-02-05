@@ -475,6 +475,24 @@ class Mongo extends \gimle\user\UserBase
 		]);
 	}
 
+	public static function getByUid ($uid): ?User
+	{
+		$mongo = MongoDb::getInstance('users');
+
+		$filter = [
+			'uids.id' => $uid,
+		];
+
+		$cursor = $mongo->query($filter);
+		$it = new \IteratorIterator($cursor);
+		$it->rewind();
+		$document = $it->current();
+		if ($document === null) {
+			return null;
+		}
+		return self::mongoToUser($document, new User());
+	}
+
 	public static function verifyEmail (string $token): ?User
 	{
 		$mongo = MongoDb::getInstance('users');
