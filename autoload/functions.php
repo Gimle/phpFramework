@@ -446,3 +446,72 @@ function json_pretty ($value): string
 	$result = tab_indent($result);
 	return $result;
 }
+
+/**
+ * Get the system load in percentage or null on failure.
+ *
+ * @return ?float
+ */
+function getSysLoad (): ?float
+{
+	if (!is_readable('/proc/stat')) {
+		return null;
+	}
+
+	$stats = file_get_contents('/proc/stat');
+	$stats = preg_replace('/[[:blank:]]+/', ' ', $stats);
+	$stats = normalize_lines(($stats));
+	$stats = explode("\n", $stats);
+	foreach ($stats as $line) {
+		$line = trim($line);
+		if (!str_starts_with($line, 'cpu ')) {
+			continue;
+		}
+		$line = explode(' ', $line);
+		if (count($line) < 5) {
+			continue;
+		}
+		array_shift($line);
+		$time = 0;
+		foreach ($line as $value) {
+			$time += (int) $value;
+		}
+		return (100 - (((int) $line[3]) * 100 / $time));
+	}
+
+	return null;
+}
+
+function getSysMemory ()
+{
+	if (!is_readable('/proc/meminfo')) {
+		return null;
+	}
+
+	$total = null;
+	$free = null;
+
+	$stats = file_get_contents('/proc/meminfo');
+	$stats = preg_replace('/[[:blank:]]+/', ' ', $stats);
+	$stats = normalize_lines(($stats));
+	$stats = explode("\n", $stats);
+	foreach ($stats as $line) {
+		if (!str_ends_with($line, ' kB')) {
+			continue;
+		}
+		if (str_starts_with($line, 'MemTotal: ')) {
+			$total = (int) substr($line, strlen( 'MemTotal: '));
+		}
+		if (str_starts_with($line, 'MemFree: ')) {
+			$free = (int) substr($line, strlen( 'MemFree: '));
+		}
+		if (($total !== null) && ($free !== null)) {
+			return [
+				'total' => $total * 1024,
+				'free' => $free * 1024,
+				'used' => ($total - $free) * 1024,
+			];
+		}
+	}
+	return $stats;
+}
