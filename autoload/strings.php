@@ -272,3 +272,25 @@ function slug (?string $slug, string $replacer = '_', ?string $translit = null):
 
 	return $slug;
 }
+
+/**
+ * Implode an array naturally.
+ *
+ * Each element is joined by a comma, except the last element where $glue is used.
+ *
+ * @param array $arr The array to be joined.
+ * @param ?string $glue The glue for the last element.
+ * @return string The joined string.
+ */
+function natural_implode (array $arr, string $glue = 'and'): string
+{
+	if (empty($arr)) {
+		return '';
+	}
+	if (count($arr) === 1) {
+		return current($arr);
+	}
+	$last = array_pop($arr);
+	$return = implode(', ', $arr);
+	return $return . ' ' . $glue . ' ' . $last;
+}
