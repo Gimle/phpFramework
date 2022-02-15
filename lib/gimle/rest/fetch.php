@@ -19,8 +19,11 @@ class Fetch extends FetchBase
 		$return = $this->wrapper->query($endpoint, $method, $returnBody);
 
 		foreach ($return['header'] as $header) {
-			if (substr($header, 0, 7) === 'HTTP/1.') {
-				$return['code'][] = (int) substr($header, 9, 3);
+			if (str_starts_with($header, 'HTTP/')) {
+				$header = explode(' ', $header);
+				if ((isset($header[1])) && (ctype_digit($header[1]))) {
+					$return['code'][] = (int) $header[1];
+				}
 			}
 		}
 

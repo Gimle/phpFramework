@@ -108,6 +108,33 @@ class Xml extends \gimle\user\UserBase
 			}
 		}
 
+		$uidsSxml = $user->addChild('uids');
+		foreach ($this->uid as $uid => $uidData) {
+			$uidSxml = $uidsSxml->addChild('uid');
+			$uidSxml['id'] = $uid;
+			$uidSxml['last_used'] = $this->asDateTime($uidData['last_used']);
+			if (isset($uidData['auto'])) {
+				$uidSxml['auto'] = $uidData['auto'];
+			}
+			foreach ($uidData['ips'] as $ip => $ipData) {
+				$ipSxml = $uidSxml->addChild('ip');
+				$ipSxml['last_used'] = $this->asDateTime($ipData['last_used']);
+				$ipSxml[0] = $ip;
+			}
+		}
+
+		$loginsSxml = $user->addChild('logins');
+
+		foreach ($this->logins as $sid => $login) {
+			$loginSxml = $loginsSxml->addChild('login');
+			$loginSxml['dt'] = self::asDateTime($login['dt']);
+			$loginSxml['ip'] = $login['ip'];
+			$loginSxml['uid'] = $login['uid'];
+			$loginSxml['asi'] = ($login['asi'] === true ? 'true' : 'false');
+			$loginSxml['lng'] = $login['lng'];
+			$loginSxml['uagent'] = $login['uagent'];
+		}
+
 		if (method_exists($this, 'postSave')) {
 			$this->postSave($user);
 		}
@@ -327,6 +354,18 @@ class Xml extends \gimle\user\UserBase
 		return $count;
 	}
 
+	public static function getByUid ($uid): ?User
+	{
+		$sxml = SimpleXmlElement::open(self::getXmlLocation(), '<users/>');
+		$xp = '/users/user/uids/uid[@id=' . $sxml->real_escape_string($uid) . ']/../..';
+		$result = current($sxml->xpath($xp));
+		if ($result !== false) {
+			return self::xmlToUser($result);
+		}
+
+		return null;
+	}
+
 	public static function setXmlLocation (string $location): void
 	{
 		self::$xmlFileLocation = $location;
@@ -457,6 +496,36 @@ class Xml extends \gimle\user\UserBase
 		}
 
 		$user->setNames();
+
+		foreach ($sxml->xpath('./uids/uid') as $uid) {
+			$ips = [];
+			foreach ($uid->xpath('./ip') as $ip) {
+				$ips[(string) $ip] = [
+					'ip' => (string) $ip,
+					'last_used' => date('Y-m-d H:i:s', strtotime((string) $ip['last_used'])),
+				];
+			}
+			$user->uid[(string) $uid['id']] = [
+				'uid' => (string) $uid['id'],
+				'last_used' => date('Y-m-d H:i:s', strtotime((string) $uid['last_used'])),
+				'ips' => $ips,
+			];
+			if ((string) $uid['auto'] !== '') {
+				$user->uid[(string) $uid['id']]['auto'] = (string) $uid['auto'];
+			}
+		}
+
+		$user->logins = [];
+		foreach ($sxml->xpath('./logins/login') as $login) {
+			$user->logins[] = [
+				'dt' => date('Y-m-d H:i:s', strtotime((string) $login['dt'])),
+				'ip' => (string) $login['ip'],
+				'uid' => (string) $login['uid'],
+				'asi' => ((string) $login['asi'] === 'true' ? true : false),
+				'lng' => (string) $login['lng'],
+				'uagent' => (string) $login['uagent'],
+			];
+		}
 
 		if (method_exists(static::class, 'postXmlToUser')) {
 			static::postXmlToUser($sxml, $user);

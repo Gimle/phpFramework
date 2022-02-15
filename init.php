@@ -121,7 +121,13 @@ foreach (['temp', 'cache', 'storage'] as $dir) {
 		}
 	}
 	if (!is_readable(constant(__NAMESPACE__ . '\\' . strtoupper($dir) . '_DIR'))) {
-		mkdir(constant(__NAMESPACE__ . '\\' . strtoupper($dir) . '_DIR'), 0777, true);
+		try {
+			mkdir(constant(__NAMESPACE__ . '\\' . strtoupper($dir) . '_DIR'), 0777, true);
+		}
+		catch (\Exception $e) {
+			echo $dir;
+			throw $e;
+		}
 	}
 }
 unset($undefinedDir);

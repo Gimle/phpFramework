@@ -196,6 +196,46 @@ function random ($characters = null, $length = null)
 }
 
 /**
+ * Checks if a string starts with a given substring.
+ *
+ * @param string The string to search in.
+ * @param string|array The substring or array to search for in the haystack.
+ * @return bool Returns true if haystack starts with needle, false otherwise.
+ */
+function str_starts_with (string $haystack, $needle): bool
+{
+	if (is_string($needle)) {
+		return \str_starts_with($haystack, $needle);
+	}
+	foreach ($needle as $test) {
+		if (\str_starts_with($haystack, $test)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * Determine if a string contains a given substring.
+ *
+ * @param string The string to search in.
+ * @param string|array The substring or array to search for in the haystack.
+ * @return bool Returns true if haystack starts with needle, false otherwise.
+ */
+function str_contains (string $haystack, $needle): bool
+{
+	if (is_string($needle)) {
+		return \str_contains($haystack, $needle);
+	}
+	foreach ($needle as $test) {
+		if (\str_contains($haystack, $test)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
  * Checks if a string ends with a given substring.
  *
  * @param string The string to search in.
@@ -231,7 +271,7 @@ function slug (?string $slug, string $replacer = '_', ?string $translit = null):
 
 	$slug = str_replace(' ', $replacer, \gimle\normalize_space($slug));
 
-	$slug = preg_replace('/[^\pL0-9]/u', $replacer, $slug);
+	$slug = preg_replace('/[^\pL0-9\-]/u', $replacer, $slug);
 	if ($translit !== null) {
 		$slug = iconv('utf-8', $translit . '//TRANSLIT', $slug);
 	}
@@ -243,4 +283,26 @@ function slug (?string $slug, string $replacer = '_', ?string $translit = null):
 	}
 
 	return $slug;
+}
+
+/**
+ * Implode an array naturally.
+ *
+ * Each element is joined by a comma, except the last element where $glue is used.
+ *
+ * @param array $arr The array to be joined.
+ * @param ?string $glue The glue for the last element.
+ * @return string The joined string.
+ */
+function natural_implode (array $arr, string $glue = 'and'): string
+{
+	if (empty($arr)) {
+		return '';
+	}
+	if (count($arr) === 1) {
+		return current($arr);
+	}
+	$last = array_pop($arr);
+	$return = implode(', ', $arr);
+	return $return . ' ' . $glue . ' ' . $last;
 }

@@ -345,7 +345,7 @@ class Solr
 		return $fetch->query($url);
 	}
 
-	protected function get (array $params = [], bool $parseResult, string $handler = 'select'): array
+	protected function get (array $params = [], bool $parseResult = true, string $handler = 'select'): array
 	{
 		$url = $this->getUrl() . $handler;
 		$fetch = new Fetch();

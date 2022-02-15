@@ -7,6 +7,8 @@ use \gimle\User;
 use \gimle\Config;
 use \gimle\Exception;
 
+use function \gimle\sp;
+
 class Mongo extends \gimle\user\UserBase
 {
 	public function save (): ?int
@@ -83,6 +85,36 @@ class Mongo extends \gimle\user\UserBase
 					$user['fields'][$method][$index] = $value;
 				}
 			}
+		}
+
+		$user['uids'] = [];
+		foreach ($this->uid as $uid => $uidData) {
+			$new = [
+				'id' => $uid,
+				'last_used' => $this->asDateTime($uidData['last_used']),
+				'ips' => [],
+			];
+			if (isset($uidData['auto'])) {
+				$new['auto'] = $uidData['auto'];
+			}
+			foreach ($uidData['ips'] as $ip => $ipData) {
+				$new['ips'][] = [
+					'ip' => $ip,
+					'last_used' => $this->asDateTime($ipData['last_used']),
+				];
+			}
+			$user['uids'][] = $new;
+		}
+		$user['logins'] = [];
+		foreach ($this->logins as $sid => $login) {
+			$user['logins'][] = [
+				'dt' => self::asDateTime($login['dt']),
+				'ip' => $login['ip'],
+				'uid' => $login['uid'],
+				'asi' => false,
+				'lng' => $login['lng'],
+				'uagent' => $login['uagent'],
+			];
 		}
 
 		if (method_exists($this, 'postSave')) {
@@ -262,8 +294,11 @@ class Mongo extends \gimle\user\UserBase
 		return false;
 	}
 
-	public static function asDateTime ($input = null): ?\MongoDB\BSON\UTCDateTime
+	public static function asDateTime (\MongoDB\BSON\UTCDateTime|string|null $input = null): ?\MongoDB\BSON\UTCDateTime
 	{
+		if (is_object($input)) {
+			return $input;
+		}
 		$mongo = MongoDb::getInstance('users');
 		return $mongo->asDateTime($input);
 	}
@@ -438,6 +473,24 @@ class Mongo extends \gimle\user\UserBase
 		return $mongo->count([
 			'id' => ['$gt' => 0],
 		]);
+	}
+
+	public static function getByUid ($uid): ?User
+	{
+		$mongo = MongoDb::getInstance('users');
+
+		$filter = [
+			'uids.id' => $uid,
+		];
+
+		$cursor = $mongo->query($filter);
+		$it = new \IteratorIterator($cursor);
+		$it->rewind();
+		$document = $it->current();
+		if ($document === null) {
+			return null;
+		}
+		return self::mongoToUser($document, new User());
 	}
 
 	public static function verifyEmail (string $token): ?User
@@ -619,6 +672,41 @@ class Mongo extends \gimle\user\UserBase
 		}
 
 		$user->setNames();
+
+		if (property_exists($document, 'uids')) {
+			foreach ($document->uids as $uid) {
+				$ips = [];
+				if (property_exists($uid, 'ips')) {
+					foreach ($uid->ips as $ip) {
+						$ips[$ip->ip] = [
+							'ip' => $ip->ip,
+							'last_used' => date('Y-m-d H:i:s', $ip->last_used->toDateTime()->getTimestamp()),
+						];
+					}
+				}
+				$user->uid[$uid->id] = [
+					'uid' => $uid->id,
+					'last_used' => date('Y-m-d H:i:s', $uid->last_used->toDateTime()->getTimestamp()),
+					'ips' => $ips,
+				];
+				if (property_exists($uid, 'auto')) {
+					$user->uid[$uid->id]['auto'] = $uid->auto;
+				}
+			}
+		}
+		$user->logins = [];
+		if (property_exists($document, 'logins')) {
+			foreach ($document->logins as $login) {
+				$user->logins[] = [
+					'dt' => date('Y-m-d H:i:s', $login->dt->toDateTime()->getTimestamp()),
+					'ip' => $login->ip,
+					'uid' => $login->uid,
+					'asi' => $login->asi,
+					'lng' => $login->lng,
+					'uagent' => $login->uagent,
+				];
+			}
+		}
 
 		if (method_exists(static::class, 'postMongoToUser')) {
 			static::postMongoToUser($document, $user);
