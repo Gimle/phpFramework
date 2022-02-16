@@ -11,6 +11,7 @@ use function \gimle\loadFile;
 use function \gimle\sp;
 use function \gimle\client_ip;
 
+use const \gimle\MAIN_SITE_ID;
 use const \gimle\MAIN_SITE_DIR;
 use const \gimle\MAIN_BASE_PATH;
 use const \gimle\MAIN_STORAGE_DIR;
