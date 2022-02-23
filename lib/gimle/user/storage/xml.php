@@ -149,7 +149,11 @@ class Xml extends \gimle\user\UserBase
 		$sxml = SimpleXmlElement::open(self::getXmlLocation(), '<users/>');
 		$result = [];
 		if (!is_int($group)) {
-			$group = (int) current($sxml->xpath('/users/group[@name=' . $sxml->real_escape_string($group) . ']'))['id'];
+			$group = current($sxml->xpath('/users/group[@name=' . $sxml->real_escape_string($group) . ']'));
+			if ($group === false) {
+				return [];
+			}
+			$group = (int) $group['id'];
 		}
 		foreach ($sxml->xpath('/users/user') as $user) {
 			$groups = (string) $user['groups'];
@@ -159,7 +163,7 @@ class Xml extends \gimle\user\UserBase
 			$groups = explode(',', $groups);
 			$groups = array_map('trim', $groups);
 			if (in_array($group, $groups)) {
-				$result[] = (int) $user['id'];
+				$result[] = self::xmlToUser($user);
 			}
 		}
 		return $result;
