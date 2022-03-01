@@ -87,7 +87,7 @@ function normalize_space (string $string): string
 /**
  * Normalize line breaks in the string.
  *
- * @param string @string The input string.
+ * @param string $string The input string.
  * @return string The normalized string.
  */
 function normalize_lines (string $string): string
@@ -95,6 +95,16 @@ function normalize_lines (string $string): string
 	return str_replace(["\r\n", "\n\r", "\r"], "\n", $string);
 }
 
+/**
+ * Multibyte whiespace trim.
+ *
+ * @param string $string The input string.
+ * @return string The trimmed string.
+ */
+function mb_trim (string $string): string
+{
+	return preg_replace('/(^\s+)|(\s+$)/us', '', $string);
+}
 
 /**
  * Encodes data with MIME base64url

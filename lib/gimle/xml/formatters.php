@@ -2,6 +2,10 @@
 declare(strict_types=1);
 namespace gimle\xml;
 
+use function \gimle\ent2utf8;
+use function \gimle\normalize_space;
+use function \gimle\mb_trim;
+
 trait Formatters
 {
 	/**
@@ -61,6 +65,25 @@ trait Formatters
 		$res = preg_replace('/(<(img|col[^group]|br|hr|input)(.*))\>\<\/(img|col[^group]|br|hr|input)\>/', '$1/>', $res);
 
 		return $prepend . $res;
+	}
+
+	/**
+	 * Extract normalized text content from a node.
+	 *
+	 * @param array $allowTags Allowed tags
+	 * @return string The resulting string.
+	 */
+	public function textContent (array $allowTags = []): string
+	{
+		$xml = $this->asXml();
+		if (empty($allowTags)) {
+			$regex = '/(<[^>]+>)/';
+		}
+		else {
+			$regex = '/(<(?!((|\/)(' . implode('|', $allowTags) . '(?!t))))[^>]+>)/';
+		}
+
+		return mb_trim(normalize_space(ent2utf8(preg_replace($regex, ' ', $xml))));
 	}
 
 	/**
