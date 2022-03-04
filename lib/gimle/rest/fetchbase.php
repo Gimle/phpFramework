@@ -141,6 +141,22 @@ abstract class FetchBase
 	}
 
 	/**
+	 * Add a file from a string to the request, and make it a multipart request.
+	 *
+	 * @throws gimle\rest\Exception If tying to attach a file to a raw post request.
+	 * @param string $key The post name.
+	 * @param string $data The raw data of the file.
+	 * @param string $value Give a custom name to the file.
+	 * @param string $mimetype The mime type of the file.
+	 * @return self
+	 */
+	public function stringFile (string $key, string $data, string $name, string $mimetype = 'application/octet-stream'): self
+	{
+		$this->wrapper->stringFile($key, $data, $name, $mimetype);
+		return $this;
+	}
+
+	/**
 	 * Sets a header for the request.
 	 *
 	 * @param string $key The header name.

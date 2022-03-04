@@ -133,6 +133,11 @@ class Stream
 		}
 	}
 
+	public function stringFile (string $key, string $data, string $name, string $mimetype = 'application/octet-stream'): void
+	{
+		throw new Exception('stringFile for streams not implemented. Implement, or use curl.');
+	}
+
 	/**
 	 * Send the request.
 	 *
