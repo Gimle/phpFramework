@@ -22,7 +22,14 @@ class Gimle extends EventEmitter {
 				let siteids = Object.keys(this._config.subsite.of);
 				for (let siteid of siteids) {
 					this.runScript(base + 'module/gimle/cli/getconfig.php ' + siteid, (r) => {
-						this._subconfig[siteid] = JSON.parse(r);
+						try {
+							this._subconfig[siteid] = JSON.parse(r);
+						}
+						catch (e) {
+							console.log(base + 'module/gimle/cli/getconfig.php ');
+							console.log(r);
+							throw e;
+						}
 					});
 				}
 			}
