@@ -191,6 +191,23 @@ class FetchCache extends FetchBase
 	}
 
 	/**
+	 * Get the cache directory for the request.
+	 *
+	 * @param string $endpoint The url to query.
+	 * @return string
+	 */
+	public function getCacheDir (string $url): string
+	{
+		$dir = filter_var($url, FILTER_SANITIZE_FILENAME, ['replace_char' => '★']);
+		if (mb_strlen($dir) > 250) {
+			$dir = md5($dir) . '-' . substr($dir, 0, 200);
+		}
+
+		$dir = $this->baseDir . $dir . '/';
+		return $dir;
+	}
+
+	/**
 	 * Send the request or fetch the cache.
 	 *
 	 * @param string $endpoint The url to query.
@@ -211,12 +228,7 @@ class FetchCache extends FetchBase
 		];
 		// Also the result will contain an array with info about the last successful query.
 
-		$dir = filter_var($url, FILTER_SANITIZE_FILENAME, ['replace_char' => '★']);
-		if (mb_strlen($dir) > 250) {
-			$dir = md5($dir) . '-' . substr($dir, 0, 200);
-		}
-
-		$dir = $this->baseDir . $dir . '/';
+		$dir = $this->getCacheDir($url);
 
 		if ((!file_exists($dir . 'reply')) || (!file_exists($dir . 'meta'))) {
 			// There is no cache, so have to query.
