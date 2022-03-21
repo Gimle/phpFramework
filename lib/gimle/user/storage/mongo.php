@@ -697,11 +697,15 @@ class Mongo extends \gimle\user\UserBase
 		$user->logins = [];
 		if (property_exists($document, 'logins')) {
 			foreach ($document->logins as $login) {
+				$asi = null;
+				if (property_exists($login, 'asi')) {
+					$asi = $login->asi;
+				}
 				$user->logins[] = [
 					'dt' => date('Y-m-d H:i:s', $login->dt->toDateTime()->getTimestamp()),
 					'ip' => $login->ip,
 					'uid' => $login->uid,
-					'asi' => $login->asi,
+					'asi' => $asi,
 					'lng' => $login->lng,
 					'uagent' => $login->uagent,
 				];
