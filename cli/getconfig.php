@@ -35,6 +35,7 @@ if (!isset($config['dir']['static'])) {
 }
 define('gimle\\MAIN_STORAGE_DIR', $config['dir']['storage']);
 define('gimle\\MAIN_STATIC_DIR', $config['dir']['static']);
+MainConfig::setAll($config);
 if (is_readable(MAIN_SITE_DIR . 'post.php')) {
 	$config = array_merge_distinct($config, include MAIN_SITE_DIR . 'post.php');
 }
