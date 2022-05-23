@@ -4,9 +4,6 @@ namespace gimle;
 
 try {
 	session_start();
-	if ((isset($_POST['auto'])) && (!isset($_COOKIE[session_name() . 'Asi']))) {
-		User::setCookie('Asi', 'true');
-	}
 
 	if (isset($_REQUEST['principal'])) {
 		$_SESSION['gimle']['activeprincipal'] = $_REQUEST['principal'];
@@ -29,7 +26,11 @@ try {
 		}
 
 		if ((isset($_POST['email'])) && (isset($_POST['password']))) {
-			$user = User::login($_POST['email'], $_POST['password']);
+			$asi = false;
+			if (isset($_POST['auto'])) {
+				$asi = true;
+			}
+			$user = User::login($_POST['email'], $_POST['password'], $asi);
 			if ($user->id === null) {
 				throw new Exception('User not found.', User::USER_NOT_FOUND);
 			}
@@ -60,6 +61,7 @@ try {
 			if ($user->id === null) {
 				throw new Exception('User not found.', User::USER_NOT_FOUND);
 			}
+
 			$_SESSION['gimle']['user'] = $user;
 		}
 		catch (\Throwable $t) {

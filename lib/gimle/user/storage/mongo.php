@@ -94,8 +94,8 @@ class Mongo extends \gimle\user\UserBase
 				'last_used' => $this->asDateTime($uidData['last_used']),
 				'ips' => [],
 			];
-			if (isset($uidData['auto'])) {
-				$new['auto'] = $uidData['auto'];
+			if (isset($uidData['asi'])) {
+				$new['asi'] = $uidData['asi'];
 			}
 			foreach ($uidData['ips'] as $ip => $ipData) {
 				$new['ips'][] = [
@@ -111,7 +111,7 @@ class Mongo extends \gimle\user\UserBase
 				'dt' => self::asDateTime($login['dt']),
 				'ip' => $login['ip'],
 				'uid' => $login['uid'],
-				'asi' => false,
+				'auto' => (isset($login['auto']) ? $login['auto'] : false),
 				'lng' => $login['lng'],
 				'uagent' => $login['uagent'],
 			];
@@ -689,23 +689,23 @@ class Mongo extends \gimle\user\UserBase
 					'last_used' => date('Y-m-d H:i:s', $uid->last_used->toDateTime()->getTimestamp()),
 					'ips' => $ips,
 				];
-				if (property_exists($uid, 'auto')) {
-					$user->uid[$uid->id]['auto'] = $uid->auto;
+				if (property_exists($uid, 'asi')) {
+					$user->uid[$uid->id]['asi'] = $uid->asi;
 				}
 			}
 		}
 		$user->logins = [];
 		if (property_exists($document, 'logins')) {
 			foreach ($document->logins as $login) {
-				$asi = null;
-				if (property_exists($login, 'asi')) {
-					$asi = $login->asi;
+				$auto = false;
+				if (property_exists($login, 'auto')) {
+					$auto = $login->auto;
 				}
 				$user->logins[] = [
 					'dt' => date('Y-m-d H:i:s', $login->dt->toDateTime()->getTimestamp()),
 					'ip' => $login->ip,
 					'uid' => $login->uid,
-					'asi' => $asi,
+					'auto' => $auto,
 					'lng' => $login->lng,
 					'uagent' => $login->uagent,
 				];

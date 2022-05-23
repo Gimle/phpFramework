@@ -225,7 +225,7 @@ abstract class UserBase
 		return $user->authLoadTypes;
 	}
 
-	public static function login (string $email, string $password): User
+	public static function login (string $email, string $password, bool $auto = false): User
 	{
 		if (isset($_SESSION['gimle']['user'])) {
 			throw new Exception('User already signed in.', User::ALREADY_SIGNED_IN);
@@ -257,12 +257,17 @@ abstract class UserBase
 						$user->uid[$uid]['last_used'] = $dt;
 						$user->uid[$uid]['ips'][$ip] = ['ip' => $ip, 'last_used' => $dt];
 					}
+					if ($auto === true) {
+						$asi = sha1(random_bytes(40));
+						$user->uid[$uid]['asi'] = $asi;
+						User::setCookie('Asi', $asi);
+					}
 
 					$login = [
 						'dt' => $dt,
 						'ip' => $ip,
 						'uid' => $uid,
-						'asi' => false,
+						'auto' => false,
 						'lng' => (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : ''),
 						'uagent' => (isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : ''),
 					];
