@@ -17,7 +17,7 @@ class DirIndex
 		}
 	}
 
-	public function add (): int
+	public function add (): array
 	{
 		$filename = $this->root . 'nextid.txt';
 		$fp = fopen($filename, 'r+');
@@ -44,9 +44,13 @@ class DirIndex
 		}
 		fclose($fp);
 
-		mkdir($this->root . 'data/' . $this->pad($thisId) . '/', 0777, true);
+		$path = $this->root . 'data/' . $this->pad($thisId) . '/';
+		mkdir($path, 0777, true);
 
-		return $thisId;
+		return [
+			'id' => $thisId,
+			'path' => $path,
+		];
 	}
 
 	public function get (int $id): string
