@@ -311,6 +311,9 @@ class Solr
 					}
 				}
 			}
+			else if (is_int($value)) {
+				$field = $xmlDoc->addChild('field', (string) $value);
+			}
 			else {
 				$field = $xmlDoc->addChild('field', htmlspecialchars($value));
 			}
