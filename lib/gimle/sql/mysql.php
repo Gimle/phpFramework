@@ -38,7 +38,7 @@ class Mysql extends \mysqli
 		if ($params === null) {
 			$params = [];
 		}
-		parent::init();
+		parent::__construct();
 		$params['user'] = (isset($params['user']) ? $params['user'] : 'root');
 		$params['pass'] = (isset($params['pass']) ? $params['pass'] : '');
 		$params['host'] = (isset($params['host']) ? $params['host'] : '127.0.0.1');
