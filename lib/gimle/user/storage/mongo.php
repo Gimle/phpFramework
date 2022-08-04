@@ -303,6 +303,11 @@ class Mongo extends \gimle\user\UserBase
 		return $mongo->asDateTime($input);
 	}
 
+	public static function asUtime (\MongoDB\BSON\UTCDateTime $input = null): int
+	{
+		return $input->toDateTime()->getTimestamp();
+	}
+
 	public static function getGroups (): array
 	{
 		$return = [];

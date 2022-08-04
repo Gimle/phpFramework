@@ -267,7 +267,7 @@ abstract class UserBase
 					$user->uids[$uid]['ips'] = array_slice($user->uids[$uid]['ips'], 0, 10);
 					// Limit to uids used in last 13 months.
 					foreach ($user->uids as $id => $row) {
-						if (((int) substr((string) $row['last_used'], 0, -3)) < strtotime('- 13 months')) {
+						if (User::asUtime($row['last_used']) < strtotime('- 13 months')) {
 							unset($user->uids[$id]);
 						}
 					}
