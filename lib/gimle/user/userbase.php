@@ -56,7 +56,7 @@ abstract class UserBase
 	protected $auth = [];
 	protected $field = [];
 	protected $logins = [];
-	protected $uid = [];
+	protected $uids = [];
 
 	protected $uses = [];
 	protected $authLoadTypes = [];
@@ -194,10 +194,10 @@ abstract class UserBase
 		if ($user->id !== null) {
 			$cookieBaseName = session_name();
 			$uid = $_COOKIE[$cookieBaseName . 'Lng'];
-			if (!isset($user->uid[$uid])) {
+			if (!isset($user->uids[$uid])) {
 				$ip = client_ip();
 				$dt = $user->asDateTime();
-				$user->uid[$uid] = [
+				$user->uids[$uid] = [
 					'uid' => $uid,
 					'last_used' => $dt,
 					'ips' => [$ip => ['ip' => $ip, 'last_used' => $dt]],
@@ -246,20 +246,35 @@ abstract class UserBase
 					$cookieBaseName = 'gimle' . ucfirst(preg_replace('/[^a-zA-Z0-9]/', '', MAIN_SITE_ID));
 					$uid = $_COOKIE[$cookieBaseName . 'Lng'];
 
-					if (!isset($user->uid[$uid])) {
-						$user->uid[$uid] = [
+					if (!isset($user->uids[$uid])) {
+						$temp = [
 							'uid' => $uid,
 							'last_used' => $dt,
 							'ips' => [$ip => ['ip' => $ip, 'last_used' => $dt]],
 						];
 					}
 					else {
-						$user->uid[$uid]['last_used'] = $dt;
-						$user->uid[$uid]['ips'][$ip] = ['ip' => $ip, 'last_used' => $dt];
+						$temp = $user->uids[$uid];
+						$temp['last_used'] = $dt;
+						$temp['ips'][$ip] = ['ip' => $ip, 'last_used' => $dt];
+						unset($user->uids[$uid]);
 					}
+					array_reverse($user->uids);
+					$user->uids[$uid] = $temp;
+					array_reverse($user->uids);
+
+					// Limit to 10 latest ips.
+					$user->uids[$uid]['ips'] = array_slice($user->uids[$uid]['ips'], 0, 10);
+					// Limit to uids used in last 13 months.
+					foreach ($user->uids as $id => $row) {
+						if (((int) substr((string) $row['last_used'], 0, -3)) < strtotime('- 13 months')) {
+							unset($user->uids[$id]);
+						}
+					}
+
 					if ($auto === true) {
 						$asi = sha1(random_bytes(40));
-						$user->uid[$uid]['asi'] = $asi;
+						$user->uids[$uid]['asi'] = $asi;
 						User::setCookie('Asi', $asi);
 					}
 
@@ -273,7 +288,7 @@ abstract class UserBase
 					];
 					array_unshift($user->logins, $login);
 
-					// Limit to 10 latest logins
+					// Limit to 10 latest logins.
 					$user->logins = array_slice($user->logins, 0, 10);
 
 					if (method_exists($user, 'postLogin')) {

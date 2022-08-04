@@ -189,6 +189,9 @@ trait Ldap
 			return;
 		}
 		$this->ldapServers = MainConfig::get('auth.ldap');
+		if ($this->ldapServers === null) {
+			throw new Exception('Could not find configuration for "auth.ldap".');
+		}
 	}
 
 	protected function ldapRowMatch (string $ou, string $valid): bool

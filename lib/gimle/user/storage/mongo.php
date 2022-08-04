@@ -88,7 +88,7 @@ class Mongo extends \gimle\user\UserBase
 		}
 
 		$user['uids'] = [];
-		foreach ($this->uid as $uid => $uidData) {
+		foreach ($this->uids as $uid => $uidData) {
 			$new = [
 				'id' => $uid,
 				'last_used' => $this->asDateTime($uidData['last_used']),
@@ -672,7 +672,6 @@ class Mongo extends \gimle\user\UserBase
 		}
 
 		$user->setNames();
-
 		if (property_exists($document, 'uids')) {
 			foreach ($document->uids as $uid) {
 				$ips = [];
@@ -684,13 +683,13 @@ class Mongo extends \gimle\user\UserBase
 						];
 					}
 				}
-				$user->uid[$uid->id] = [
+				$user->uids[$uid->id] = [
 					'uid' => $uid->id,
 					'last_used' => date('Y-m-d H:i:s', $uid->last_used->toDateTime()->getTimestamp()),
 					'ips' => $ips,
 				];
 				if (property_exists($uid, 'asi')) {
-					$user->uid[$uid->id]['asi'] = $uid->asi;
+					$user->uids[$uid->id]['asi'] = $uid->asi;
 				}
 			}
 		}
