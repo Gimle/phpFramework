@@ -21,7 +21,7 @@ class Mongo
 			$this->config = MainConfig::get('mongo.' . $key);
 		}
 		if (!is_array($this->config)) {
-			throw new Exception('Could not find db configuration.');
+			throw new Exception('Could not find db configuration for "' . $key . '".');
 		}
 
 		$this->connection = new \MongoDB\Driver\Manager($this->config['host']);

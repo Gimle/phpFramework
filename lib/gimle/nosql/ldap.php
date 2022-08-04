@@ -22,6 +22,9 @@ class Ldap
 		if (($this->config === null) && (IS_SUBSITE)) {
 			$this->config = MainConfig::get('ldap.' . $key);
 		}
+		if (!is_array($this->config)) {
+			throw new Exception('Could not find ldap configuration for "' . $key . '".');
+		}
 
 		$this->connection = ldap_connect($this->config['host']);
 		ldap_set_option($this->connection, LDAP_OPT_PROTOCOL_VERSION, 3);
