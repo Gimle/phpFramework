@@ -277,6 +277,9 @@ abstract class UserBase
 						$user->uids[$uid]['asi'] = $asi;
 						User::setCookie('Asi', $asi);
 					}
+					else if (isset($user->uids[$uid]['asi'])) {
+						unset($user->uids[$uid]['asi']);
+					}
 
 					$login = [
 						'dt' => $dt,
