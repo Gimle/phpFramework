@@ -303,7 +303,7 @@ class Mongo extends \gimle\user\UserBase
 		return $mongo->asDateTime($input);
 	}
 
-	public static function asUtime (\MongoDB\BSON\UTCDateTime $input): int
+	public static function asUtime (string|\MongoDB\BSON\UTCDateTime $input): int
 	{
 		return MongoDb::asUtime($input);
 	}
