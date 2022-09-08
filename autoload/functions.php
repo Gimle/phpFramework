@@ -567,3 +567,19 @@ function getSysMemory ()
 	}
 	return $stats;
 }
+
+function array_replace_key (array $array, $oldkey, $newkey): array
+{
+	if (!array_key_exists($oldkey, $array)) {
+		return $array;
+	}
+
+	$keys = array_keys($array);
+
+	if ((is_string($oldkey)) && (is_numeric($oldkey)) && (strpos($oldkey, '.') === false)) {
+		$oldkey = (int) $oldkey;
+	}
+
+	$keys[array_search($oldkey, $keys, true)] = $newkey;
+	return array_combine($keys, $array);
+}
