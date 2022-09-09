@@ -144,3 +144,19 @@ if (!function_exists('str_ends_with')) {
 		return (substr($string, -$length) === $needle);
 	}
 }
+
+if (!function_exists('ctype_float')) {
+	/**
+	 * Check for float character(s)
+	 *
+	 * @param string $string The input string.
+	 * @return bool The result.
+	 */
+	function ctype_float (string $string): bool
+	{
+		if (!preg_match('/^[\d]+\.[\d]+$/', $string)) {
+			return false;
+		}
+		return true;
+	}
+}
