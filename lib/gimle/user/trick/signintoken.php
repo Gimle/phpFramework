@@ -13,20 +13,8 @@ trait SigninToken
 	{
 		$token = self::retrieveSigninToken();
 		if ($token === null) {
-			$token = generateSigninToken();
+			$token = self::generateSigninToken();
 		}
-		return $token;
-	}
-
-	/**
-	 * Generate a new signin token.
-	 *
-	 * @return string
-	 */
-	public static function generateSigninToken (): string
-	{
-		$token = bin2hex(openssl_random_pseudo_bytes(12));
-		$_SESSION['gimle']['siginin']['token'] = $token;
 		return $token;
 	}
 
@@ -67,5 +55,17 @@ trait SigninToken
 		if (isset($_SESSION['gimle']['siginin']['token'])) {
 			unset($_SESSION['gimle']['siginin']['token']);
 		}
+	}
+
+	/**
+	 * Generate a new signin token.
+	 *
+	 * @return string
+	 */
+	private static function generateSigninToken (): string
+	{
+		$token = bin2hex(openssl_random_pseudo_bytes(12));
+		$_SESSION['gimle']['siginin']['token'] = $token;
+		return $token;
 	}
 }
