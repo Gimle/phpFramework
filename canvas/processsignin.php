@@ -114,6 +114,11 @@ if (Config::get('user.reply') === 'json') {
 	return true;
 }
 
+if (isset($_SESSION['gimle']['retrunto'])) {
+	$target = $_SESSION['gimle']['retrunto'];
+	unset($_SESSION['gimle']['retrunto']);
+}
+
 header('Location: ' . $target);
 
 /*
