@@ -18,6 +18,6 @@ if (!isset($argv[1])) {
 
 $spectacle = file_get_contents(TEMP_DIR . 'gimle/spectacle/' . $argv[1]);
 
-echo json_decode($spectacle);
+echo html_entity_decode(strip_tags(json_decode($spectacle, true)['tabs']['spectacle']['content']));
 
 return true;
