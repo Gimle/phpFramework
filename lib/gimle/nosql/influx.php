@@ -29,6 +29,8 @@ class Influx
 	{
 		$fetch = new Fetch();
 		$fetch->post('q', $q);
+		$fetch->connectionTimeout(10);
+		$fetch->resultTimeout(60);
 		$result = $fetch->query($this->config['host'] . ':8086/query?pretty=true&db=' . $this->config['database']);
 		return json_decode($result['reply'], true);
 	}

@@ -102,6 +102,14 @@ class Mongo
 		return null;
 	}
 
+	public static function asUtime (string|\MongoDB\BSON\UTCDateTime $input): int
+	{
+		if (is_string($input)) {
+			return strtotime($input);
+		}
+		return $input->toDateTime()->getTimestamp();
+	}
+
 	private function rs (?string $namespace = null): string
 	{
 		if ($namespace === null) {

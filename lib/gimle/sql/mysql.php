@@ -84,7 +84,8 @@ class Mysql extends \mysqli
 	 * @param int $resultmode MYSQLI_STORE_RESULT
 	 * @return mixed bool|object
 	 */
-	public function query (string $query, int $resultmode = MYSQLI_STORE_RESULT): \mysqli_result|bool
+	#[\ReturnTypeWillChange]
+	public function query (string $query, int $resultmode = MYSQLI_STORE_RESULT): Mysqliresult|bool
 	{
 		$t = microtime(true);
 		$error = false;

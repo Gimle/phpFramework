@@ -379,3 +379,35 @@ function numeric_dir (int $num, int $length, int $split = 3): string
 	$result = implode('/', $result) . '/';
 	return $result;
 }
+
+
+/**
+ * Make sure that the filename is not in use. If requested name is in use, add () with a new id.
+ *
+ * @param string $folder The folder for where to look for identical filename.
+ * @param string $filename The wanted filename.
+ * @return string The original filename, or the modified one if the original was in use.
+ */
+function fileuname (string $folder, string $filename): string
+{
+	if (file_exists($folder . $filename)) {
+		$pos = strrpos($filename, '.');
+		if ($pos === false) {
+			$name = $filename;
+			$ext = '';
+		}
+		else {
+			$name = substr($filename, 0, $pos);
+			$ext = substr($filename, $pos);
+		}
+		$i = 1;
+		while (true) {
+			$filename = $name . ' (' . $i . ')' . $ext;
+			if (!file_exists($folder . $filename)) {
+				break;
+			}
+			$i++;
+		}
+	}
+	return $filename;
+}

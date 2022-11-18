@@ -130,7 +130,7 @@ class Xml extends \gimle\user\UserBase
 			$loginSxml['dt'] = self::asDateTime($login['dt']);
 			$loginSxml['ip'] = $login['ip'];
 			$loginSxml['uid'] = $login['uid'];
-			$loginSxml['auto'] = ($login['auto'] === true ? 'true' : 'false');
+			$loginSxml['auto'] = (((isset($login['auto'])) && ($login['auto'] === true)) ? 'true' : 'false');
 			$loginSxml['lng'] = $login['lng'];
 			$loginSxml['uagent'] = $login['uagent'];
 		}
