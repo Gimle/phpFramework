@@ -384,13 +384,13 @@ function numeric_dir (int $num, int $length, int $split = 3): string
 /**
  * Make sure that the filename is not in use. If requested name is in use, add () with a new id.
  *
- * @param string $folder The folder for where to look for identical filename.
+ * @param string|array $folder The folder for where to look for identical filename, or an array containing taken filenames.
  * @param string $filename The wanted filename.
  * @return string The original filename, or the modified one if the original was in use.
  */
-function fileuname (string $folder, string $filename): string
+function fileuname (string|array $folder, string $filename): string
 {
-	if (file_exists($folder . $filename)) {
+	if (((is_string($folder)) && (file_exists($folder . $filename))) || ((is_array($folder)) && (in_array($filename, $folder)))) {
 		$pos = strrpos($filename, '.');
 		if ($pos === false) {
 			$name = $filename;
@@ -403,8 +403,15 @@ function fileuname (string $folder, string $filename): string
 		$i = 1;
 		while (true) {
 			$filename = $name . ' (' . $i . ')' . $ext;
-			if (!file_exists($folder . $filename)) {
-				break;
+			if (is_string($folder)) {
+				if (!file_exists($folder . $filename)) {
+					break;
+				}
+			}
+			else {
+				if (!in_array($filename, $folder)) {
+					break;
+				}
 			}
 			$i++;
 		}
