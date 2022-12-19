@@ -41,6 +41,7 @@ abstract class UserBase
 	public const VERIFICATION_REQUIRED = 16;
 
 	protected $id = null;
+	protected $uid = null;
 	protected $firstName = null;
 	protected $middleName = null;
 	protected $firstNames = null;
