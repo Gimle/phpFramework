@@ -15,6 +15,7 @@ class Ldap
 	const CRYPT_SHA_512 = 1;
 
 	private $config = null;
+	private $connection = null;
 
 	public function __construct (string $key)
 	{
