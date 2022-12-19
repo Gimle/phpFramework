@@ -19,6 +19,13 @@ abstract class FileStreamBase
 	protected $path;
 
 	/**
+	 * A holder for the current context.
+	 *
+	 * @var mixed
+	 */
+	public $context = null;
+
+	/**
 	 * Sets the path of the wrapper.
 	 *
 	 * @param string $path The path.

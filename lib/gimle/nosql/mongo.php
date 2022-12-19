@@ -13,6 +13,7 @@ class Mongo
 	use \gimle\trick\Multiton;
 
 	private $config = null;
+	private $connection = null;
 
 	public function __construct (string $key)
 	{
