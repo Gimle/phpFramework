@@ -123,6 +123,20 @@ class i18n
 	}
 
 	/**
+	 * Gets a list of available languages.
+	 *
+	 * @return array The language codes.
+	 */
+	public function getLanguages (): array
+	{
+		$return = [];
+		foreach ($this->config['lang'] as $code => $data) {
+			$return[] = $code;
+		}
+		return $return;
+	}
+
+	/**
 	 * Translate a message.
 	 *
 	 * @param mixed $message The message to be translated.

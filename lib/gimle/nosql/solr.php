@@ -273,6 +273,13 @@ class Solr
 		return $input;
 	}
 
+	public static function real_escape_string (string $input): string
+	{
+		$replace = ['+', '-', '&&', '||', '!' ,'(', ')', '{', '}', '[', ']', '^', '"', '~', '*', '?', ':', '\\', '/'];
+		$with = ['\\+', '\\-', '\\&&', '\\||', '\\!' ,'\\(', '\\)', '\\{', '\\}', '\\[', '\\]', '\\^', '\\"', '\\~', '\\*', '\\?', '\\:', '\\\\', '\\/'];
+		return str_replace($replace, $with, $input);
+	}
+
 	protected function prepare (array $array = [], ?int $boost = null): ?SimpleXmlElement
 	{
 		if (!isset($array['id'])) {
