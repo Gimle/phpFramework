@@ -125,7 +125,7 @@ class Gimle extends EventEmitter {
 
 			let lastkey = undefined;
 			contents.split('\n').forEach(function (linestr, linenum) {
-				if (linestr.substr(0, 1) === ';') {
+				if (linestr.slice(0, 1) === ';') {
 					return;
 				}
 				if (linestr === '') {
@@ -133,10 +133,10 @@ class Gimle extends EventEmitter {
 				}
 				let line = linestr.split(' = ');
 				let key = line[0];
-				if ((line[1] !== undefined) && (line[0].substr(0, 1) !== '[')) {
+				if ((line[1] !== undefined) && (line[0].slice(0, 1) !== '[')) {
 					let value = undefined;
 
-					if ((line[1].substr(0, 1) === '"') && (line[1].substr(-1) === '"')) {
+					if ((line[1].slice(0, 1) === '"') && (line[1].slice(-1) === '"')) {
 						value = line[1].slice(1, -1).replace('\\"', '"').replace('\\\\', '\\');
 					}
 					else if (that.isInt(line[1])) {
