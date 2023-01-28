@@ -306,6 +306,12 @@ if (ENV_MODE & ENV_WEB) {
 							if (is_readable(MAIN_SITE_DIR . 'config.php')) {
 								$subConfig = array_merge_distinct(include MAIN_SITE_DIR . 'config.php', $subConfig, true);
 							}
+							if (is_readable(MAIN_SITE_DIR . 'post.php')) {
+								$subConfig = array_merge_distinct($subConfig, include MAIN_SITE_DIR . 'post.php');
+							}
+							if (is_readable(MAIN_SITE_DIR . 'post.ini')) {
+								$subConfig = array_merge_distinct($subConfig, parse_config_file(MAIN_SITE_DIR . 'post.ini'));
+							}
 
 							MainConfig::setAll($subConfig);
 						}
