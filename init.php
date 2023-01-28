@@ -524,11 +524,21 @@ if ((isset($config['server']['override'])) && (is_array($config['server']['overr
 	}
 }
 
-if (is_readable(MAIN_SITE_DIR . 'post.php')) {
-	$config = array_merge_distinct($config, include MAIN_SITE_DIR . 'post.php');
+if (IS_SUBSITE === false) {
+	if (is_readable(SITE_DIR . 'post.php')) {
+		$config = array_merge_distinct($config, include SITE_DIR . 'post.php');
+	}
+	if (is_readable(SITE_DIR . 'post.ini')) {
+		$config = array_merge_distinct($config, parse_config_file(SITE_DIR . 'post.ini'));
+	}
 }
-if (is_readable(MAIN_SITE_DIR . 'post.ini')) {
-	$config = array_merge_distinct($config, parse_config_file(MAIN_SITE_DIR . 'post.ini'));
+else {
+	if (is_readable(MAIN_SITE_DIR . 'post.php')) {
+		$config = array_merge_distinct($config, include MAIN_SITE_DIR . 'post.php');
+	}
+	if (is_readable(MAIN_SITE_DIR . 'post.ini')) {
+		$config = array_merge_distinct($config, parse_config_file(MAIN_SITE_DIR . 'post.ini'));
+	}
 }
 
 Config::setAll($config);
