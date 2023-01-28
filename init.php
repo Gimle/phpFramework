@@ -518,6 +518,13 @@ if ((isset($config['server']['override'])) && (is_array($config['server']['overr
 	}
 }
 
+if (is_readable(MAIN_SITE_DIR . 'post.php')) {
+	$config = array_merge_distinct($config, include MAIN_SITE_DIR . 'post.php');
+}
+if (is_readable(MAIN_SITE_DIR . 'post.ini')) {
+	$config = array_merge_distinct($config, parse_config_file(MAIN_SITE_DIR . 'post.ini'));
+}
+
 Config::setAll($config);
 if (IS_SUBSITE === false) {
 	MainConfig::setAll($config);
