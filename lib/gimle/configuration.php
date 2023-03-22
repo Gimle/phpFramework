@@ -59,8 +59,11 @@ abstract class Configuration
 	 * @param ?string $key A dot separated index for the the key to check or null to get all.
 	 * @return mixed The value for the key.
 	 */
-	public static function get (?string $key = null)
+	public static function get (?string $key = null, mixed $default = null): mixed
 	{
+		if ($default !== null) {
+			return (static::exists($key) ? static::get($key) : $default);
+		}
 		if ($key === null) {
 			return static::$config;
 		}
