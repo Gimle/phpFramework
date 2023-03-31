@@ -436,6 +436,80 @@ if (ENV_MODE & ENV_WEB) {
 		unset($config['base']);
 	}
 }
+elseif (ENV_MODE & ENV_CLI) {
+	$subsite = null;
+
+	if (isset($cli)) {
+		Cli::start($cli['description'], $cli['options']);
+
+		if (isset($cli['index'])) {
+			if (is_int($cli['index'])) {
+				$subsite = $_SERVER['params'][$cli['index']];
+			}
+			elseif (isset($_SERVER['options'][$cli['index']])) {
+				$subsite = current($_SERVER['options'][$cli['index']]);
+			}
+
+			if (!str_starts_with($subsite, '/')) {
+				if (isset($config['subsite']['of'][$subsite])) {
+					$subsite = $config['subsite']['of'][$subsite];
+				}
+				else {
+					$subsite = substr(SITE_DIR, 0, strrpos(SITE_DIR, '/', -2)) . '/' . $subsite . '/';
+				}
+			}
+		}
+	}
+
+	if ($subsite === null) {
+		define(__NAMESPACE__ . '\\IS_SUBSITE', false);
+		define(__NAMESPACE__ . '\\MAIN_SITE_ID', SITE_ID);
+		define(__NAMESPACE__ . '\\MAIN_SITE_DIR', SITE_DIR);
+		define(__NAMESPACE__ . '\\MAIN_BASE_PATH', BASE_PATH);
+		define(__NAMESPACE__ . '\\MAIN_TEMP_DIR', TEMP_DIR);
+		define(__NAMESPACE__ . '\\MAIN_CACHE_DIR', CACHE_DIR);
+		define(__NAMESPACE__ . '\\MAIN_STORAGE_DIR', STORAGE_DIR);
+		define(__NAMESPACE__ . '\\MAIN_STATIC_DIR', STATIC_DIR);
+	}
+	else {
+		define(__NAMESPACE__ . '\\IS_SUBSITE', true);
+		define(__NAMESPACE__ . '\\MAIN_SITE_ID', basename($subsite));
+		define(__NAMESPACE__ . '\\MAIN_SITE_DIR', $subsite);
+
+		$subConfig = parse_config_file(MAIN_SITE_DIR . 'config.ini');
+		if (get_cfg_var('gimle') !== false) {
+			$subConfig = array_merge_distinct(parse_config_file(get_cfg_var('gimle')), $subConfig, true);
+		}
+		if (is_readable(MAIN_SITE_DIR . 'config.php')) {
+			$subConfig = array_merge_distinct(include MAIN_SITE_DIR . 'config.php', $subConfig, true);
+		}
+
+		if (!isset($subConfig['dir']['storage'])) {
+			$subConfig['dir']['storage'] = MAIN_SITE_DIR . 'storage/';
+		}
+		if (!isset($subConfig['dir']['static'])) {
+			$subConfig['dir']['static'] = MAIN_SITE_DIR . 'static/';
+		}
+		if (!isset($subConfig['dir']['temp'])) {
+			define(__NAMESPACE__ . '\\MAIN_TEMP_DIR', MAIN_SITE_DIR . 'temp/');
+		}
+		else {
+			define(__NAMESPACE__ . '\\MAIN_TEMP_DIR', $subConfig['dir']['temp']);
+		}
+		if (!isset($subConfig['dir']['cache'])) {
+			define(__NAMESPACE__ . '\\MAIN_CACHE_DIR', MAIN_SITE_DIR . 'cache/');
+		}
+		else {
+			define(__NAMESPACE__ . '\\MAIN_CACHE_DIR', $subConfig['dir']['cache']);
+		}
+
+		define(__NAMESPACE__ . '\\MAIN_STORAGE_DIR', $subConfig['dir']['storage']);
+		define(__NAMESPACE__ . '\\MAIN_STATIC_DIR', $subConfig['dir']['static']);
+
+		MainConfig::setAll($subConfig);
+	}
+}
+
 if (!defined(__NAMESPACE__ . '\\IS_SUBSITE')) {
 	define(__NAMESPACE__ . '\\IS_SUBSITE', false);
 }
