@@ -465,7 +465,6 @@ elseif (ENV_MODE & ENV_CLI) {
 		define(__NAMESPACE__ . '\\IS_SUBSITE', false);
 		define(__NAMESPACE__ . '\\MAIN_SITE_ID', SITE_ID);
 		define(__NAMESPACE__ . '\\MAIN_SITE_DIR', SITE_DIR);
-		define(__NAMESPACE__ . '\\MAIN_BASE_PATH', BASE_PATH);
 		define(__NAMESPACE__ . '\\MAIN_TEMP_DIR', TEMP_DIR);
 		define(__NAMESPACE__ . '\\MAIN_CACHE_DIR', CACHE_DIR);
 		define(__NAMESPACE__ . '\\MAIN_STORAGE_DIR', STORAGE_DIR);

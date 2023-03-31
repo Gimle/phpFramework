@@ -26,7 +26,7 @@ class Gimle extends EventEmitter {
 							this._subconfig[siteid] = JSON.parse(r);
 						}
 						catch (e) {
-							console.log(base + 'module/gimle/cli/getconfig.php ');
+							console.log(base + 'module/gimle/cli/getconfig.php ' + siteid);
 							console.log(r);
 							throw e;
 						}
