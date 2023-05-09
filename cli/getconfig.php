@@ -20,6 +20,19 @@ if (isset($argv[1])) {
 
 require dirname(__DIR__) . '/init.php';
 
+if (!MainConfig::exists('dir.storage')) {
+	MainConfig::set('dir.storage', MAIN_STORAGE_DIR);
+}
+if (!MainConfig::exists('dir.static')) {
+	MainConfig::set('dir.storage', MAIN_STATIC_DIR);
+}
+if (!MainConfig::exists('dir.temp')) {
+	MainConfig::set('dir.temp', MAIN_STATIC_DIR);
+}
+if (!MainConfig::exists('dir.cache')) {
+	MainConfig::set('dir.cache', MAIN_STATIC_DIR);
+}
+
 echo json_encode(MainConfig::get(), JSON_PRETTY_PRINT);
 
 return true;
