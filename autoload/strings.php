@@ -316,3 +316,60 @@ function natural_implode (array $arr, string $glue = 'and'): string
 	$return = implode(', ', $arr);
 	return $return . ' ' . $glue . ' ' . $last;
 }
+
+/**
+ * Converts a common string representation of a varialy type into it's represented type.
+ *
+ * @param string $string The string to be converted.
+ * @return mixed The input converted to the proper type.
+ */
+function string_to_type (string $string): mixed
+{
+	if ((substr($string, 0, 1) === '\'') && (substr($string, -1, 1) === '\'')) {
+		return substr($string, 1, -1);
+	}
+	if ((ctype_digit($string)) || ((substr($string, 0, 1) === '-') && (ctype_digit(substr($string, 1))))) {
+		$num = $string;
+		if (substr($num, 0, 1) === '-') {
+			$num = substr($string, 1);
+		}
+		if (substr($num, 0, 1) === '0') {
+			if (substr($string, 0, 1) === '-') {
+				$value = -octdec($string);
+			}
+			else {
+				$value = octdec($string);
+			}
+		}
+		else {
+			$value = (int) $string;
+		}
+		unset($num);
+		return $value;
+	}
+	if ($string === 'true') {
+		return true;
+	}
+	if ($string === 'false') {
+		return false;
+	}
+	if ($string === 'null') {
+		return null;
+	}
+	if (preg_match('/^0[xX][0-9a-fA-F]+$/', $string)) {
+		return hexdec(substr($string, 2));
+	}
+	if (preg_match('/^\-0[xX][0-9a-fA-F]+$/', $string)) {
+		return -hexdec(substr($string, 3));
+	}
+	if (preg_match('/^0b[01]+$/', $string)) {
+		return bindec(substr($string, 2));
+	}
+	if (preg_match('/^\-0b[01]+$/', $string)) {
+		return -bindec(substr($string, 3));
+	}
+	if (filter_var($string, FILTER_VALIDATE_FLOAT) !== false) {
+		return (float) $string;
+	}
+	trigger_error('Error', E_USER_ERROR);
+}

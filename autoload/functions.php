@@ -534,6 +534,11 @@ function getSysLoad (): ?float
 	return null;
 }
 
+/**
+ * Get system memory information
+ *
+ * @return array System memory information,
+ */
 function getSysMemory ()
 {
 	if (!is_readable('/proc/meminfo')) {
@@ -568,7 +573,16 @@ function getSysMemory ()
 	return $stats;
 }
 
-function array_replace_key (array $array, $oldkey, $newkey): array
+/**
+ * Replace a key in an array.
+ *
+ * @param array The array.
+ * @param int|string $oldkey The key to be replaced.
+ * @param int|string $newkey The new key.
+ *
+ * @return array The array with the replaced key.
+ */
+function array_replace_key (array $array, int|string $oldkey, int|string $newkey): array
 {
 	if (!array_key_exists($oldkey, $array)) {
 		return $array;
@@ -582,4 +596,25 @@ function array_replace_key (array $array, $oldkey, $newkey): array
 
 	$keys[array_search($oldkey, $keys, true)] = $newkey;
 	return array_combine($keys, $array);
+}
+
+/**
+ * Retruns an array with accepted return types, and their priority.
+ *
+ * @return array The accepted return types.
+ */
+function return_type (): array
+{
+	$rawAccept = explode(',', $_SERVER['HTTP_ACCEPT']);
+	$accept = [];
+	foreach ($rawAccept as $a) {
+		$q = 1;
+		if (strpos($a, ';q=')) {
+			list($a, $q) = explode(';q=', $a);
+			$q = (float) $q;
+		}
+		$accept[$a] = $q;
+	}
+	arsort($accept);
+	return $accept;
 }
