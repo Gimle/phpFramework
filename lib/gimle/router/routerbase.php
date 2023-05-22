@@ -38,6 +38,7 @@ class RouterBase extends PathResolver
 	public const R_LINK = 256;
 	public const R_UNLINK = 512;
 	public const R_PURGE = 1024;
+	public const R_ANY = 2047;
 
 	/*
 	Constants for errors.
@@ -499,9 +500,14 @@ class RouterBase extends PathResolver
 	 *
 	 * @return void
 	 */
-	public function fallback (int $code, callable $callback): void
+	public function fallback (callable|int $code, ?callable $callback = null): void
 	{
-		$this->fallback[$code] = $callback;
+		if (is_int($code)) {
+			$this->fallback[$code] = $callback;
+		}
+		else {
+			$this->fallback['*'] = $code;
+		}
 	}
 
 	protected function catch ($e)
@@ -533,8 +539,13 @@ class RouterBase extends PathResolver
 					if ((is_array($returnValue)) && (isset($returnValue['status']))) {
 						$returnValue = $returnValue['status'];
 					}
-					if (isset($this->fallback[$returnValue])) {
-						$result = $this->fallback[$returnValue]($contentType, $trial);
+					if ((isset($this->fallback[$returnValue])) || (isset($this->fallback['*']))) {
+						if (isset($this->fallback[$returnValue])) {
+							$result = $this->fallback[$returnValue]($contentType, $trial);
+						}
+						else {
+							$result = $this->fallback['*']($contentType, $trial);
+						}
 						if ($result === true) {
 							$this->_preRender($e);
 							sp($e);
@@ -590,11 +601,16 @@ class RouterBase extends PathResolver
 		}
 		sp($e);
 
-		if (isset($this->fallback[$error])) {
+		if ((isset($this->fallback[$error])) || (isset($this->fallback['*']))) {
 			while (ob_get_length() !== false) {
 				ob_end_clean();
 			}
-			$result = $this->fallback[$error]($contentType, $error);
+			if (isset($this->fallback[$error])) {
+				$result = $this->fallback[$error]($contentType, $error);
+			}
+			else {
+				$result = $this->fallback['*']($contentType, $error);
+			}
 			if ($result === true) {
 				$this->_preRender($e);
 				Canvas::_create();
