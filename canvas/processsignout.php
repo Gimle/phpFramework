@@ -6,6 +6,13 @@ session_start();
 if (isset($_SESSION['gimle']['user'])) {
 	unset($_SESSION['gimle']['user']);
 }
+if (isset($_SESSION['gimle'])) {
+	foreach ($_SESSION['gimle'] as $key => $value) {
+		if (str_starts_with($key, 'user-')) {
+			unset($_SESSION['gimle'][$key]);
+		}
+	}
+}
 
 if (method_exists(__NAMESPACE__ . '\\User', 'postSignOut')) {
 	User::postSignOut();
