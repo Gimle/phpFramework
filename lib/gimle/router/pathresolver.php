@@ -29,6 +29,21 @@ class PathResolver
 	}
 
 	/**
+	 * Returns the absolute paths for all templates.
+	 *
+	 * @param string $template Template name.
+	 * @param ?mixed $params Optional format parameters.
+	 * @return array Full paths.
+	 */
+	public static function getTemplatePaths (string $template, ...$params): array
+	{
+		if (!empty($params)) {
+			return self::formattedPathResolver($template, 'template', $params, true);
+		}
+		return self::pathResolver($template, 'template', true);
+	}
+
+	/**
 	 * Returns the absolute path for a canvas or null if not found.
 	 *
 	 * @param string $template Canvas name.
@@ -64,22 +79,26 @@ class PathResolver
 	 * @param string $template File name.
 	 * @param string $dir The directory.
 	 * @param array $params Format parameters.
-	 * @return ?string Full path or null if not found.
+	 * @param bool $multiple Should it return all?
+	 * @return ?string|array Full path or null if not found. If multiple, then array of found.
 	 */
-	protected static function formattedPathResolver (string $template, string $dir, array $params): ?string
+	protected static function formattedPathResolver (string $template, string $dir, array $params, bool $multiple = false): null|string|array
 	{
 		foreach ($params as $param) {
 			if (is_array($param)) {
-				$check = self::pathResolver(vsprintf($template, $param), $dir);
+				$check = self::pathResolver(vsprintf($template, $param), $dir, $multiple);
 			}
 			else {
-				$check = self::pathResolver(sprintf($template, $param), $dir);
+				$check = self::pathResolver(sprintf($template, $param), $dir, $multiple);
 			}
 			if ($check !== null) {
 				return $check;
 			}
 		}
-		return null;
+		if (!$multiple) {
+			return null;
+		}
+		return [];
 	}
 
 	/**
@@ -87,38 +106,58 @@ class PathResolver
 	 *
 	 * @param string $template File name.
 	 * @param string $dir The directory.
-	 * @return ?string Full path or null if not found.
+	 * @param bool $multiple Should it return all?
+	 * @return ?string|array Full path or null if not found. If multiple, then array of found.
 	 */
-	protected static function pathResolver (string $template, string $dir): ?string
+	protected static function pathResolver (string $template, string $dir, bool $multiple = false): null|string|array
 	{
+		$return = [];
 		if (strpos($template, '.') === false) {
 			$template .= '.php';
 		}
 
 		if (is_readable(SITE_DIR . $dir . '/' . $template)) {
-			return SITE_DIR . $dir . '/' . $template;
+			if (!$multiple) {
+				return SITE_DIR . $dir . '/' . $template;
+			}
+			$return[] = SITE_DIR . $dir . '/' . $template;
 		}
 		if (IS_SUBSITE) {
 			if (is_readable(MAIN_SITE_DIR . SITE_ID . '/' . $dir . '/' . $template)) {
-				return MAIN_SITE_DIR . SITE_ID . '/' . $dir . '/' . $template;
+				if (!$multiple) {
+					return MAIN_SITE_DIR . SITE_ID . '/' . $dir . '/' . $template;
+				}
+				$return[] = MAIN_SITE_DIR . SITE_ID . '/' . $dir . '/' . $template;
 			}
 			$mainModules = MainConfig::get('subsite.' . SITE_ID . '.modules');
 			if ($mainModules !== null) {
 				foreach ($mainModules as $module) {
 					if (is_readable(MAIN_SITE_DIR . 'module/' . $module . '/' . $dir . '/' . $template)) {
-						return MAIN_SITE_DIR . 'module/' . $module . '/' . $dir . '/' . $template;
+						if (!$multiple) {
+							return MAIN_SITE_DIR . 'module/' . $module . '/' . $dir . '/' . $template;
+						}
+						$return[] = MAIN_SITE_DIR . 'module/' . $module . '/' . $dir . '/' . $template;
 					}
 				}
 			}
 		}
 		foreach (System::getModules(MODULE_GIMLE) as $module) {
 			if (is_readable(SITE_DIR . 'module/' . $module . '/' . $dir . '/' . $template)) {
-				return SITE_DIR . 'module/' . $module . '/' . $dir . '/' . $template;
+				if (!$multiple) {
+					return SITE_DIR . 'module/' . $module . '/' . $dir . '/' . $template;
+				}
+				$return[] = SITE_DIR . 'module/' . $module . '/' . $dir . '/' . $template;
 			}
 		}
 		if (is_readable(SITE_DIR . 'module/' . MODULE_GIMLE . '/' . $dir . '/' . $template)) {
-			return SITE_DIR . 'module/' . MODULE_GIMLE . '/' . $dir . '/' . $template;
+			if (!$multiple) {
+				return SITE_DIR . 'module/' . MODULE_GIMLE . '/' . $dir . '/' . $template;
+			}
+			$return[] = SITE_DIR . 'module/' . MODULE_GIMLE . '/' . $dir . '/' . $template;
 		}
-		return null;
+		if (!$multiple) {
+			return null;
+		}
+		return $return;
 	}
 }
