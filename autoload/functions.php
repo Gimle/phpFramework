@@ -605,6 +605,9 @@ function array_replace_key (array $array, int|string $oldkey, int|string $newkey
  */
 function return_type (): array
 {
+	if (!isset($_SERVER['HTTP_ACCEPT'])) {
+		return [];
+	}
 	$rawAccept = explode(',', $_SERVER['HTTP_ACCEPT']);
 	$accept = [];
 	foreach ($rawAccept as $a) {
