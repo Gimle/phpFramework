@@ -371,5 +371,5 @@ function string_to_type (string $string): mixed
 	if (filter_var($string, FILTER_VALIDATE_FLOAT) !== false) {
 		return (float) $string;
 	}
-	trigger_error('Error', E_USER_ERROR);
+	return $string;
 }
