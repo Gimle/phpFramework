@@ -93,7 +93,9 @@ class Canvas
 	public static function _create (bool $return = false): ?string
 	{
 		$content = ob_get_contents();
-		ob_end_clean();
+		if (ob_get_length() !== false) {
+			ob_end_clean();
+		}
 
 		$template = self::$template;
 		$replaces = ['%content%'];
