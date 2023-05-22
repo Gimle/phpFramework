@@ -150,6 +150,11 @@ abstract class UserBase
 		if (is_array($value)) {
 			$this->field[$id] = $value;
 		}
+		elseif ($value === false) {
+			if (isset($this->field[$id])) {
+				unset($this->field[$id]);
+			}
+		}
 		else {
 			throw new Exception('Can not set custom field: ' . $id);
 		}
