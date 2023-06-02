@@ -6,6 +6,8 @@ use \gimle\Exception;
 
 class DirIndex
 {
+	private $root = null;
+
 	public function __construct ($root)
 	{
 		$this->root = $root;
