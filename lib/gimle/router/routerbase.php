@@ -392,10 +392,11 @@ class RouterBase extends PathResolver
 			if ($this->parseCanvas === true) {
 
 				if ($this->template !== null) {
-					$this->template = self::getTemplatePath($this->template);
-					if ($this->template === null) {
+					$resolved = self::getTemplatePath($this->template);
+					if ($resolved === null) {
 						$this->except(self::E_TEMPLATE_NOT_FOUND);
 					}
+					$this->template = $resolved;
 
 					ob_start();
 					$templateResult = include $this->template;
@@ -654,6 +655,7 @@ class RouterBase extends PathResolver
 				break;
 			case self::E_TEMPLATE_NOT_FOUND:
 				$e = new Exception('Template not found.', $type);
+				$e->set('template', $this->template);
 				break;
 			case self::E_CANVAS_RETURN:
 				$e = new Exception('Invalid canvas return value.', $type);
