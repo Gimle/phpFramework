@@ -149,11 +149,29 @@ class Mongo extends \gimle\user\UserBase
 	{
 		$return = [];
 		$mongo = MongoDb::getInstance('users');
+		if (is_string($group)) {
+			$group = self::getGroupId($group);
+		}
 		$cursor = $mongo->query(['groups' => $group], ['limit' => $limit, 'sort' => ['groups' => -1, 'name.first' => 1, 'name.last' => 1]]);
 		foreach ($cursor as $document) {
 			$return[] = self::mongoToUser($document, new User());
 		}
 		return $return;
+	}
+
+	public static function getGroupId (string $name): ?int
+	{
+		$mongo = MongoDb::getInstance('users');
+		$cursor = $mongo->query([
+			'name' => $name,
+		], ['sort' => ['id' => 1]], 'groups');
+		$it = new \IteratorIterator($cursor);
+		$it->rewind();
+		$cur = $it->current();
+		if ($cur === null) {
+			return null;
+		}
+		return $cur->id;
 	}
 
 	public static function updateGroup (string $name, string $description, $edit, ?int $newid = null): bool
