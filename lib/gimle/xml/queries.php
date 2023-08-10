@@ -37,11 +37,17 @@ trait Queries
 	/**
 	 * Get the parent of the current node.
 	 *
+	 * @param int $level How many levels back up the parent tree? Default 1.
 	 * @return ?SimpleXmlElement
 	 */
-	public function getParent (): ?self
+	public function getParent (int $level = 1): ?self
 	{
-		return ($this->xpath('parent::*')[0] ?? null);
+		$q = [];
+		while ($level > 0) {
+			$q[] = 'parent::*';
+			$level--;
+		}
+		return ($this->xpath(implode('/', $q))[0] ?? null);
 	}
 
 	/**
