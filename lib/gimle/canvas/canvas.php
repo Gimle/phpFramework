@@ -210,6 +210,11 @@ class Canvas
 			elseif ($params[1] === true) {
 				self::$magic[$method][] = $params[0];
 			}
+			elseif ($params[1] === false) {
+				if (!isset(self::$magic[$method])) {
+					self::$magic[$method][] = $params[0];
+				}
+			}
 		}
 
 		return;
