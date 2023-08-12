@@ -630,7 +630,7 @@ foreach (System::getModules(MODULE_GIMLE) as $name) {
 	}
 	sort($loadfiles);
 	foreach ($loadfiles as $file) {
-		include SITE_DIR . 'module/' . $name . '/autoload/' . $file;
+		inc(SITE_DIR . 'module/' . $name . '/autoload/' . $file);
 	}
 	unset($loadfiles);
 }
