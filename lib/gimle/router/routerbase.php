@@ -117,13 +117,6 @@ class RouterBase extends PathResolver
 	private $tried = [];
 
 	/**
-	 * Holder for prerentder callback.
-	 *
-	 * @var callable
-	 */
-	private $preRender = null;
-
-	/**
 	 * Holder for variables that should not be affected by includes.
 	 *
 	 * @var array
@@ -317,7 +310,12 @@ class RouterBase extends PathResolver
 	public function getCanvas ($skipCheck = false): ?string
 	{
 		if (($skipCheck === false) && ($this->canvas === null)) {
-			$this->except(self::E_CANVAS_NOT_SET);
+			try {
+				$this->except(self::E_CANVAS_NOT_SET);
+			}
+			catch (\Throwable $e) {
+				$this->catch($e);
+			}
 		}
 		return $this->canvas;
 	}
@@ -453,7 +451,6 @@ class RouterBase extends PathResolver
 						if ($templateResult !== true) {
 							$resultHandler($this->template, $templateResult);
 						}
-						$this->_preRender();
 						echo $content;
 					}
 				}
@@ -472,24 +469,10 @@ class RouterBase extends PathResolver
 			if ($canvasResult !== true) {
 				$resultHandler(null, $canvasResult);
 			}
-			$this->_preRender();
 			echo $content;
 		}
 		catch (\Throwable $e) {
 			$this->catch($e);
-		}
-	}
-
-	public function preRender (callable $callback): void
-	{
-		$this->preRender = $callback;
-	}
-
-	protected function _preRender ($e = null)
-	{
-		if ($this->preRender !== null) {
-			$preRender = $this->preRender;
-			$preRender($e);
 		}
 	}
 
@@ -548,7 +531,6 @@ class RouterBase extends PathResolver
 							$result = $this->fallback['*']($contentType, $trial);
 						}
 						if ($result === true) {
-							$this->_preRender($e);
 							sp($e);
 							return true;
 						}
@@ -592,7 +574,6 @@ class RouterBase extends PathResolver
 						}
 						header('Content-Type: ' . $mime['mime']);
 						readfile($path . ltrim($url, '/'));
-						$this->_preRender();
 						return true;
 					}
 				}
@@ -606,6 +587,7 @@ class RouterBase extends PathResolver
 			while (ob_get_length() !== false) {
 				ob_end_clean();
 			}
+			ob_start();
 			if (isset($this->fallback[$error])) {
 				$result = $this->fallback[$error]($contentType, $error);
 			}
@@ -613,13 +595,11 @@ class RouterBase extends PathResolver
 				$result = $this->fallback['*']($contentType, $error);
 			}
 			if ($result === true) {
-				$this->_preRender($e);
 				Canvas::_create();
 				return true;
 			}
 		}
 
-		$this->_preRender($e);
 		if ($contentType === 'text/html') {
 			Canvas::_override(self::getCanvasPath('html'));
 		}
