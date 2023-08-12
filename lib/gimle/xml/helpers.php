@@ -198,6 +198,12 @@ trait Helpers
 	{
 		$contents = self::openXml($filename, $new);
 		if (is_string($contents)) {
+			if (function_exists('\gimle\xml\openxml')) {
+				$result = openxml($contents);
+				if ($result !== null) {
+					return $result;
+				}
+			}
 			return new static($contents);
 		}
 
