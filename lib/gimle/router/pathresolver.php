@@ -115,6 +115,9 @@ class PathResolver
 		if (strpos($template, '.') === false) {
 			$template .= '.php';
 		}
+		if (str_starts_with($template, '/')) {
+			return $template;
+		}
 
 		if (is_readable(SITE_DIR . $dir . '/' . $template)) {
 			if (!$multiple) {
