@@ -180,9 +180,10 @@ class RouterBase extends PathResolver
 			}
 		}
 
-		if (current($this->url) === '__gimle') {
+		if (current($this->url) === '__spectacle') {
 			if (isset($this->url[1])) {
 				header('Content-type: application/json');
+				header('Access-Control-Allow-Origin: *');
 				$res = Spectacle::read($this->url[1]);
 				if ($res === false) {
 					echo json_encode(false);

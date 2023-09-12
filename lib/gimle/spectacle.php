@@ -221,7 +221,7 @@ class Spectacle
 		}
 		$this->match = [];
 
-		$return[] = '<p><span style="font-family: monospace; color: DarkBlue;">' . $title . '</span> in <span style="color: DarkBlue;">' . $file . '</span> on line <span style="color: DarkBlue;">' . $line . '</span></p>';
+		$return[] = '<p><span style="font-family: monospace; color: darkcyan;">' . $title . '</span> in <span style="color: darkcyan;">' . $file . '</span> on line <span style="color: darkcyan;">' . $line . '</span></p>';
 
 		foreach ($data as $index => $item) {
 			$return[] = d($item, ['return' => true, 'title' => 'param' . ($index + 1)]);
