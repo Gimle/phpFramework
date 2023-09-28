@@ -137,7 +137,7 @@ trait Helpers
 	/**
 	 * Convert a time input to a ISO 8601 time string.
 	 *
-	 * @param mixed $input null = current time, int = unix time, string = parse time (strtotime).
+	 * @param mixed $input null = current time, int/ctype_digit = unix time, string = parse time (strtotime).
 	 * @param bool $includeTimeZone Include timezone in the string.
 	 * @return ?string null if input could be converted, or a datetime string.
 	 */
@@ -152,6 +152,9 @@ trait Helpers
 		}
 		else if (is_int($input)) {
 			return date($format, $input);
+		}
+		else if (ctype_digit($input)) {
+			return date($format, (int) $input);
 		}
 		else if (is_string($input)) {
 			return date($format, strtotime($input));
