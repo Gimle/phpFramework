@@ -450,7 +450,7 @@ elseif (ENV_MODE & ENV_CLI) {
 				$subsite = current($_SERVER['options'][$cli['index']]);
 			}
 
-			if (!str_starts_with($subsite, '/')) {
+			if (($subsite !== null) && (!str_starts_with($subsite, '/'))) {
 				if (isset($config['subsite']['of'][$subsite])) {
 					$subsite = $config['subsite']['of'][$subsite];
 				}
