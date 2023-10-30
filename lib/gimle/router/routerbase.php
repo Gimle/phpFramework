@@ -541,7 +541,7 @@ class RouterBase extends PathResolver
 		}
 
 		$error = 500;
-		if (($e->getCode() === self::E_ROUTES_EXHAUSTED) || ($e->getCode() === self::E_ROUTE_NOT_FOUND)) {
+		if (($e instanceof \gimle\router\Exception) &&  (($e->getCode() === self::E_ROUTES_EXHAUSTED) || ($e->getCode() === self::E_ROUTE_NOT_FOUND))) {
 			$url = $e->get('url');
 			if ((filter_var($url, FILTER_VALIDATE_DIRNAME)) && (substr($url, 0, 7) === 'module/') && (strpos($url, '../') === false)) {
 				$url = substr($url, 7);
