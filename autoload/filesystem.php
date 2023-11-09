@@ -38,9 +38,9 @@ function dirname (string $path, int $level = 1): string
  * @param string $postfix Custom postfix, default = ''.
  * @return string The unique file name.
  */
-function uniquename ($dir = TEMP_DIR, $prefix = '', $postfix = ''): string
+function uniquename ($dir = TEMP_DIR, $prefix = '', $postfix = '', $len = null): string
 {
-	$name = random();
+	$name = random(null, $len);
 	if (!file_exists($dir . $prefix . $name . $postfix)) {
 		return $prefix . $name . $postfix;
 	}

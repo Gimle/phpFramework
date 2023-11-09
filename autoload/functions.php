@@ -621,3 +621,13 @@ function return_type (): array
 	arsort($accept);
 	return $accept;
 }
+
+/**
+ * Checks for the maximum size uploads.
+ *
+ * @return int Maximum number of bytes.
+ */
+function get_upload_limit (): int
+{
+	return (int) min(string_to_bytes(ini_get('post_max_size')), string_to_bytes(ini_get('upload_max_filesize')));
+}
