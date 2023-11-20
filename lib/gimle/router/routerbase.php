@@ -80,6 +80,7 @@ class RouterBase extends PathResolver
 	 * @var ?string
 	 */
 	private $template = null;
+	private $templateargs = [];
 
 	/**
 	 * The defined routes.
@@ -222,8 +223,9 @@ class RouterBase extends PathResolver
 	 * @param string $name The name of the canvas.
 	 * @return void
 	 */
-	public function setTemplate (string $name): void
+	public function setTemplate (string $name, ...$args): void
 	{
+		$this->templateargs = $args;
 		$this->template = $name;
 	}
 
@@ -398,7 +400,12 @@ class RouterBase extends PathResolver
 					$this->template = $resolved;
 
 					ob_start();
-					$templateResult = include $this->template;
+					if (!empty($this->templateargs)) {
+						$templateResult = inc($this->template, ...$this->templateargs);
+					}
+					else {
+						$templateResult = include $this->template;
+					}
 					$content = ob_get_contents();
 					ob_end_clean();
 				}
@@ -434,9 +441,7 @@ class RouterBase extends PathResolver
 					];
 					$this->canvas = $recuriveCanvasHolder;
 					array_pop($this->routes[$path]);
-					if (empty($this->routes[$path])) {
-						unset($this->routes[$path]);
-					}
+					unset($this->routes[$path]);
 					$this->dispatch();
 					return;
 				}
@@ -529,7 +534,7 @@ class RouterBase extends PathResolver
 							$result = $this->fallback[$returnValue]($contentType, $trial);
 						}
 						else {
-							$result = $this->fallback['*']($contentType, $trial);
+							$result = $this->fallback['*']($contentType, $trial, $returnValue);
 						}
 						if ($result === true) {
 							sp($e);
@@ -541,7 +546,7 @@ class RouterBase extends PathResolver
 		}
 
 		$error = 500;
-		if (($e instanceof \gimle\router\Exception) &&  (($e->getCode() === self::E_ROUTES_EXHAUSTED) || ($e->getCode() === self::E_ROUTE_NOT_FOUND))) {
+		if (($e->getCode() === self::E_ROUTES_EXHAUSTED) || ($e->getCode() === self::E_ROUTE_NOT_FOUND)) {
 			$url = $e->get('url');
 			if ((filter_var($url, FILTER_VALIDATE_DIRNAME)) && (substr($url, 0, 7) === 'module/') && (strpos($url, '../') === false)) {
 				$url = substr($url, 7);
@@ -590,10 +595,10 @@ class RouterBase extends PathResolver
 			}
 			ob_start();
 			if (isset($this->fallback[$error])) {
-				$result = $this->fallback[$error]($contentType, $error);
+				$result = $this->fallback[$error]($contentType, []);
 			}
 			else {
-				$result = $this->fallback['*']($contentType, $error);
+				$result = $this->fallback['*']($contentType, [], $error);
 			}
 			if ($result === true) {
 				Canvas::_create();
