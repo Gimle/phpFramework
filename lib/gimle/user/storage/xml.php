@@ -380,6 +380,73 @@ class Xml extends \gimle\user\UserBase
 		self::$xmlFileLocation = $location;
 	}
 
+	public static function verifyEmail (string $token): ?User
+	{
+		$sxml = SimpleXmlElement::open(self::getXmlLocation(), '<users/>');
+		$xp = '/users/user/auth/local[@verify=' . $sxml->real_escape_string($token) . ']/../..';
+		$result = current($sxml->xpath($xp));
+		$user = self::xmlToUser($result);
+		if ($user !== false) {
+			foreach ($user->auth['local'] as &$auth) {
+				if ($auth['verify'] === $token) {
+					unset($auth['verify']);
+					$auth['verified'] = $user->asDateTime();
+					$user->save();
+					return $user;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	public static function recover (string $email): ?User
+	{
+		$sxml = SimpleXmlElement::open(self::getXmlLocation(), '<users/>');
+		$xp = '/users/user/auth/*[self::local or self::ldap][@email=' . $sxml->real_escape_string($email) . ']/../..';
+		$result = current($sxml->xpath($xp));
+		if ($result !== false) {
+			return self::xmlToUser($result);
+		}
+
+		return null;
+	}
+
+	public static function checkRecovery (string $token, string $email = null, $validity = '-1 hour'): ?User
+	{
+		$sxml = SimpleXmlElement::open(self::getXmlLocation(), '<users/>');
+		if ($email !== null) {
+			$xp = '/users/user/auth/*[self::local or self::ldap][@email=' . $sxml->real_escape_string($email) . '][@recover=' . $sxml->real_escape_string($token) . ']/../..';
+		}
+		else {
+			$xp = '/users/user/auth/*[self::local or self::ldap][@recover=' . $sxml->real_escape_string($token) . ']/../..';
+		}
+		$result = current($sxml->xpath($xp));
+		if ($result === false) {
+			return null;
+		}
+
+		if (is_string($validity)) {
+			$validity = strtotime($validity);
+		}
+
+		$user = self::xmlToUser($result);
+		foreach (['local', 'ldap'] as $provider) {
+			if (isset($user->auth[$provider])) {
+				foreach ($user->auth[$provider] as $auth) {
+					if ($auth['recover'] === $token) {
+						$dt = strtotime($auth['recover_dt']);
+						if ($dt > $validity) {
+							return $user;
+						}
+					}
+				}
+			}
+		}
+
+		return null;
+	}
+
 	protected static function getVarCType ($value): string
 	{
 		if (is_bool($value)) {

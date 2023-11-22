@@ -44,7 +44,7 @@ trait Local
 		return null;
 	}
 
-	public function updatePassword (string $email, string $password): bool
+	public function updateLocalPassword (string $email, string $password): bool
 	{
 		if (!isset($this->auth['local'])) {
 			return false;
@@ -52,6 +52,10 @@ trait Local
 		foreach ($this->auth['local'] as &$local) {
 			if ($local['email'] === $email) {
 				$local['password'] = self::hashPassword($password);
+				if (isset($local['verify'])) {
+					unset($local['verify']);
+					$local['verified'] = $user->asDateTime();
+				}
 				if (isset($local['recover'])) {
 					unset($local['recover']);
 				}

@@ -536,15 +536,15 @@ class Mongo extends \gimle\user\UserBase
 		$user = self::mongoToUser($document, new User());
 
 		foreach ($user->auth['local'] as &$auth) {
-			if ($auth['verify'] === $_SERVER['QUERY_STRING']) {
+			if ($auth['verify'] === $token) {
 				unset($auth['verify']);
 				$auth['verified'] = $user->asDateTime();
-				break;
+				$user->save();
+				return $user;
 			}
 		}
-		$user->save();
 
-		return $user;
+		return null;
 	}
 
 	public static function recover (string $email): ?User

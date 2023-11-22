@@ -367,10 +367,34 @@ abstract class UserBase
 		return false;
 	}
 
-	public function getRecoverToken (string $email): string
+	public function getRecoverToken (string $email): ?string
+	{
+		$token = $this->_getRecoverToken($email, 'local');
+		if ($token === null) {
+			$token = $this->_getRecoverToken($email, 'ldap');
+		}
+		return $token;
+	}
+
+	public function updatePassword (string $email, string $password): bool
+	{
+		$result = false;
+		if (method_exists($this, 'updateLocalPassword')) {
+			$result = $this->updateLocalPassword($email, $password);
+		}
+		if (($result === false) && (method_exists($this, 'updateLdapPassword'))) {
+			$result = $this->updateLdapPassword($email, $password);
+		}
+		return $result;
+	}
+
+	protected function _getRecoverToken (string $email, string $field): ?string
 	{
 		$token = null;
-		foreach ($this->auth['local'] as &$auth) {
+		if (!isset($this->auth[$field])) {
+			return null;
+		}
+		foreach ($this->auth[$field] as &$auth) {
 			if ($auth['email'] === $email) {
 				if ((isset($auth['recover'])) && (isset($auth['recover_dt']))) {
 					$dt = strtotime($auth['recover_dt']);
@@ -408,10 +432,10 @@ abstract class UserBase
 		return true;
 	}
 
-	protected function callUses ($prefix)
+	protected function callUses (string $prefix, string $postfix = '')
 	{
 		foreach ($this->uses as $method) {
-			$method = $prefix . $method;
+			$method = $prefix . $method . $postfix;
 			if (method_exists($this, $method)) {
 				$this->$method();
 			}

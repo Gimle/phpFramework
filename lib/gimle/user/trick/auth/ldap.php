@@ -183,6 +183,51 @@ trait Ldap
 		return true;
 	}
 
+	public function updateLdapPassword (string $email, string $password, ?string $server = null): bool
+	{
+		if (!isset($this->auth['ldap'])) {
+			return false;
+		}
+		foreach ($this->auth['ldap'] as &$ldapXml) {
+			if (($server !== null) && ((string) $ldapXml['server'] !== $server)) {
+				continue;
+			}
+			if ((string) $ldapXml['email'] === $email) {
+				$result = $this->_updateLdapPassword($email, $password, (string) $ldapXml['server']);
+				if ($result === true) {
+					if (isset($ldapXml['verify'])) {
+						unset($ldapXml['verify']);
+						$ldapXml['verified'] = $user->asDateTime();
+					}
+					if (isset($ldapXml['recover'])) {
+						unset($ldapXml['recover']);
+					}
+					if (isset($ldapXml['recover_dt'])) {
+						unset($ldapXml['recover_dt']);
+					}
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	protected function _updateLdapPassword (string $email, string $password, string $server): bool
+	{
+		$ldap = \gimle\nosql\Ldap::getInstance($server);
+		$ldapConfig = MainConfig::get('auth.ldap.' . $server);
+		$result = $ldap->search($ldapConfig['users'], '(' . $ldapConfig['email'] . '=' . ldap_escape($email) . ')');
+		foreach ($result as $entry) {
+			$row = $entry->fetch();
+			if ($row !== null) {
+				$password = \gimle\nosql\Ldap::hashPassword($password);
+				$ldap->modify($row['dn'], 'userPassword', $password);
+				return true;
+			}
+		}
+		return false;
+	}
+
 	protected function ldapLoadServers (): void
 	{
 		if ($this->ldapServers !== null) {
