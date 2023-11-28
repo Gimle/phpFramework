@@ -521,6 +521,7 @@ class RouterBase extends PathResolver
 			$contentType = 'text/html';
 		}
 
+		$error = 500;
 		if (method_exists($e, 'get')) {
 			$tried = $e->get('tried');
 			if ($tried !== null) {
@@ -543,49 +544,48 @@ class RouterBase extends PathResolver
 					}
 				}
 			}
-		}
 
-		$error = 500;
-		if (($e->getCode() === self::E_ROUTES_EXHAUSTED) || ($e->getCode() === self::E_ROUTE_NOT_FOUND)) {
-			$url = $e->get('url');
-			if ((filter_var($url, FILTER_VALIDATE_DIRNAME)) && (substr($url, 0, 7) === 'module/') && (strpos($url, '../') === false)) {
-				$url = substr($url, 7);
-				$pos = strpos($url, '/');
-				if ($pos !== false) {
-					$module = substr($url, 0, $pos);
-					$url = ltrim(substr($url, $pos), '/');
+			if (($e->getCode() === self::E_ROUTES_EXHAUSTED) || ($e->getCode() === self::E_ROUTE_NOT_FOUND)) {
+				$url = $e->get('url');
+				if ((filter_var($url, FILTER_VALIDATE_DIRNAME)) && (substr($url, 0, 7) === 'module/') && (strpos($url, '../') === false)) {
+					$url = substr($url, 7);
+					$pos = strpos($url, '/');
+					if ($pos !== false) {
+						$module = substr($url, 0, $pos);
+						$url = ltrim(substr($url, $pos), '/');
 
-					$path = null;
-					if (($module === 'local') && ($url !== false) && (is_readable(MAIN_SITE_DIR . SITE_ID . '/' . '/public/' . $url))) {
-						$path = MAIN_SITE_DIR . SITE_ID . '/' . '/public/';
-					}
-					elseif (($url !== false) && (is_readable(SITE_DIR . 'module/' . $module . '/public/' . $url))) {
-						$path = SITE_DIR . 'module/' . $module . '/public/';
-					}
-					if ($path !== null) {
-						$mime = get_mimetype($path . $url);
-						/*
-						Sometimes the system reports wrong mime type.
-						When serving files for a website from a public folder,
-						we need this little probability override to not cause problems with common mime types.
-						*/
-						if (substr($url, -3, 3) === '.js') {
-							$mime['mime'] = 'application/javascript';
+						$path = null;
+						if (($module === 'local') && ($url !== false) && (is_readable(MAIN_SITE_DIR . SITE_ID . '/' . '/public/' . $url))) {
+							$path = MAIN_SITE_DIR . SITE_ID . '/' . '/public/';
 						}
-						elseif (substr($url, -4, 4) === '.css') {
-							$mime['mime'] = 'text/css';
+						elseif (($url !== false) && (is_readable(SITE_DIR . 'module/' . $module . '/public/' . $url))) {
+							$path = SITE_DIR . 'module/' . $module . '/public/';
 						}
-						elseif ($mime['mime'] === 'image/svg') {
-							$mime['mime'] = 'image/svg+xml';
+						if ($path !== null) {
+							$mime = get_mimetype($path . $url);
+							/*
+							Sometimes the system reports wrong mime type.
+							When serving files for a website from a public folder,
+							we need this little probability override to not cause problems with common mime types.
+							*/
+							if (substr($url, -3, 3) === '.js') {
+								$mime['mime'] = 'application/javascript';
+							}
+							elseif (substr($url, -4, 4) === '.css') {
+								$mime['mime'] = 'text/css';
+							}
+							elseif ($mime['mime'] === 'image/svg') {
+								$mime['mime'] = 'image/svg+xml';
+							}
+							header('Content-Type: ' . $mime['mime']);
+							readfile($path . ltrim($url, '/'));
+							return true;
 						}
-						header('Content-Type: ' . $mime['mime']);
-						readfile($path . ltrim($url, '/'));
-						return true;
 					}
 				}
-			}
 
-			$error = 404;
+				$error = 404;
+			}
 		}
 		sp($e);
 
