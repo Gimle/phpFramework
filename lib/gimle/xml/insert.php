@@ -200,7 +200,7 @@ trait Insert
 	 * @param mixed $ref null = after self. string = xpath to append, SimpleXmlElement = reference to append.
 	 * @return void
 	 */
-	public function insertAfter ($element, $ref = null): void
+	public function insertAfter ($element, $ref = null, $trimNewline = false): void
 	{
 		$refs = $this->resolveReference($ref);
 		$element = $this->toDom($element, false);
@@ -217,6 +217,9 @@ trait Insert
 				$leadingWhitespace = ($leadingWhitespace[0] ?? null);
 				if (($leadingWhitespace !== null) && (strpos($leadingWhitespace, "\n") !== false)) {
 					$node = new \DomDocument();
+					if ($trimNewline === true) {
+						$leadingWhitespace = "\n" . substr($leadingWhitespace, strrpos($leadingWhitespace, "\n") + 1);
+					}
 					$node = $node->createTextNode($leadingWhitespace);
 					$insertBefore = $dom->ownerDocument->importNode($node, true);
 					$dom->parentNode->insertBefore($insertBefore, $new);

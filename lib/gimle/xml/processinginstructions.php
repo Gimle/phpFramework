@@ -67,10 +67,15 @@ trait ProcessingInstructions
 				}
 				$parent = $pi->parentNode;
 				$lastInsert = $pi->nextSibling;
+				$trimNewline = true;
+				$result = array_reverse($result);
 				foreach ($result as $node) {
+					if (!next($result)) {
+						$trimNewline = false;
+					}
 					$fragment = $pi->ownerDocument->createDocumentFragment();
 					$fragment->appendXML($node);
-					$this->insertAfter($node, $pi);
+					$this->insertAfter($node, $pi, $trimNewline);
 				}
 				$this->remove($pi, self::LTRIM_FIRST);
 			}
