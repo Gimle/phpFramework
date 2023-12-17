@@ -101,7 +101,34 @@ function var_dump ($var, array $mode = []): ?string
 		}
 	};
 
-	$dodump = function ($var, ?string $var_name = null, int $indent = 0, array $params = []) use (&$dodump, &$fixDumpString, &$webmode, &$mode, &$recursionClasses, &$showComment): void {
+	$getObject = function ($value) use ($mode) {
+		if (!is_object($value)) {
+			return null;
+		}
+		$class = new \ReflectionObject($value);
+		$parents = '';
+		if ($parent = $class->getParentClass()) {
+			$parents .= ' extends ' . $class->getParentClass()->name;
+		}
+		unset($parent);
+		$interfaces = $class->getInterfaces();
+		if (!empty($interfaces)) {
+			$parents .= ' implements ' . implode(', ', array_keys($interfaces));
+		}
+		unset($interfaces);
+
+		$return = ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ' . colorize($class->getName() . ' Object' . $parents, 'recursion', $mode['background'], $mode['mode']);
+		if ($value instanceof \SimpleXmlElement) {
+			$return .= colorize(' (' . $value->getName() . ')', 'gray', $mode['background'], $mode['mode']);
+		}
+		if ($value instanceof \DateTimeInterface) {
+			$return .= colorize(' (' . $value->format('Y-m-d H:i:s') . ')', 'gray', $mode['background'], $mode['mode']);
+		}
+		$return .= "\n";
+		return $return;
+	};
+
+	$dodump = function ($var, ?string $var_name = null, int $indent = 0, array $params = []) use (&$dodump, &$fixDumpString, &$webmode, &$mode, &$recursionClasses, &$showComment, &$getObject): void {
 		if (is_object($var)) {
 			if (!empty($recursionClasses)) {
 				$add = true;
@@ -122,10 +149,7 @@ function var_dump ($var, array $mode = []): ?string
 		$doDump_indent = colorize('|', 'lightgray', $mode['background'], $mode['mode']) . '   ';
 		echo str_repeat($doDump_indent, $indent) . colorize(($webmode === true ? htmlentities($var_name) : $var_name), 'varname', $mode['background'], $mode['mode']);
 
-		if (is_callable($var)) {
-			echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ' . colorize('*CALLABLE*', 'recursion', $mode['background'], $mode['mode']);
-		}
-		elseif (is_array($var)) {
+		if (is_array($var)) {
 			echo ' ' . colorize('=>', 'black', $mode['background'], $mode['mode']) . ' ' . colorize('Array (' . count($var) . ')', 'gray', $mode['background'], $mode['mode']) . "\n" . str_repeat($doDump_indent, $indent) . colorize('(', 'lightgray', $mode['background'], $mode['mode']) . "\n";
 			foreach ($var as $key => $value) {
 				if (is_callable($var[$key])) {
@@ -168,15 +192,15 @@ function var_dump ($var, array $mode = []): ?string
 						echo colorize(get_class($value) . '()', 'recursion', $mode['background'], $mode['mode']);
 						echo "\n";
 					}
-					elseif (get_class($value) === 'Closure') {
-						$doDump_indent = colorize('|', 'lightgray', $mode['background'], $mode['mode']) . '   ';
-						echo str_repeat($doDump_indent, $indent + 1) . colorize('[\'' . ($webmode === true ? htmlentities((string) $key) : (string) $key) . '\']', 'varname', $mode['background'], $mode['mode']);
-						echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ';
-						echo colorize(get_class($value) . '()', 'recursion', $mode['background'], $mode['mode']);
-						echo "\n";
-					}
 					else {
-						$dodump($value, '[\'' . $key . '\']', $indent + 1);
+						$test = $getObject($value);
+						if ($test !== null) {
+							echo str_repeat($doDump_indent, $indent + 1) . colorize('[\'' . ($webmode === true ? htmlentities((string) $key) : (string) $key) . '\']', 'varname', $mode['background'], $mode['mode']);
+							echo $test;
+						}
+						else {
+							$dodump($value, '[\'' . $key . '\']', $indent + 1);
+						}
 					}
 					continue;
 				}
@@ -191,6 +215,9 @@ function var_dump ($var, array $mode = []): ?string
 			elseif ((isset($params['omitted'])) && ($params['omitted'] === true)) {
 				echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ' . colorize('Omitted: ' . $fixDumpString($var_name, $var, $webmode), 'recursion', $mode['background'], $mode['mode']);
 			}
+			elseif ((isset($params['sxml'])) && ($params['sxml'] === true)) {
+				echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ' . colorize('Node name: ', 'recursion', $mode['background'], $mode['mode']) . colorize($fixDumpString($var_name, '<' . $var . '> ', $webmode), 'black', $mode['background'], $mode['mode']) . colorize($fixDumpString($var_name, '(Get text content with ', $webmode), 'gray', $mode['background'], $mode['mode']) . colorize($fixDumpString($var_name, '->asXml()', $webmode), 'recursion', $mode['background'], $mode['mode']) . colorize($fixDumpString($var_name, ' method).', $webmode), 'gray', $mode['background'], $mode['mode']);
+			}
 			else {
 				echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ' . colorize('String(' . strlen($var) . ')', 'gray', $mode['background'], $mode['mode']) . ' ' . colorize('\'' . $fixDumpString($var_name, $var, $webmode) . '\'', 'string', $mode['background'], $mode['mode']);
 			}
@@ -201,21 +228,8 @@ function var_dump ($var, array $mode = []): ?string
 		elseif (is_bool($var)) {
 			echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ' . colorize('Boolean', 'gray', $mode['background'], $mode['mode']) . ' ' . colorize(($var === true ? 'true' : 'false'), 'bool', $mode['background'], $mode['mode']);
 		}
-		elseif ((is_object($var)) && ($var instanceof \SimpleXmlElement)) {
-			$class = new \ReflectionObject($var);
-			$parents = '';
-			if ($parent = $class->getParentClass()) {
-				$parents .= ' extends ' . $class->getParentClass()->name;
-			}
-			unset($parent);
-			$interfaces = $class->getInterfaces();
-			if (!empty($interfaces)) {
-				$parents .= ' implements ' . implode(', ', array_keys($interfaces));
-			}
-			unset($interfaces);
-
-			echo ' ' . colorize('=>', 'black', $mode['background'], $mode['mode']) . ' ' . colorize($class->getName() . ' Object' . $parents, 'recursion', $mode['background'], $mode['mode']);
-			echo colorize(' (' . $var->getName() . ')', 'gray', $mode['background'], $mode['mode']);
+		elseif (is_callable($var, false, $callableName)) {
+			echo ' ' . colorize('=', 'black', $mode['background'], $mode['mode']) . ' ' . colorize($callableName . ' *CALLABLE*', 'recursion', $mode['background'], $mode['mode']);
 		}
 		elseif (is_object($var)) {
 			$class = new \ReflectionObject($var);
@@ -294,6 +308,9 @@ function var_dump ($var, array $mode = []): ?string
 						if (!is_object($var->{$match})) {
 							$dodump($var->{$match}, '[\'' . $match . '\']', $indent + 1, []);
 						}
+						elseif ($var instanceof \SimpleXmlElement) {
+							$dodump($var->getName(), '[\'' . $match . '\']', $indent + 1, ['sxml' => true]);
+						}
 						else {
 							$dodump('(object value omitted)', '[\'' . $match . '\']', $indent + 1, ['omitted' => true]);
 						}
@@ -309,6 +326,12 @@ function var_dump ($var, array $mode = []): ?string
 						}
 						elseif ($prop->isProtected()) {
 							$append .= ' protected';
+						}
+						$doc = $prop->getDocComment();
+						if (is_string($doc)) {
+							if (preg_match('/__get/', $doc)) {
+								$append .= ' public read';
+							}
 						}
 						$prop->setAccessible(true);
 						if ($prop->isStatic()) {
@@ -347,7 +370,14 @@ function var_dump ($var, array $mode = []): ?string
 								echo "\n";
 							}
 							else {
-								$dodump($value, '[\'' . $prop->name . '\'' . $append . ']', $indent + 1, ['error' => $error]);
+								$test = $getObject($value);
+								if ($test !== null) {
+									echo str_repeat($doDump_indent, $indent + 1) . colorize('[\'' . ($webmode === true ? htmlentities($prop->name . '\'' . $append) : $prop->name . '\'' . $append) . ']', 'varname', $mode['background'], $mode['mode']);
+									echo $test;
+								}
+								else {
+									$dodump($value, '[\'' . $prop->name . '\'' . $append . ']', $indent + 1, ['error' => $error]);
+								}
 							}
 						}
 						else {
@@ -358,7 +388,9 @@ function var_dump ($var, array $mode = []): ?string
 
 				if (!empty($dblcheck)) {
 					foreach ($dblcheck as $key => $value) {
-						$dodump($value, '[\'' . $key . '\' magic]', $indent + 1);
+						if (!$var instanceof \SimpleXmlElement) {
+							$dodump($value, '[\'' . $key . '\' magic]', $indent + 1);
+						}
 					}
 				}
 
