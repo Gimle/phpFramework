@@ -53,6 +53,8 @@ class RouterBase extends PathResolver
 	public const E_CANVAS_NOT_SET = 8;
 	public const E_UNKNOWN = 9;
 
+	public $preRender = null;
+
 	/**
 	 * The request method for this request.
 	 *
@@ -380,6 +382,10 @@ class RouterBase extends PathResolver
 						return;
 					}
 				}
+			}
+
+			if (is_callable($this->preRender)) {
+				($this->preRender)();
 			}
 
 			if ($routeFound === false) {
