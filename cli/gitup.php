@@ -26,7 +26,7 @@ require dirname(__DIR__) . '/init.php';
 $exec = 'cd ' . SITE_DIR . '; git pull';
 exec($exec);
 
-$gitmodules = parse_config_file(SITE_DIR . '.gitmodules');
+$gitmodules = parse_config_file(SITE_DIR . '.gitmodules', false);
 foreach ($gitmodules as $name => $config) {
 	if (!isset($config['branch'])) {
 		echo "{$config['path']} does not have a branch to follow.\n";
