@@ -278,7 +278,7 @@ function parse_config_file (string $filename): ?array
 					$value = json_decode($line[1], true);
 				}
 				else {
-					throw new Exception('Unknown value in ini file on line ' . ($linenum + 1) . ': ' . $linestr);
+					$value = $line[1];
 				}
 				if (isset($value)) {
 					if (!isset($lastkey)) {
