@@ -201,7 +201,7 @@ function _ (...$message)
  * @param string $filename the full path to the file to parse.
  * @return array or null. Array with the read configuration file, or false upon failure.
  */
-function parse_config_file (string $filename): ?array
+function parse_config_file (string $filename, bool $deep = true): ?array
 {
 	if (!is_readable($filename)) {
 		return null;
@@ -283,6 +283,9 @@ function parse_config_file (string $filename): ?array
 				if (isset($value)) {
 					if (!isset($lastkey)) {
 						$return[$key] = $value;
+					}
+					elseif ($deep === false) {
+						$return[$lastkey][$key] = $value;
 					}
 					else {
 						$return = array_merge_distinct($return, string_to_nested_array($lastkey, [$key => $value]));
