@@ -468,6 +468,8 @@ class Mongo extends \gimle\user\UserBase
 			],
 		]];
 
+		$command['allowDiskUse'] = true;
+
 		$cursor = $mongo->command($command);
 
 		$return = [
