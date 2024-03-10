@@ -4,6 +4,7 @@ namespace gimle;
 
 class System
 {
+	public const PARENT = 1;
 	/**
 	 * Configuration for paths to search for classes when autoloading.
 	 *
@@ -19,6 +20,7 @@ class System
 	 * @var array
 	 */
 	private static $modules = null;
+	private static $modulesParent = null;
 
 	/**
 	 * Cache for the getLogname method.
@@ -114,11 +116,30 @@ class System
 	/**
 	 * Get modules included in this project.
 	 *
-	 * @param string $exclude
+	 * @param int|string $exclude with possible flag at end.
 	 * @return array
 	 */
-	public static function getModules (string ...$exclude): array
+	public static function getModules (int|string ...$exclude): array
 	{
+		$mode = 0;
+		if (is_int(end($exclude))) {
+			$mode = array_pop($exclude);
+		}
+		if ($mode & self::PARENT) {
+			if (self::$modulesParent === null) {
+				self::$modulesParent = [];
+				foreach (new \DirectoryIterator(MAIN_SITE_DIR . 'module/') as $item) {
+					$name = $item->getFileName();
+					if ((substr($name, 0, 1) === '.') || (!$item->isDir()) || (!$item->isExecutable())) {
+						continue;
+					}
+					self::$modulesParent[] = $name;
+				}
+				rsort(self::$modulesParent, SORT_NATURAL | SORT_FLAG_CASE);
+			}
+
+			return array_diff(self::$modulesParent, $exclude);
+		}
 		if (self::$modules === null) {
 			self::$modules = [];
 			foreach (new \DirectoryIterator(SITE_DIR . 'module/') as $item) {
@@ -128,7 +149,7 @@ class System
 				}
 				self::$modules[] = $name;
 			}
-			sort(self::$modules, SORT_NATURAL | SORT_FLAG_CASE);
+			rsort(self::$modules, SORT_NATURAL | SORT_FLAG_CASE);
 		}
 
 		return array_diff(self::$modules, $exclude);
