@@ -618,7 +618,7 @@ if (IS_SUBSITE === false) {
 
 unset($config);
 
-foreach (System::getModules(MODULE_GIMLE) as $name) {
+foreach (array_reverse(System::getModules(MODULE_GIMLE)) as $name) {
 	if (is_executable(SITE_DIR . 'module/' . $name . '/lib/')) {
 		System::autoloadRegister(SITE_DIR . 'module/' . $name . '/lib/', ['toLowercase' => true]);
 	}
