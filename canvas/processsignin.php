@@ -32,7 +32,24 @@ try {
 			}
 			$user = User::login($_POST['email'], $_POST['password'], $asi);
 			if ($user->id === null) {
-				throw new Exception('User not found.', User::USER_NOT_FOUND);
+				if ($user instanceof \gimle\user\storage\Xml) {
+					$userxml = \gimle\xml\SimpleXmlElement::open(STORAGE_DIR . 'users.xml');
+					if (current($userxml->xpath('/users/user')) === false) {
+						$user = new User();
+						$user->email = $_POST['email'];
+						$user->firstName = substr($_POST['email'], 0, strpos($_POST['email'], '@'));
+						$user->lastName = substr($_POST['email'], strpos($_POST['email'], '@') + 1);
+						$user->addLocalAuth($_POST['email'], $_POST['password']);
+						$user->groups = [2 => 'root'];
+						$res = $user->save();
+						if ($res === null) {
+							throw new Exception('Could not create user.', User::OTHER_ERROR);
+						}
+					}
+				}
+				if ($user->id === null) {
+					throw new Exception('User not found.', User::USER_NOT_FOUND);
+				}
 			}
 			$_SESSION['gimle']['user'] = $user;
 		}
