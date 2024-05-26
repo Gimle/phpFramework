@@ -295,10 +295,10 @@ class FetchCache extends FetchBase
 					try {
 						$decoded = new SimpleXmlElement($reply);
 					}
-					catch (Exception $e) {
+					catch (\Throwable $t) {
 						$validationCallback = null;
 						$cacheIt = false;
-						$return['formatError'] = $e->getMessage();
+						$return['formatError'] = $t->getMessage();
 					}
 				}
 				elseif ($this->expect === self::JSON) {
@@ -347,6 +347,7 @@ class FetchCache extends FetchBase
 			$builder['reply'] = file_get_contents($dir . 'reply');
 			$builder = array_merge($builder, json_decode(file_get_contents($dir . 'meta'), true));
 			$return['created'] = date('Y-m-d H:i:s', filemtime($dir . 'reply'));
+			$return['fname'] = $dir . 'reply';
 			$return = array_merge($builder, $return);
 		}
 		else {

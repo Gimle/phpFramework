@@ -6,6 +6,7 @@ class ErrorException extends \ErrorException
 {
 	/**
 	 * A holder for the private properties.
+	 * __get
 	 *
 	 * @var array
 	 */
@@ -40,5 +41,12 @@ class ErrorException extends \ErrorException
 		}
 
 		return null;
+	}
+
+	public function __get ($name)
+	{
+		if ($name === 'params') {
+			return $this->params;
+		}
 	}
 }
