@@ -64,9 +64,11 @@ trait Insert
 				if ($dom->parentNode->nodeValue !== null) {
 					preg_match('/^[\s]+/s', $dom->parentNode->nodeValue, $leadingWhitespace);
 					$leadingWhitespace = ($leadingWhitespace[0] ?? '');
-					$pos = strpos($leadingWhitespace, "\n", 1);
-					if ($pos !== false) {
-						$leadingWhitespace = substr($leadingWhitespace, 0, $pos);
+					if ($leadingWhitespace !== '') {
+						$pos = strpos($leadingWhitespace, "\n", 1);
+						if ($pos !== false) {
+							$leadingWhitespace = substr($leadingWhitespace, 0, $pos);
+						}
 					}
 				}
 				$insertBefore = $leadingWhitespace . "\t";
@@ -132,9 +134,11 @@ trait Insert
 				if ($dom->parentNode->nodeValue !== null) {
 					preg_match('/^[\s]+/s', $dom->parentNode->nodeValue, $leadingWhitespace);
 					$leadingWhitespace = ($leadingWhitespace[0] ?? '');
-					$pos = strpos($leadingWhitespace, "\n", 1);
-					if ($pos !== false) {
-						$leadingWhitespace = substr($leadingWhitespace, 0, $pos);
+					if ($leadingWhitespace !== '') {
+						$pos = strpos($leadingWhitespace, "\n", 1);
+						if ($pos !== false) {
+							$leadingWhitespace = substr($leadingWhitespace, 0, $pos);
+						}
 					}
 					$insertAfter = $leadingWhitespace;
 				}
