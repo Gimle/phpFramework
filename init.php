@@ -336,7 +336,7 @@ if (ENV_MODE & ENV_WEB) {
 		}
 
 		foreach ($config['base'] as $key => $value) {
-			if ((!isset($value['path'])) || ((!isset($value['start'])) && (!isset($value['regex'])))) {
+			if (!isset($value['path'])) {
 				throw new \Exception('Basepath configuration missing.');
 			}
 
@@ -386,6 +386,10 @@ if (ENV_MODE & ENV_WEB) {
 					 *
 					 * <p>When working with multiple bases in config, this will contain the key of the matched block.</p>
 					 */
+					define(__NAMESPACE__ . '\\BASE_PATH_KEY', $key);
+				}
+				elseif ($value['path'] === substr($base, 0, strlen($value['path']))) {
+					define(__NAMESPACE__ . '\\BASE_PATH', $value['path']);
 					define(__NAMESPACE__ . '\\BASE_PATH_KEY', $key);
 				}
 			}
