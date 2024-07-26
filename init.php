@@ -21,11 +21,11 @@ set_error_handler(function (int $errno, string $message, string $file, int $line
 	throw new ErrorException($message, 0, $errno, $file, $line);
 });
 
-$config = parse_config_file(SITE_DIR . 'config.ini');
+$config = [];
 if (get_cfg_var('gimle') !== false) {
 	$config = array_merge_distinct(parse_config_file(get_cfg_var('gimle')), $config, true);
 }
-
+$config = array_merge_distinct(parse_config_file(SITE_DIR . 'config.ini'), $config, true);
 
 $env_add = ((PHP_SAPI === 'cli') ? ENV_CLI : ENV_WEB);
 if (isset($config['env_mode'])) {
@@ -209,7 +209,11 @@ if (ENV_MODE & ENV_WEB) {
 				if (defined(__NAMESPACE__ . '\\BASE_PATH')) {
 					break;
 				}
-				$subConfig = parse_config_file($path . 'config.ini');
+				$subConfig = [];
+				if (get_cfg_var('gimle') !== false) {
+					$subConfig = array_merge_distinct(parse_config_file(get_cfg_var('gimle')), $subConfig, true);
+				}
+				$subConfig = array_merge_distinct(parse_config_file($path . 'config.ini'), $subConfig, true);
 				if ((isset($subConfig['base'])) && (is_array($subConfig['base']))) {
 					$base = $getBase();
 					if (isset($matches)) {
@@ -332,7 +336,7 @@ if (ENV_MODE & ENV_WEB) {
 		}
 
 		foreach ($config['base'] as $key => $value) {
-			if ((!isset($value['path'])) || ((!isset($value['start'])) && (!isset($value['regex'])))) {
+			if (!isset($value['path'])) {
 				throw new \Exception('Basepath configuration missing.');
 			}
 
@@ -382,6 +386,10 @@ if (ENV_MODE & ENV_WEB) {
 					 *
 					 * <p>When working with multiple bases in config, this will contain the key of the matched block.</p>
 					 */
+					define(__NAMESPACE__ . '\\BASE_PATH_KEY', $key);
+				}
+				elseif ($value['path'] === substr($base, 0, strlen($value['path']))) {
+					define(__NAMESPACE__ . '\\BASE_PATH', $value['path']);
 					define(__NAMESPACE__ . '\\BASE_PATH_KEY', $key);
 				}
 			}

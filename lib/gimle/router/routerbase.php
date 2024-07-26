@@ -354,6 +354,7 @@ class RouterBase extends PathResolver
 		try {
 			$routeFound = false;
 			$methodMatch = false;
+			$routeException = null;
 
 			foreach ($this->routes as $path => $index) {
 
@@ -369,9 +370,13 @@ class RouterBase extends PathResolver
 
 					$route = end($index);
 					if ($this->requestMethod & $route['requestMethod']) {
-						if ($route['callback']() === false) {
+						$res = $route['callback']();
+						if ($res === false) {
 							$routeFound = false;
 							continue;
+						}
+						if ($res !== true) {
+							$routeException = $res;
 						}
 						$methodMatch = true;
 						break;
@@ -464,6 +469,9 @@ class RouterBase extends PathResolver
 							$resultHandler($this->template, $templateResult);
 						}
 						echo $content;
+					}
+					if ($routeException !== null) {
+						$resultHandler(null, $routeException);
 					}
 				}
 				else {
