@@ -50,17 +50,18 @@ trait ProcessingInstructions
 	/**
 	 * Parse processing instructions from the document with a matching name.
 	 *
-	 * @param callable $callback(string $target, string $contents) The callback function.
+	 * @param callable $callback(string $target, string $contents, mixed $input) The callback function.
 	 * @param ?string $name Only parse processing instructions with the given name. Default = null.
 	 * @param ?bool $searchChildren Do a recursive search for all processing instructions in all children of the reference. Default = false.
+	 * @param ?mixed $input Input values for the callback.
 	 * @param ?mixed $ref null = Siblings of self. string = Children of xpath, SimpleXmlElement = Children of reference.
 	 * @return void
 	 */
-	public function parsePi (callable $callback, string $name = null, bool $searchChildren = false, $ref = null): void
+	public function parsePi (callable $callback, string $name = null, bool $searchChildren = false, $input = null, $ref = null): void
 	{
 		$pis = $this->getDomPi($name, $searchChildren, $ref);
 		foreach ($pis as $pi) {
-			$result = $callback($pi->nodeName, $pi->nodeValue);
+			$result = $callback($pi->nodeName, $pi->nodeValue, $input);
 			if ($result !== null) {
 				if (!is_array($result)) {
 					$result = [$result];
