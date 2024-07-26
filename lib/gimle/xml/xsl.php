@@ -35,7 +35,7 @@ class Xsl
 	protected $variables = [];
 	protected $stylesheets = [];
 
-	public function render ($document, $engine = 'standard'): string
+	public function render ($document, string $engine = 'standard'): string
 	{
 		$stylesheet = $this->loadAndMakeStylesheet($engine);
 		$document = $this->toXml($document);
