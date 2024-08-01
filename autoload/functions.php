@@ -327,6 +327,11 @@ function exec (string $command): array
  */
 function array_merge_distinct (...$arrays): array
 {
+	foreach ($arrays as &$incarray) {
+		if (!is_array($incarray)) {
+			$incarray = [];
+		}
+	}
 	$array = current($arrays);
 	$reposition = false;
 	if (is_bool($arrays[count($arrays) - 1])) {
