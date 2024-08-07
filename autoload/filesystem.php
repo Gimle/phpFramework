@@ -265,6 +265,23 @@ function get_mimetype (string $file): array
 				}
 			}
 		}
+
+		if ($matches[1] === 'application/octet-stream') {
+			$size = filesize($file);
+			if ($size > 4) {
+				$fp = fopen($file, 'r');
+				$check1 = fread($fp, 4);
+
+				fclose($fp);
+
+				if ($check1 === hex2bin('01000000')) {
+					if (str_ends_with($file, '.emf')) {
+						$matches[1] = 'image/x-emf';
+					}
+				}
+
+			}
+		}
 	}
 
 	return ['mime' => $matches[1], 'charset' => $matches[2]];
