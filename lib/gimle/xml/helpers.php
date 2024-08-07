@@ -2,6 +2,8 @@
 declare(strict_types=1);
 namespace gimle\xml;
 
+use function \gimle\sp;
+
 trait Helpers
 {
 	/**
@@ -155,6 +157,9 @@ trait Helpers
 		}
 		else if (ctype_digit($input)) {
 			return date($format, (int) $input);
+		}
+		else if ((substr($input, 0, 1) === '-') && (ctype_digit(substr($input, 1)))) {
+			return date($format, -(int) substr($input, 1));
 		}
 		else if (is_string($input)) {
 			return date($format, strtotime($input));
