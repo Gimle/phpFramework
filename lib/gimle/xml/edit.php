@@ -26,6 +26,20 @@ trait Edit
 		return $return;
 	}
 
+	public function unwrap ($ref = null)
+	{
+		$refs = $this->resolveReference($ref);
+		foreach ($refs as $ref) {
+			$dom = $this->toDom($ref);
+
+			$parent = $dom->parentNode;
+			foreach ($dom->childNodes as $child) {
+				$parent->insertBefore($child->cloneNode(true), $dom);
+			}
+			$parent->removeChild($dom);
+		}
+	}
+
 	/**
 	 * Replace a given node.
 	 *
