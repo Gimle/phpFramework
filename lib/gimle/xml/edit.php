@@ -34,7 +34,6 @@ trait Edit
 
 			$parent = $dom->parentNode;
 			foreach ($dom->childNodes as $child) {
-				$parent->insertBefore($child->cloneNode(true), $dom);
 				$res = $parent->insertBefore($child->cloneNode(true), $dom);
 			}
 			$parent->removeChild($dom);
