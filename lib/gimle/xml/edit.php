@@ -26,7 +26,7 @@ trait Edit
 		return $return;
 	}
 
-	public function unwrap ($ref = null)
+	public function unwrap ($ref = null): void
 	{
 		$refs = $this->resolveReference($ref);
 		foreach ($refs as $ref) {
@@ -35,6 +35,7 @@ trait Edit
 			$parent = $dom->parentNode;
 			foreach ($dom->childNodes as $child) {
 				$parent->insertBefore($child->cloneNode(true), $dom);
+				$res = $parent->insertBefore($child->cloneNode(true), $dom);
 			}
 			$parent->removeChild($dom);
 		}
