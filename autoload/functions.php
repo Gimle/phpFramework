@@ -22,6 +22,19 @@ function session_available (): bool
 }
 
 /**
+ * If a session is available, then start it.
+ *
+ * @throws gimle\ErrorException If session.use_only_cookies can not be set.
+ * @return void
+ */
+function session_restore (): void
+{
+	if (session_available() === true) {
+		session_start();
+	}
+}
+
+/**
  * Set some default values on session start.
  *
  * @throws gimle\ErrorException If session.use_only_cookies can not be set.
