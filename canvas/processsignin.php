@@ -100,9 +100,28 @@ catch (Exception $e) {
 
 User::deleteSigninToken();
 
+if (Config::get('user.reply') === 'json') {
+	header('Content-type: application/json');
+	if (isset($_SESSION['gimle']['signinException'])) {
+		sp($_SESSION['gimle']['signinException']);
+		echo json_encode(false);
+		unset($_SESSION['gimle']['signinException']);
+		return true;
+	}
+	echo json_encode(true);
+	return true;
+}
+
 $target = BASE_PATH;
+
+if (isset($_SESSION['gimle']['retrunto'])) {
+	$target = $_SESSION['gimle']['retrunto'];
+	unset($_SESSION['gimle']['retrunto']);
+}
+
 if (isset($_SESSION['gimle']['activeprincipal'])) {
 	if (Config::exists('user.principal.' . $_SESSION['gimle']['activeprincipal'])) {
+		$target = BASE_PATH;
 		$principal = Config::get('user.principal.' . $_SESSION['gimle']['activeprincipal']);
 		if (!isset($_SESSION['gimle']['user'])) {
 			if (isset($principal['fail'])) {
@@ -117,23 +136,6 @@ if (isset($_SESSION['gimle']['activeprincipal'])) {
 		}
 	}
 	unset($_SESSION['gimle']['activeprincipal']);
-}
-
-if (Config::get('user.reply') === 'json') {
-	header('Content-type: application/json');
-	if (isset($_SESSION['gimle']['signinException'])) {
-		sp($_SESSION['gimle']['signinException']);
-		echo json_encode(false);
-		unset($_SESSION['gimle']['signinException']);
-		return true;
-	}
-	echo json_encode(true);
-	return true;
-}
-
-if (isset($_SESSION['gimle']['retrunto'])) {
-	$target = $_SESSION['gimle']['retrunto'];
-	unset($_SESSION['gimle']['retrunto']);
 }
 
 header('Location: ' . $target);
