@@ -2,6 +2,8 @@
 declare(strict_types=1);
 namespace gimle\xml;
 
+use function \gimle\sp;
+
 trait Queries
 {
 	/**
@@ -48,6 +50,11 @@ trait Queries
 			$level--;
 		}
 		return ($this->xpath(implode('/', $q))[0] ?? null);
+	}
+
+	public function getAncestor (string $type): ?self
+	{
+		return ($this->xpath('./ancestor::' . $type . '[1]')[0] ?? null);
 	}
 
 	/**
