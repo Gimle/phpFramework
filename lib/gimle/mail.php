@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace gimle;
 
 use \PHPMailer\PHPMailer\PHPMailer;
+use \gimle\router\PathResolver;
 
 /**
  * This class requires PHPMailer to be installed as a submodule.
@@ -56,6 +57,8 @@ class Mail extends PHPMailer
 	 */
 	private $config = null;
 
+	private $sitelanguage = null;
+
 	/**
 	 * Create a new PHPMailer object.
 	 *
@@ -93,10 +96,20 @@ class Mail extends PHPMailer
 		if (isset($this->config['secure'])) {
 			$this->SMTPSecure = $this->config['secure'];
 		}
+
 		$this->isHTML(true);
 
 		if ((isset($this->config['spectacle'])) && ($this->config['spectacle'] === true)) {
 			$this->spectacle = true;
+		}
+
+		$this->sitelanguage = (i18n::getInstance())->getLanguage();
+		$synonyms = MainConfig::get('i18n.lang.' . $this->sitelanguage . '.synonyms');
+		if (is_array($synonyms)) {
+			$this->sitelanguage = array_merge([$this->sitelanguage], $synonyms);
+		}
+		else {
+			$this->sitelanguage = [$this->sitelanguage];
 		}
 	}
 
@@ -141,6 +154,22 @@ class Mail extends PHPMailer
 	{
 		$this->fromIsSet = true;
 		return parent::setFrom($address, $name, $auto);
+	}
+
+	public function template (string $template): bool
+	{
+		$languages = array_merge($this->sitelanguage, ['en']);
+		foreach ($languages as $language) {
+			$html = PathResolver::getTemplatePath('mail/' . $template . '/' . $language . '.' . $template . '.html');
+			$txt = PathResolver::getTemplatePath('mail/' . $template . '/' . $language . '.' . $template . '.txt');
+			if (($html === null) || ($txt === null)) {
+				continue;
+			}
+			$this->Body = file_get_contents($html);
+			$this->AltBody = file_get_contents($txt);
+			return true;
+		}
+		return false;
 	}
 
 	/**
