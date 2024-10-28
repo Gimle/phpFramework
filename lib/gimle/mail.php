@@ -229,5 +229,28 @@ class Mail extends PHPMailer
 				}
 			}
 		}
+
+		if (isset($this->config['dkim'])) {
+			if (!isset($this->config['dkim']['identity'])) {
+				$this->DKIM_identity = $this->From;
+			}
+			else {
+				$this->DKIM_identity = $this->config['dkim']['identity'];
+			}
+
+			if (!isset($this->config['dkim']['domain'])) {
+				$this->DKIM_domain = substr($this->From, strpos($this->DKIM_identity, '@') + 1);
+			}
+			else {
+				$this->DKIM_domain = $this->config['dkim']['domain'];
+			}
+
+			$this->DKIM_private = $this->config['dkim']['private'];
+			$this->DKIM_selector = $this->config['dkim']['selector'];
+
+			if (isset($this->config['dkim']['pass'])) {
+				$this->DKIM_passphrase = $this->config['dkim']['pass'];
+			}
+		}
 	}
 }
