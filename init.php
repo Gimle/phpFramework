@@ -744,3 +744,8 @@ if (is_executable(SITE_DIR . 'autoload/')) {
 		include SITE_DIR . '/autoload/' . $fileInfo->getFilename();
 	}
 }
+foreach (array_reverse(System::getModules(MODULE_GIMLE)) as $name) {
+	if (is_readable(SITE_DIR . 'module/' . $name . '/init.php')) {
+		include SITE_DIR . 'module/' . $name . '/init.php';
+	}
+}
