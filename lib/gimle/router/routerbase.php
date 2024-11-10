@@ -60,71 +60,71 @@ class RouterBase extends PathResolver
 	 *
 	 * @var int
 	 */
-	private $requestMethod;
+	protected $requestMethod;
 
 	/**
 	 * The currently selected canvas to serve.
 	 *
 	 * @var string
 	 */
-	private $canvas = null;
+	protected $canvas = null;
 
 	/**
 	 * Should the canvas be parsed, or served directly.
 	 *
 	 * @var bool
 	 */
-	private $parseCanvas = true;
+	protected $parseCanvas = true;
 
 	/**
 	 * The currently selected template to serve.
 	 *
 	 * @var ?string
 	 */
-	private $template = null;
-	private $templateargs = [];
+	protected $template = null;
+	protected $templateargs = [];
 
 	/**
 	 * The defined routes.
 	 *
 	 * @var array
 	 */
-	private $routes = [];
+	protected $routes = [];
 
 	/**
 	 * Information about the current url.
 	 *
 	 * @var array
 	 */
-	private $url = [];
+	protected $url = [];
 
 	/**
 	 * The current url.
 	 *
 	 * @var string
 	 */
-	private $urlString = '';
+	protected $urlString = '';
 
 	/**
 	 * Custom fallbacks.
 	 *
 	 * @var array
 	 */
-	private $fallback = [];
+	protected $fallback = [];
 
 	/**
 	 * If a route fails, store the fail here, for a potential exception to use it later.
 	 *
 	 * @var array
 	 */
-	private $tried = [];
+	protected $tried = [];
 
 	/**
 	 * Holder for variables that should not be affected by includes.
 	 *
 	 * @var array
 	 */
-	private $vars = [];
+	protected $vars = [];
 
 	/**
 	 * Holder for potentional error.
@@ -140,37 +140,37 @@ class RouterBase extends PathResolver
 		}
 		switch ($_SERVER['REQUEST_METHOD']) {
 			case 'GET':
-				$this->requestMethod = self::R_GET;
+				$this->requestMethod = static::R_GET;
 				break;
 			case 'POST':
-				$this->requestMethod = self::R_POST;
+				$this->requestMethod = static::R_POST;
 				break;
 			case 'PUT':
-				$this->requestMethod = self::R_PUT;
+				$this->requestMethod = static::R_PUT;
 				break;
 			case 'PATCH':
-				$this->requestMethod = self::R_PATCH;
+				$this->requestMethod = static::R_PATCH;
 				break;
 			case 'DELETE':
-				$this->requestMethod = self::R_DELETE;
+				$this->requestMethod = static::R_DELETE;
 				break;
 			case 'COPY':
-				$this->requestMethod = self::R_COPY;
+				$this->requestMethod = static::R_COPY;
 				break;
 			case 'HEAD':
-				$this->requestMethod = self::R_HEAD;
+				$this->requestMethod = static::R_HEAD;
 				break;
 			case 'OPTIONS':
-				$this->requestMethod = self::R_OPTIONS;
+				$this->requestMethod = static::R_OPTIONS;
 				break;
 			case 'LINK':
-				$this->requestMethod = self::R_LINK;
+				$this->requestMethod = static::R_LINK;
 				break;
 			case 'UNLINK':
-				$this->requestMethod = self::R_UNLINK;
+				$this->requestMethod = static::R_UNLINK;
 				break;
 			case 'PURGE':
-				$this->requestMethod = self::R_PURGE;
+				$this->requestMethod = static::R_PURGE;
 				break;
 			default:
 				$this->requestMethod = 0;
@@ -245,7 +245,7 @@ class RouterBase extends PathResolver
 		if (ENV_MODE & ENV_CLI) {
 			return;
 		}
-		assert(($requestMethod >= self::R_GET) && ($requestMethod <= ((self::R_PURGE * 2) - 1)));
+		assert(($requestMethod >= static::R_GET) && ($requestMethod <= ((static::R_PURGE * 2) - 1)));
 		if (($basePathKey === '*') || ($basePathKey === BASE_PATH_KEY)) {
 
 			$this->routes[$path][] = [
@@ -270,7 +270,7 @@ class RouterBase extends PathResolver
 		if (ENV_MODE & ENV_CLI) {
 			return;
 		}
-		assert(($requestMethod >= self::R_GET) && ($requestMethod <= ((self::R_PURGE * 2) - 1)));
+		assert(($requestMethod >= static::R_GET) && ($requestMethod <= ((static::R_PURGE * 2) - 1)));
 		if (!is_array($conditions)) {
 			$requestMethod = $conditions;
 			$conditions = [];
@@ -316,7 +316,7 @@ class RouterBase extends PathResolver
 	{
 		if (($skipCheck === false) && ($this->canvas === null)) {
 			try {
-				$this->except(self::E_CANVAS_NOT_SET);
+				$this->except(static::E_CANVAS_NOT_SET);
 			}
 			catch (\Throwable $e) {
 				$this->catch($e);
@@ -394,19 +394,19 @@ class RouterBase extends PathResolver
 			}
 
 			if ($routeFound === false) {
-				$this->except(self::E_ROUTES_EXHAUSTED);
+				$this->except(static::E_ROUTES_EXHAUSTED);
 			}
 			if ($methodMatch === false) {
-				$this->except(self::E_METHOD_NOT_FOUND);
+				$this->except(static::E_METHOD_NOT_FOUND);
 			}
 
 			$this->vars['path'] = $path;
 			if ($this->parseCanvas === true) {
 
 				if ($this->template !== null) {
-					$resolved = self::getTemplatePath($this->template);
+					$resolved = static::getTemplatePath($this->template);
 					if ($resolved === null) {
-						$this->except(self::E_TEMPLATE_NOT_FOUND);
+						$this->except(static::E_TEMPLATE_NOT_FOUND);
 					}
 					$this->template = $resolved;
 
@@ -423,9 +423,9 @@ class RouterBase extends PathResolver
 			}
 
 			$recuriveCanvasHolder = $this->canvas;
-			$this->canvas = self::getCanvasPath($this->canvas);
+			$this->canvas = static::getCanvasPath($this->canvas);
 			if ($this->canvas === null) {
-				$this->except(self::E_CANVAS_NOT_FOUND);
+				$this->except(static::E_CANVAS_NOT_FOUND);
 			}
 
 			$path = $this->vars['path'];
@@ -457,7 +457,7 @@ class RouterBase extends PathResolver
 					return;
 				}
 				else {
-					$this->except(self::E_ROUTES_EXHAUSTED);
+					$this->except(static::E_ROUTES_EXHAUSTED);
 				}
 			};
 
@@ -475,7 +475,7 @@ class RouterBase extends PathResolver
 					}
 				}
 				else {
-					$this->except(self::E_CANVAS_RETURN, [
+					$this->except(static::E_CANVAS_RETURN, [
 						'returnValue' => $canvasResult
 					]);
 				}
@@ -559,7 +559,7 @@ class RouterBase extends PathResolver
 				}
 			}
 
-			if (($e->getCode() === self::E_ROUTES_EXHAUSTED) || ($e->getCode() === self::E_ROUTE_NOT_FOUND)) {
+			if (($e->getCode() === static::E_ROUTES_EXHAUSTED) || ($e->getCode() === static::E_ROUTE_NOT_FOUND)) {
 				$url = $e->get('url');
 				if ((filter_var($url, FILTER_VALIDATE_DIRNAME)) && (substr($url, 0, 7) === 'module/') && (strpos($url, '../') === false)) {
 					$url = substr($url, 7);
@@ -621,12 +621,12 @@ class RouterBase extends PathResolver
 		}
 
 		if ($contentType === 'text/html') {
-			Canvas::_override(self::getCanvasPath('html'));
+			Canvas::_override(static::getCanvasPath('html'));
 		}
 		else {
-			Canvas::_override(self::getCanvasPath('json'));
+			Canvas::_override(static::getCanvasPath('json'));
 		}
-		inc(self::getTemplatePath('error/' . $error), $e);
+		inc(static::getTemplatePath('error/' . $error), $e);
 		Canvas::_create();
 	}
 
@@ -640,37 +640,37 @@ class RouterBase extends PathResolver
 	 */
 	private function except (int $type, array $params = []): void
 	{
-		if (($type === self::E_ROUTES_EXHAUSTED) && (empty($this->tried))) {
-			$type = self::E_ROUTE_NOT_FOUND;
+		if (($type === static::E_ROUTES_EXHAUSTED) && (empty($this->tried))) {
+			$type = static::E_ROUTE_NOT_FOUND;
 		}
 		switch ($type) {
-			case self::E_ROUTE_NOT_FOUND:
+			case static::E_ROUTE_NOT_FOUND:
 				$e = new Exception('Route not found.', $type);
 				break;
-			case self::E_METHOD_NOT_FOUND:
+			case static::E_METHOD_NOT_FOUND:
 				$e = new Exception('Method not found.', $type);
 				break;
-			case self::E_CANVAS_NOT_FOUND:
+			case static::E_CANVAS_NOT_FOUND:
 				$e = new Exception('Canvas not found.', $type);
 				break;
-			case self::E_TEMPLATE_NOT_FOUND:
+			case static::E_TEMPLATE_NOT_FOUND:
 				$e = new Exception('Template not found.', $type);
 				$e->set('template', $this->template);
 				break;
-			case self::E_CANVAS_RETURN:
+			case static::E_CANVAS_RETURN:
 				$e = new Exception('Invalid canvas return value.', $type);
 				break;
-			case self::E_TEMPLATE_RETURN:
+			case static::E_TEMPLATE_RETURN:
 				$e = new Exception('Invalid template return value.', $type);
 				break;
-			case self::E_ROUTES_EXHAUSTED:
+			case static::E_ROUTES_EXHAUSTED:
 				$e = new Exception('Routes exhausted.', $type);
 				break;
-			case self::E_CANVAS_NOT_SET:
+			case static::E_CANVAS_NOT_SET:
 				$e = new Exception('No canvas set.', $type);
 				break;
 			default:
-				$e = new Exception('Unknown.', self::E_UNKNOWN);
+				$e = new Exception('Unknown.', static::E_UNKNOWN);
 		}
 		$e->set('url', $this->urlString);
 		$e->set('page', \gimle\page());
