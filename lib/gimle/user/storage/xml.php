@@ -193,7 +193,7 @@ class Xml extends \gimle\user\UserBase
 		return true;
 	}
 
-	public static function addGroup (string $name, string $description, int $id = null): bool
+	public static function addGroup (string $name, string $description, ?int $id = null): bool
 	{
 		if (($id !== null) && ($id < 3)) {
 			return false;
@@ -412,7 +412,7 @@ class Xml extends \gimle\user\UserBase
 		return null;
 	}
 
-	public static function checkRecovery (string $token, string $email = null, $validity = '-1 hour'): ?User
+	public static function checkRecovery (string $token, ?string $email = null, $validity = '-1 hour'): ?User
 	{
 		$sxml = SimpleXmlElement::open(self::getXmlLocation(), '<users/>');
 		if ($email !== null) {

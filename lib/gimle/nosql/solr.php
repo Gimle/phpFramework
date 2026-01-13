@@ -194,7 +194,7 @@ class Solr
 	 * @param bool $parseResult Should xml and json responces be returned as their datatype instead of plain text.
 	 * @return array
 	 */
-	public function core (int $action = null, array $params = [], bool $parseResult = true)
+	public function core (?int $action = null, array $params = [], bool $parseResult = true)
 	{
 		/* Potentional actions: https://wiki.apache.org/solr/CoreAdmin */
 
