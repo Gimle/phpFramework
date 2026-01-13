@@ -385,6 +385,9 @@ class Xml extends \gimle\user\UserBase
 		$sxml = SimpleXmlElement::open(self::getXmlLocation(), '<users/>');
 		$xp = '/users/user/auth/local[@verify=' . $sxml->real_escape_string($token) . ']/../..';
 		$result = current($sxml->xpath($xp));
+		if ($result === false) {
+			return null;
+		}
 		$user = self::xmlToUser($result);
 		if ($user !== false) {
 			foreach ($user->auth['local'] as &$auth) {
