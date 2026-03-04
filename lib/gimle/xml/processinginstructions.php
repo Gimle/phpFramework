@@ -15,7 +15,7 @@ trait ProcessingInstructions
 	 * @param ?mixed $ref null = Siblings of self. string = Children of xpath, SimpleXmlElement = Children of reference.
 	 * @return array
 	 */
-	public function getPi (string $name = null, bool $searchChildren = false, $ref = null): array
+	public function getPi (?string $name = null, bool $searchChildren = false, $ref = null): array
 	{
 		$pis = $this->getDomPi($name, $searchChildren, $ref);
 		$return = [];
@@ -36,7 +36,7 @@ trait ProcessingInstructions
 	 * @param ?mixed $ref null = Siblings of self. string = Children of xpath, SimpleXmlElement = Children of reference.
 	 * @return array
 	 */
-	public function removePi (string $name = null, bool $searchChildren = false, $ref = null): array
+	public function removePi (?string $name = null, bool $searchChildren = false, $ref = null): array
 	{
 		$pis = $this->getDomPi($name, $searchChildren, $ref);
 		$return = [];
@@ -57,7 +57,7 @@ trait ProcessingInstructions
 	 * @param ?mixed $ref null = Siblings of self. string = Children of xpath, SimpleXmlElement = Children of reference.
 	 * @return void
 	 */
-	public function parsePi (callable $callback, string $name = null, bool $searchChildren = false, $input = null, $ref = null): void
+	public function parsePi (callable $callback, ?string $name = null, bool $searchChildren = false, $input = null, $ref = null): void
 	{
 		$pis = $this->getDomPi($name, $searchChildren, $ref);
 		foreach ($pis as $pi) {
@@ -94,7 +94,7 @@ trait ProcessingInstructions
 	 * @param ?mixed $ref null = Siblings of self. string = Children of xpath, SimpleXmlElement = Children of reference.
 	 * @return array
 	 */
-	private function getDomPi (string $name = null, bool $searchChildren = false, $ref = null): array
+	private function getDomPi (?string $name = null, bool $searchChildren = false, $ref = null): array
 	{
 		$injectXpath = '';
 		if ($ref === null) {

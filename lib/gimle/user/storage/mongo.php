@@ -215,7 +215,7 @@ class Mongo extends \gimle\user\UserBase
 		return true;
 	}
 
-	public static function addGroup (string $name, string $description, int $id = null): bool
+	public static function addGroup (string $name, string $description, ?int $id = null): bool
 	{
 		if (($id !== null) && ($id < 3)) {
 			return false;
@@ -580,7 +580,7 @@ class Mongo extends \gimle\user\UserBase
 		}
 	}
 
-	public static function checkRecovery (string $token, string $email = null, $validity = '-1 hour'): ?User
+	public static function checkRecovery (string $token, ?string $email = null, $validity = '-1 hour'): ?User
 	{
 		$mongo = MongoDb::getInstance('users');
 

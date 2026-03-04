@@ -8,7 +8,7 @@ class DateTime extends \DateTime
 
 	public function format (string $format): string
 	{
-		$fmt = new \IntlDateFormatter(setlocale(LC_TIME, 0));
+		$fmt = new \IntlDateFormatter(setlocale(LC_TIME, null));
 		$fmt->setPattern($format);
 		return $fmt->format($this);
 	}

@@ -286,8 +286,6 @@ class Curl
 		}
 		$return['error'] = curl_errno($ch);
 
-		curl_close($ch);
-
 		return $return;
 	}
 }

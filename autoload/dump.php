@@ -333,7 +333,6 @@ function var_dump ($var, array $mode = []): ?string
 								$append .= ' public read';
 							}
 						}
-						$prop->setAccessible(true);
 						if ($prop->isStatic()) {
 							$value = $prop->getValue();
 							$append .= ' static';
