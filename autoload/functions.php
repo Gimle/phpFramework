@@ -47,6 +47,11 @@ function session_start (): void
 			throw new Exception('Could not start session.');
 		}
 
+		$samesite = 'Lax';
+		if (MainConfig::get('samesite') === true) {
+			$samesite = 'Strict';
+		}
+
 		$secure = false;
 		$urlPartsBase = parse_url(MAIN_BASE_PATH);
 		if ($urlPartsBase['scheme'] === 'https') {
@@ -76,12 +81,16 @@ function session_start (): void
 					'path' => $urlPartsBase['path'],
 					'secure' => true,
 					'httponly' => true,
-					'samesite' => 'Lax',
+					'samesite' => $samesite,
 				]
 			);
 			$_COOKIE[$sessionName . 'Lng'] = $uid;
 		}
-		\session_start();
+		\session_start([
+			'cookie_secure' => true,
+			'cookie_httponly' => true,
+			'cookie_samesite' => $samesite,
+		]);
 	}
 
 	$sid = session_id();
