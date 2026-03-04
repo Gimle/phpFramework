@@ -5,6 +5,7 @@ namespace gimle\user;
 use \gimle\System;
 use \gimle\User;
 use \gimle\Exception;
+use \gimle\MainConfig;
 
 use function \gimle\filter_var;
 use function \gimle\loadFile;
@@ -324,6 +325,10 @@ abstract class UserBase
 			$expires = time() + (86400 * 400);
 		}
 		$urlPartsBase = parse_url(MAIN_BASE_PATH);
+		$samesite = 'Lax';
+		if (MainConfig::get('samesite') === true) {
+			$samesite = 'Strict';
+		}
 		setcookie(
 			session_name() . $name,
 			$value,
@@ -332,7 +337,7 @@ abstract class UserBase
 				'path' => $urlPartsBase['path'],
 				'secure' => true,
 				'httponly' => true,
-				'samesite' => 'Lax',
+				'samesite' => $samesite,
 			]
 		);
 	}
