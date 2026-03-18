@@ -24,13 +24,12 @@ class DirIndex
 		$filename = $this->root . 'nextid.txt';
 		$fp = fopen($filename, 'r+');
 		if (flock($fp, LOCK_EX)) {
-			$thisId = fread($fp, filesize($filename));
+			$thisId = (int) fread($fp, filesize($filename));
 			rewind($fp);
-			$thisId = (int) $thisId;
 			$lastId = $thisId - 1;
 			$nextId = $thisId + 1;
 
-			if (($lastId > 1) && (strlen((string) $lastId) !== strlen((string) $thisId)) && ($thisId % 3 === 1)) {
+			if (($lastId > 1) && (strlen($this->pad($thisId)) !== strlen($this->pad($lastId)))) {
 				rename($this->root . 'data/', $this->root . 'temp/');
 				mkdir($this->root . 'data/', 0777, true);
 				rename($this->root . 'temp/', $this->root . 'data/000/');
@@ -55,13 +54,24 @@ class DirIndex
 		];
 	}
 
-	public function get (int $id): string
+	public function count (): int
 	{
-		$len = (int) file_get_contents($this->root . 'nextid.txt');
-		$len--;
-		$len = strlen((string) $len);
-		$padded = str_pad((string) $id, $len, '0', STR_PAD_LEFT);
-		return $this->pad($padded) . '/';
+		$count = 0;
+
+		$directory = new \RecursiveDirectoryIterator($this->root . 'data/', \RecursiveDirectoryIterator::SKIP_DOTS);
+		$filter = new \RecursiveCallbackFilterIterator($directory, function ($current, $key, $iterator) {
+			if ($current->isDir()) {
+				return is_numeric($current->getFilename());
+			}
+			return false;
+		});
+
+		$iterator = new \RecursiveIteratorIterator($filter, \RecursiveIteratorIterator::SELF_FIRST);
+		foreach ($iterator as $item) {
+			$count++;
+		}
+
+		return $count;
 	}
 
 	public function loop ()
@@ -80,7 +90,7 @@ class DirIndex
 			if (str_starts_with($filename, '.')) {
 				continue;
 			}
-			if ((!ctype_digit($filename)) || (strlen($filename) !== 3)) {
+			if (!ctype_digit($filename)) {
 				continue;
 			}
 
@@ -95,10 +105,8 @@ class DirIndex
 
 	private function pad (int|string $id): string
 	{
-		$splitted = str_split(strrev((string) $id), 3);
-		array_walk($splitted, function (&$item) {
-			$item = str_pad($item, 3, '0', STR_PAD_RIGHT);
-		});
-		return strrev(implode('/', $splitted));
+		$id = (string) (int) $id;
+		$len = (int) ceil(strlen($id) / 3) * 3;
+		return implode('/', str_split(str_pad($id, $len, '0', STR_PAD_LEFT), 3));
 	}
 }
