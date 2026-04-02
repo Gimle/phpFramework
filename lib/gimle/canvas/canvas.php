@@ -6,6 +6,8 @@ declare(strict_types=1);
 
 namespace gimle\canvas;
 
+use function \gimle\sp;
+
 /**
  * Canvas class.
  */
@@ -175,6 +177,11 @@ class Canvas
 	 */
 	public static function __callStatic (string $method, array $params)
 	{
+		$escape = true;
+		if ((isset($params['escape'])) && ($params['escape'] === false)) {
+			$escape = false;
+		}
+
 		if (substr($method, 0, 1) === '_') {
 			throw new \Exception('Methods starting with underscore is reserved for functionality, and should not be used for variables.', self::E_RESERVED_NAME);
 		}
@@ -187,7 +194,7 @@ class Canvas
 		}
 		if (!isset($params[1])) {
 			if (($params[0] !== null) && (!is_bool($params[0]))) {
-				self::$magic[$method] = [$params[0]];
+				self::$magic[$method] = [($escape ? htmlspecialchars($params[0]) : $params[0])];
 			}
 			elseif ($params[0] === null) {
 				unset(self::$magic[$method]);
@@ -196,23 +203,23 @@ class Canvas
 		else {
 			if (($params[1] !== null) && (!is_bool($params[1]))) {
 				if (($params[1] === -1) && (isset(self::$magic[$method]))) {
-					array_unshift(self::$magic[$method], $params[0]);
+					array_unshift(self::$magic[$method], ($escape ? htmlspecialchars($params[0]) : $params[0]));
 				}
 				else {
 					if ((isset($params[2])) && ($params[2] === -1) && (isset(self::$magic[$method])) && (!array_key_exists($params[1], self::$magic[$method]))) {
-						self::$magic[$method] = array_merge([$params[1] => $params[0]], self::$magic[$method]);
+						self::$magic[$method] = array_merge([$params[1] => htmlspecialchars($params[0])], self::$magic[$method]);
 					}
 					else {
-						self::$magic[$method][$params[1]] = $params[0];
+						self::$magic[$method][$params[1]] = ($escape ? htmlspecialchars($params[0]) : $params[0]);
 					}
 				}
 			}
 			elseif ($params[1] === true) {
-				self::$magic[$method][] = $params[0];
+				self::$magic[$method][] = ($escape ? htmlspecialchars($params[0]) : $params[0]);
 			}
 			elseif ($params[1] === false) {
 				if (!isset(self::$magic[$method])) {
-					self::$magic[$method][] = $params[0];
+					self::$magic[$method][] = ($escape ? htmlspecialchars($params[0]) : $params[0]);
 				}
 			}
 		}
