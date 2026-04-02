@@ -178,7 +178,7 @@ class Canvas
 	public static function __callStatic (string $method, array $params)
 	{
 		$escape = true;
-		if ((isset($params['escape'])) && ($params['escape'] === false)) {
+		if (((isset($params['escape'])) && ($params['escape'] === false)) || ($params[0] === null)) {
 			$escape = false;
 		}
 
