@@ -70,20 +70,34 @@ trait Formatters
 	/**
 	 * Extract normalized text content from a node.
 	 *
-	 * @param array $allowTags Allowed tags
+	 * @param array $allow Allowed tags.
+	 * @param array $remove Elements to remove.
 	 * @return string The resulting string.
 	 */
-	public function textContent (array $allowTags = []): string
+	public function textContent (array $allow = [], array $remove = []): string
 	{
-		$xml = $this->asXml();
-		if (empty($allowTags)) {
-			$regex = '/(<[^>]+>)/';
+		if (!empty($remove)) {
+			$sxml = new SimpleXmlElement($this->asXml());
+			array_walk($remove, function (&$value) {
+				$value = '//' . $value;
+			});
+
+			$sxml->remove(implode('|', $remove));
+			$xml = $sxml->asXml();
 		}
 		else {
-			$regex = '/(<(?!((|\/)(' . implode('|', $allowTags) . '(?!t))))[^>]+>)/';
+			$xml = $this->asXml();
+		}
+		$xml = preg_replace('/^.+\n/', '', $xml);
+
+		if (!empty($allow)) {
+			$regex = '/(<(?!((|\/)(' . implode('|', $allow) . '(?!t))))[^>]+>)/';
+		}
+		else {
+			$regex = '/(<[^>]+>)/';
 		}
 
-		return mb_trim(normalize_space(ent2utf8(preg_replace($regex, ' ', $xml))));
+		return mb_trim(normalize_space(preg_replace($regex, ' ', ent2utf8($xml))));
 	}
 
 	/**
