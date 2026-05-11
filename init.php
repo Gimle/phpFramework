@@ -450,7 +450,7 @@ elseif (ENV_MODE & ENV_CLI) {
 		Cli::start($cli['description'], $cli['options']);
 
 		if (isset($cli['index'])) {
-			if (is_int($cli['index'])) {
+			if ((is_int($cli['index'])) && (isset($_SERVER['params'][$cli['index']]))) {
 				$subsite = $_SERVER['params'][$cli['index']];
 			}
 			elseif (isset($_SERVER['options'][$cli['index']])) {
