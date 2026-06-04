@@ -373,3 +373,21 @@ function string_to_type (string $string): mixed
 	}
 	return $string;
 }
+
+/**
+ * Escapes input variale for use in html.
+ *
+ * @param mixed $string The input value
+ * @return string The escaped string
+ */
+function esc (mixed $string): string
+{
+	if ($string instanceof \Simplexmlelement) {
+		$string = (string) $string;
+	}
+	if (!is_string($string)) {
+		return '';
+	}
+
+	return htmlspecialchars($string, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5);
+}
