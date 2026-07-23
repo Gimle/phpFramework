@@ -5,6 +5,7 @@ namespace gimle\user\storage;
 use \gimle\xml\SimpleXmlElement;
 use \gimle\User;
 use \gimle\Exception;
+use \gimle\MainConfig;
 
 use function \gimle\sp;
 
@@ -467,7 +468,12 @@ class Xml extends \gimle\user\UserBase
 	protected static function getXmlLocation (): string
 	{
 		if (self::$xmlFileLocation === null) {
-			self::$xmlFileLocation = MAIN_STORAGE_DIR . 'users.xml';
+			if (MainConfig::exists('user.location')) {
+				self::$xmlFileLocation = MainConfig::get('user.location') . 'users.xml';
+			}
+			else {
+				self::$xmlFileLocation = MAIN_STORAGE_DIR . 'users.xml';
+			}
 		}
 		return self::$xmlFileLocation;
 	}

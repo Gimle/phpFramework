@@ -17,6 +17,7 @@ use const \gimle\MAIN_SITE_DIR;
 use const \gimle\MAIN_BASE_PATH;
 use const \gimle\MAIN_STORAGE_DIR;
 use const \gimle\FILTER_SANITIZE_NAME;
+use const \gimle\USERS_DIR;
 
 abstract class UserBase
 {
@@ -69,6 +70,15 @@ abstract class UserBase
 		foreach ($uses as $use) {
 			$use = substr($use, strrpos($use, '\\') + 1);
 			$this->uses[] = $use;
+		}
+
+		if (!defined('gimle\\USERS_DIR')) {
+			if (MainConfig::exists('user.location')) {
+				define('gimle\\USERS_DIR', MainConfig::get('user.location') . 'users/');
+				}
+			else {
+				define('gimle\\USERS_DIR', MAIN_STORAGE_DIR . 'users/');
+			}
 		}
 
 		$this->callUses('init');
@@ -458,14 +468,14 @@ abstract class UserBase
 
 	protected function updateAi (int $newid)
 	{
-		if (!file_exists(MAIN_STORAGE_DIR . 'users/')) {
-			mkdir(MAIN_STORAGE_DIR . 'users/');
+		if (!file_exists(USERS_DIR)) {
+			mkdir(USERS_DIR);
 		}
-		file_put_contents(MAIN_STORAGE_DIR . 'users/userid.txt', (string) $newid, LOCK_EX);
+		file_put_contents(USERS_DIR . 'userid.txt', (string) $newid, LOCK_EX);
 	}
 
 	protected function getAi (): int
 	{
-		return (int) loadFile(MAIN_STORAGE_DIR . 'users/userid.txt', '1');
+		return (int) loadFile(USERS_DIR . 'userid.txt', '1');
 	}
 }
