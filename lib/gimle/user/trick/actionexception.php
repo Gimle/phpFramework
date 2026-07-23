@@ -4,6 +4,8 @@ namespace gimle\user\trick;
 
 use \gimle\Exception;
 
+use function \gimle\session_start;
+
 trait ActionException
 {
 	/**
@@ -21,6 +23,7 @@ trait ActionException
 	 */
 	public static function setActionException (Exception $e): void
 	{
+		session_start();
 		$_SESSION['gimle']['actionException'] = $e;
 	}
 
