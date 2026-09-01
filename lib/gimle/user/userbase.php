@@ -24,7 +24,7 @@ abstract class UserBase
 	use trick\SigninToken;
 	use trick\ActionException;
 
-	/* Error constants */
+	/* Auth Constants */
 	public const UNKNOWN = 1;
 	public const ALREADY_SIGNED_IN = 2;
 	public const MISSING_PAYLOAD = 3;
@@ -42,7 +42,15 @@ abstract class UserBase
 	public const CUSTOM = 15;
 	public const VERIFICATION_REQUIRED = 16;
 
+	/* Status Constants */
+	public const CREATE_PENDING = 2; // After using eg oauth to authenticate, but required fields are not present to create the account
+	public const UPDATE_PENDING = 3; // The system now requires user data that the account is missing
+	public const LINK_PENDING = 4; // Another authentication method was used for an existing account email, waiting for verification
+	public const ACTIVE = 5; // The user is signed in normally
+	public const SUSPENDED = 6; // The account is suspended, and can not be used
+
 	protected $id = null;
+	protected $status = null;
 	protected $uid = null;
 	protected $firstName = null;
 	protected $middleName = null;
@@ -131,6 +139,9 @@ abstract class UserBase
 			$this->auth = $value;
 			return;
 		}
+		else if ($property === 'status') {
+			$this->status = $value;
+		}
 		throw new Exception('Can not set user property: ' . $property);
 	}
 
@@ -138,6 +149,12 @@ abstract class UserBase
 	{
 		if (in_array($property, ['id', 'uses', 'groups', 'created', 'firstName', 'middleName', 'firstNames', 'lastName', 'fullName', 'email', 'auth', 'activeLdap', 'authLoadTypes'])) {
 			return $this->$property;
+		}
+		else if ($property === 'status') {
+			if ($this->id !== null) {
+				return self::ACTIVE;
+			}
+			return $this->status;
 		}
 	}
 

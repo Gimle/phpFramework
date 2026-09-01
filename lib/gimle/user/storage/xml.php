@@ -451,6 +451,23 @@ class Xml extends \gimle\user\UserBase
 		return null;
 	}
 
+	public static function createInitial (array $data): User
+	{
+		$userxml = \gimle\xml\SimpleXmlElement::open(STORAGE_DIR . 'users.xml');
+		if (current($userxml->xpath('/users/user')) === false) {
+			$user = new User();
+			$user->email = $data['email'];
+			$user->firstName = substr($data['email'], 0, strpos($data['email'], '@'));
+			$user->lastName = substr($data['email'], strpos($data['email'], '@') + 1);
+			$user->addLocalAuth($data['email'], $data['password']);
+			$user->groups = [2 => 'root'];
+			$res = $user->save();
+			if ($res === null) {
+				throw new Exception('Could not create user.', User::OTHER_ERROR);
+			}
+		}
+	}
+
 	protected static function getVarCType ($value): string
 	{
 		if (is_bool($value)) {

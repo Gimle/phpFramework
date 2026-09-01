@@ -16,13 +16,11 @@ try {
 	}
 
 	if (!isset($_SESSION['gimle']['awaitAuthFeedback'])) {
-		if (!isset($_GET['remote'])) {
-			if (!isset($_POST['token'])) {
-				throw new Exception('Payload missing.', User::MISSING_PAYLOAD);
-			}
-			if (!User::validateSigninToken($_POST['token'])) {
-				throw new Exception('Payload not valid.', User::INVALID_PAYLOAD);
-			}
+		if (!isset($_POST['token'])) {
+			throw new Exception('Payload missing.', User::MISSING_PAYLOAD);
+		}
+		if (!User::validateSigninToken($_POST['token'])) {
+			throw new Exception('Payload not valid.', User::INVALID_PAYLOAD);
 		}
 
 		if ((isset($_POST['email'])) && (isset($_POST['password']))) {
@@ -32,38 +30,17 @@ try {
 			}
 			$user = User::login($_POST['email'], $_POST['password'], $asi);
 			if ($user->id === null) {
-				if ($user instanceof \gimle\user\storage\Xml) {
-					$userxml = \gimle\xml\SimpleXmlElement::open(STORAGE_DIR . 'users.xml');
-					if (current($userxml->xpath('/users/user')) === false) {
-						$user = new User();
-						$user->email = $_POST['email'];
-						$user->firstName = substr($_POST['email'], 0, strpos($_POST['email'], '@'));
-						$user->lastName = substr($_POST['email'], strpos($_POST['email'], '@') + 1);
-						$user->addLocalAuth($_POST['email'], $_POST['password']);
-						$user->groups = [2 => 'root'];
-						$res = $user->save();
-						if ($res === null) {
-							throw new Exception('Could not create user.', User::OTHER_ERROR);
-						}
-					}
-				}
+				$user = User::createInitial($_POST);
 				if ($user->id === null) {
 					throw new Exception('User not found.', User::USER_NOT_FOUND);
 				}
 			}
 			$_SESSION['gimle']['user'] = $user;
 		}
-		elseif (isset($_REQUEST['remote'])) {
-			try {
-				call_user_func([__NAMESPACE__ . '\\User', 'redirect'  . ucfirst($_REQUEST['remote'])]);
-				$_SESSION['gimle']['awaitAuthFeedback'] = $_REQUEST['remote'];
-				die();
-			}
-			catch (\Throwable $t) {
-				sp($t);
-			}
-
-			throw new Exception('Unknown signin operation.', User::UNKNOWN_OPERATION);
+		elseif (isset($_POST['remote'])) {
+			$_SESSION['gimle']['awaitAuthFeedback'] = $_POST['remote'];
+			call_user_func([__NAMESPACE__ . '\\User', 'redirect'  . ucfirst($_POST['remote'])]);
+			die();
 		}
 		else {
 			throw new Exception('Unknown signin operation.', User::UNKNOWN_OPERATION);
@@ -73,25 +50,18 @@ try {
 		$loginClass = $_SESSION['gimle']['awaitAuthFeedback'];
 		unset($_SESSION['gimle']['awaitAuthFeedback']);
 
-		try {
-			$user = call_user_func([__NAMESPACE__ . '\\User', 'remote'  . ucfirst($loginClass)]);
-			if ($user->id === null) {
-				throw new Exception('User not found.', User::USER_NOT_FOUND);
-			}
-
-			$_SESSION['gimle']['user'] = $user;
+		$user = call_user_func([__NAMESPACE__ . '\\User', 'remote'  . ucfirst($loginClass)]);
+		if ($user->status === null) {
+			throw new Exception('User not found.', User::USER_NOT_FOUND);
 		}
-		catch (\Throwable $t) {
-			sp($_GET);
-			sp($t);
 
-			throw new Exception('Unknown signin operation.', User::UNKNOWN_OPERATION);
-		}
+		$_SESSION['gimle']['user'] = $user;
 	}
 }
 catch (Exception $e) {
 	$e->set('post', $_POST);
 	$e->set('type', 'signin');
+	sp($e);
 	if ($e->getCode() !== User::ALREADY_SIGNED_IN) {
 		User::setCookie('Asi', 'false', time() - (86400 * 400));
 	}
