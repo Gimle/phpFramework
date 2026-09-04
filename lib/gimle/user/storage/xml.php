@@ -453,7 +453,7 @@ class Xml extends \gimle\user\UserBase
 
 	public static function createInitial (array $data): User
 	{
-		$userxml = \gimle\xml\SimpleXmlElement::open(STORAGE_DIR . 'users.xml');
+		$userxml = \gimle\xml\SimpleXmlElement::open(MAIN_STORAGE_DIR . 'users.xml');
 		if (current($userxml->xpath('/users/user')) === false) {
 			$user = new User();
 			$user->email = $data['email'];
@@ -465,6 +465,7 @@ class Xml extends \gimle\user\UserBase
 			if ($res === null) {
 				throw new Exception('Could not create user.', User::OTHER_ERROR);
 			}
+			return $user;
 		}
 	}
 
